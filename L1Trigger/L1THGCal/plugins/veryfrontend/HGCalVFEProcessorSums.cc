@@ -3,10 +3,12 @@
 DEFINE_EDM_PLUGIN(HGCalVFEProcessorBaseFactory, HGCalVFEProcessorSums, "HGCalVFEProcessorSums");
 
 HGCalVFEProcessorSums::HGCalVFEProcessorSums(const edm::ParameterSet& conf) : HGCalVFEProcessorBase(conf) {
-  vfeLinearizationSiImpl_ =
-      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_si"));
-  vfeLinearizationScImpl_ =
-      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_sc"));
+  vfeLinearizationEEImpl_ =
+      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_ee"));
+  vfeLinearizationHEsiImpl_ =
+      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesi"));
+  vfeLinearizationHEscImpl_ =
+      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesc"));
 
   vfeSummationImpl_ = std::make_unique<HGCalVFESummationImpl>(conf.getParameter<edm::ParameterSet>("summationCfg"));
 
@@ -28,10 +30,13 @@ HGCalVFEProcessorSums::HGCalVFEProcessorSums(const edm::ParameterSet& conf) : HG
 void HGCalVFEProcessorSums::run(const HGCalDigiCollection& digiColl,
                                 l1t::HGCalTriggerCellBxCollection& triggerCellColl) {
   vfeSummationImpl_->setGeometry(geometry());
-  calibrationEE_->setGeometry(geometry());
-  calibrationHEsi_->setGeometry(geometry());
-  calibrationHEsc_->setGeometry(geometry());
-  calibrationNose_->setGeometry(geometry());
+  vfeLinearizationEEImpl_->setGeometry(geometry(), DetId::HGCalEE);
+  vfeLinearizationHEsiImpl_->setGeometry(geometry(), DetId::HGCalHSi);
+  vfeLinearizationHEscImpl_->setGeometry(geometry(), DetId::HGCalEE);
+  calibrationEE_->setGeometry(geometry(), DetId::HGCalEE);
+  calibrationHEsi_->setGeometry(geometry(), DetId::HGCalHSi);
+  calibrationHEsc_->setGeometry(geometry(), DetId::HGCalEE);
+  calibrationNose_->setGeometry(geometry(), DetId::HGCalEE);
   triggerTools_.setGeometry(geometry());
 
   std::vector<HGCalDataFrame> dataframes;
@@ -66,9 +71,13 @@ void HGCalVFEProcessorSums::run(const HGCalDigiCollection& digiColl,
   int thickness = triggerTools_.thicknessIndex(dataframes[0].id());
   // Linearization of ADC and TOT values to the same LSB
   if (isSilicon) {
-    vfeLinearizationSiImpl_->linearize(dataframes, linearized_dataframes);
+    if(isEM) {
+      vfeLinearizationEEImpl_->linearize(dataframes, linearized_dataframes);
+    } else {
+      vfeLinearizationHEsiImpl_->linearize(dataframes, linearized_dataframes);
+    }
   } else {
-    vfeLinearizationScImpl_->linearize(dataframes, linearized_dataframes);
+    vfeLinearizationHEscImpl_->linearize(dataframes, linearized_dataframes);
   }
   // Sum of sensor cells into trigger cells
   vfeSummationImpl_->triggerCellSums(linearized_dataframes, tc_payload);

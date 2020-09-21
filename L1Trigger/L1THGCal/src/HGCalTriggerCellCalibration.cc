@@ -8,7 +8,8 @@ HGCalTriggerCellCalibration::HGCalTriggerCellCalibration(const edm::ParameterSet
       chargeCollectionEfficiency_(conf.getParameter<edm::ParameterSet>("chargeCollectionEfficiency")
                                       .getParameter<std::vector<double>>("values")),
       thicknessCorrection_(conf.getParameter<std::vector<double>>("thicknessCorrection")),
-      dEdX_weights_(conf.getParameter<std::vector<double>>("dEdXweights")) {
+      dEdX_weights_(conf.getParameter<std::vector<double>>("dEdXweights")),
+      new_digi_(conf.getParameter<bool>("newDigi")) {
   for (const auto& fCperMIP : fCperMIP_) {
     if (fCperMIP <= 0) {
       edm::LogWarning("DivisionByZero") << "WARNING: zero or negative MIP->fC correction factor. It won't be "
@@ -25,6 +26,35 @@ HGCalTriggerCellCalibration::HGCalTriggerCellCalibration(const edm::ParameterSet
     if (thickCorr <= 0) {
       edm::LogWarning("DivisionByZero") << "WARNING: zero or negative cell-thickness correction factor. It won't be "
                                            "applied to correct trigger cell energies.";
+    }
+  }
+
+
+  if(new_digi_) {
+    noise_map_.setDoseMap(conf.getParameter<std::string>("doseMap"),
+        conf.getParameter<uint32_t>("scaleByDoseAlgo"));
+    noise_map_.setFluenceScaleFactor(conf.getParameter<double>("scaleByDoseFactor"));
+    noise_map_.setIleakParam(conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
+    noise_map_.setCceParam(conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
+        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
+        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
+  }
+}
+
+
+void HGCalTriggerCellCalibration::eventSetup(const edm::EventSetup& es, DetId::Detector det) {
+  triggerTools_.eventSetup(es);
+  if(new_digi_) {
+    //assign the geometry and tell the tool that the gain is automatically set to have the MIP close to 10ADC counts
+    switch(det) {
+      case DetId::HGCalEE:
+        noise_map_.setGeometry(triggerTools_.getTriggerGeometry()->eeGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
+        break;
+      case DetId::HGCalHSi:
+        noise_map_.setGeometry(triggerTools_.getTriggerGeometry()->hsiGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
+        break;
+      default:
+        throw cms::Exception("SetupError") << "Non supported detector type " << det << " for HGCalSiNoiseMap setup";
     }
   }
 }
@@ -49,16 +79,33 @@ void HGCalTriggerCellCalibration::calibrateInMipT(l1t::HGCalTriggerCell& trgCell
 
   // Convert ADC to charge in fC (in EE+FH) or in MIPs (in BH)
   double amplitude = hwPt * lsb_;
-
-  if (chargeCollectionEfficiency_[thickness] > 0) {
-    amplitude /= chargeCollectionEfficiency_[thickness];
-  }
-
-  /* convert the charge amplitude in MIP: */
   double trgCellMipP = amplitude;
 
-  if (fCperMIP_[thickness] > 0) {
-    trgCellMipP /= fCperMIP_[thickness];
+  if(new_digi_) {
+    // double mipfC = 0.;
+    double cce = 0.;
+    auto cells = triggerTools_.getTriggerGeometry()->getCellsFromTriggerCell(trgdetid);
+    for(const auto& cellid : cells) {
+      HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_.getSiCellOpCharacteristics(cellid);
+      // mipfC += double(siop.mipfC);
+      cce += siop.core.cce;
+    }
+    // mipfC /= cells.size();
+    cce /= cells.size();
+    trgCellMipP /= cce;
+    if (fCperMIP_[thickness] > 0) {
+      trgCellMipP /= fCperMIP_[thickness];
+    }
+    // trgCellMipP /= mipfC;
+  }
+  else {
+    if (chargeCollectionEfficiency_[thickness] > 0) {
+      trgCellMipP /= chargeCollectionEfficiency_[thickness];
+    }
+    if (fCperMIP_[thickness] > 0) {
+      trgCellMipP /= fCperMIP_[thickness];
+    }
+
   }
 
   /* compute the transverse-mip */
@@ -86,10 +133,9 @@ void HGCalTriggerCellCalibration::calibrateMipTinGeV(l1t::HGCalTriggerCell& trgC
    * GeV */
   trgCellEt = trgCell.mipPt() * MevToGeV;
   trgCellEt *= dEdX_weights_.at(trgCellLayer);
-
-  /* correct for the cell-thickness */
+  // [> correct for the cell-thickness <]
   if (thicknessCorrection_[thickness] > 0) {
-    trgCellEt /= thicknessCorrection_[thickness];
+   trgCellEt /= thicknessCorrection_[thickness];
   }
 
   math::PtEtaPhiMLorentzVector calibP4(trgCellEt, trgCell.eta(), trgCell.phi(), 0.);
