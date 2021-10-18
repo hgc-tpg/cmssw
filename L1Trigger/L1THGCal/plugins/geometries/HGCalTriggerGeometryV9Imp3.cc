@@ -311,8 +311,18 @@ HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9Imp3::getCellsFromTrigg
     int iphi0 = (trigger_cell_sc_id.iphi() - 1) * hSc_triggercell_size_ + 1;
     for (int ietaAbs = ieta0; ietaAbs < ieta0 + (int)hSc_triggercell_size_; ietaAbs++) {
       int ieta = ietaAbs * trigger_cell_sc_id.zside();
+      int type = 0;
+      int sipm = 0;
+      std::pair<int, int> typm = hscTopology().dddConstants().tileType(trigger_cell_sc_id.layer(), ietaAbs, 0);
+      if (typm.first >= 0) {
+        type = typm.first;
+        sipm = typm.second;
+      }
       for (int iphi = iphi0; iphi < iphi0 + (int)hSc_triggercell_size_; iphi++) {
-        unsigned cell_id = HGCScintillatorDetId(trigger_cell_sc_id.type(), trigger_cell_sc_id.layer(), ieta, iphi);
+        auto cell_scid = HGCScintillatorDetId(trigger_cell_sc_id.type(), trigger_cell_sc_id.layer(), ieta, iphi);
+        cell_scid.setType(type);
+        cell_scid.setSiPM(sipm);
+        unsigned cell_id = cell_scid;
         if (validCellId(DetId::HGCalHSc, cell_id))
           cell_det_ids.emplace(cell_id);
       }
