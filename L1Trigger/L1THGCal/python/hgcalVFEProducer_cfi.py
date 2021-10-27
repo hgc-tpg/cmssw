@@ -159,6 +159,7 @@ calibration_params_nose = cms.PSet(
         )
 
 vfe_proc = cms.PSet( ProcessorName = cms.string('HGCalVFEProcessorSums'),
+                     connectAllModules = cms.bool(False),
                      linearizationCfg_ee = linearization_params_ee,
                      linearizationCfg_hesi = linearization_params_hesi,
                      linearizationCfg_hesc = linearization_params_hesc,
