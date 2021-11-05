@@ -12,7 +12,7 @@
 class HGCalVFELinearizationImpl {
 public:
   HGCalVFELinearizationImpl(const edm::ParameterSet& conf);
-  void eventSetup(const edm::EventSetup& es, DetId::Detector det);
+  void setGeometry(const HGCalTriggerGeometryBase* const geom, DetId::Detector det);
 
   void linearize(const std::vector<HGCalDataFrame>&, std::vector<std::pair<DetId, uint32_t>>&);
 

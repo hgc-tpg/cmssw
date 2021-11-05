@@ -29,29 +29,30 @@ HGCalTriggerCellCalibration::HGCalTriggerCellCalibration(const edm::ParameterSet
     }
   }
 
-
-  if(new_digi_) {
-    noise_map_.setDoseMap(conf.getParameter<std::string>("doseMap"),
-        conf.getParameter<uint32_t>("scaleByDoseAlgo"));
+  if (new_digi_) {
+    noise_map_.setDoseMap(conf.getParameter<std::string>("doseMap"), conf.getParameter<uint32_t>("scaleByDoseAlgo"));
     noise_map_.setFluenceScaleFactor(conf.getParameter<double>("scaleByDoseFactor"));
-    noise_map_.setIleakParam(conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
-    noise_map_.setCceParam(conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
+    noise_map_.setIleakParam(
+        conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
+    noise_map_.setCceParam(
+        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
         conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
         conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
   }
 }
 
-
-void HGCalTriggerCellCalibration::eventSetup(const edm::EventSetup& es, DetId::Detector det) {
-  triggerTools_.eventSetup(es);
-  if(new_digi_) {
+void HGCalTriggerCellCalibration::setGeometry(const HGCalTriggerGeometryBase* const geom, DetId::Detector det) {
+  triggerTools_.setGeometry(geom);
+  if (new_digi_) {
     //assign the geometry and tell the tool that the gain is automatically set to have the MIP close to 10ADC counts
-    switch(det) {
+    switch (det) {
       case DetId::HGCalEE:
-        noise_map_.setGeometry(triggerTools_.getTriggerGeometry()->eeGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
+        noise_map_.setGeometry(
+            triggerTools_.getTriggerGeometry()->eeGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
         break;
       case DetId::HGCalHSi:
-        noise_map_.setGeometry(triggerTools_.getTriggerGeometry()->hsiGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
+        noise_map_.setGeometry(
+            triggerTools_.getTriggerGeometry()->hsiGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
         break;
       default:
         throw cms::Exception("SetupError") << "Non supported detector type " << det << " for HGCalSiNoiseMap setup";
@@ -81,11 +82,11 @@ void HGCalTriggerCellCalibration::calibrateInMipT(l1t::HGCalTriggerCell& trgCell
   double amplitude = hwPt * lsb_;
   double trgCellMipP = amplitude;
 
-  if(new_digi_) {
+  if (new_digi_) {
     // double mipfC = 0.;
     double cce = 0.;
     auto cells = triggerTools_.getTriggerGeometry()->getCellsFromTriggerCell(trgdetid);
-    for(const auto& cellid : cells) {
+    for (const auto& cellid : cells) {
       HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_.getSiCellOpCharacteristics(cellid);
       // mipfC += double(siop.mipfC);
       cce += siop.core.cce;
@@ -97,15 +98,13 @@ void HGCalTriggerCellCalibration::calibrateInMipT(l1t::HGCalTriggerCell& trgCell
       trgCellMipP /= fCperMIP_[thickness];
     }
     // trgCellMipP /= mipfC;
-  }
-  else {
+  } else {
     if (chargeCollectionEfficiency_[thickness] > 0) {
       trgCellMipP /= chargeCollectionEfficiency_[thickness];
     }
     if (fCperMIP_[thickness] > 0) {
       trgCellMipP /= fCperMIP_[thickness];
     }
-
   }
 
   /* compute the transverse-mip */
@@ -135,7 +134,7 @@ void HGCalTriggerCellCalibration::calibrateMipTinGeV(l1t::HGCalTriggerCell& trgC
   trgCellEt *= dEdX_weights_.at(trgCellLayer);
   // [> correct for the cell-thickness <]
   if (thicknessCorrection_[thickness] > 0) {
-   trgCellEt /= thicknessCorrection_[thickness];
+    trgCellEt /= thicknessCorrection_[thickness];
   }
 
   math::PtEtaPhiMLorentzVector calibP4(trgCellEt, trgCell.eta(), trgCell.phi(), 0.);

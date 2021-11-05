@@ -21,35 +21,36 @@ HGCalVFELinearizationImpl::HGCalVFELinearizationImpl(const edm::ParameterSet& co
   tdcLSB_ = std::ldexp(tdcsaturation_, -tdcnBits_);
   linMax_ = (0x1 << linnBits_) - 1;
 
-  if(new_digi_) {
-    noise_map_.setDoseMap(conf.getParameter<std::string>("doseMap"),
-        conf.getParameter<uint32_t>("scaleByDoseAlgo"));
+  if (new_digi_) {
+    noise_map_.setDoseMap(conf.getParameter<std::string>("doseMap"), conf.getParameter<uint32_t>("scaleByDoseAlgo"));
     noise_map_.setFluenceScaleFactor(conf.getParameter<double>("scaleByDoseFactor"));
-    noise_map_.setIleakParam(conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
-    noise_map_.setCceParam(conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
+    noise_map_.setIleakParam(
+        conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
+    noise_map_.setCceParam(
+        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
         conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
         conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
   }
-
 }
 
-void HGCalVFELinearizationImpl::eventSetup(const edm::EventSetup& es, DetId::Detector det) {
-  triggerTools_.eventSetup(es);
-  if(new_digi_) {
+void HGCalVFELinearizationImpl::setGeometry(const HGCalTriggerGeometryBase* const geom, DetId::Detector det) {
+  triggerTools_.setGeometry(geom);
+  if (new_digi_) {
     //assign the geometry and tell the tool that the gain is automatically set to have the MIP close to 10ADC counts
-    switch(det) {
+    switch (det) {
       case DetId::HGCalEE:
-        noise_map_.setGeometry(triggerTools_.getTriggerGeometry()->eeGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
+        noise_map_.setGeometry(
+            triggerTools_.getTriggerGeometry()->eeGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
         break;
       case DetId::HGCalHSi:
-        noise_map_.setGeometry(triggerTools_.getTriggerGeometry()->hsiGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
+        noise_map_.setGeometry(
+            triggerTools_.getTriggerGeometry()->hsiGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
         break;
       default:
         throw cms::Exception("SetupError") << "Non supported detector type " << det << " for HGCalSiNoiseMap setup";
     }
   }
 }
-
 
 void HGCalVFELinearizationImpl::linearize(const std::vector<HGCalDataFrame>& dataframes,
                                           std::vector<std::pair<DetId, uint32_t>>& linearized_dataframes) {
@@ -58,25 +59,25 @@ void HGCalVFELinearizationImpl::linearize(const std::vector<HGCalDataFrame>& dat
   constexpr int kOuttime2Sample = 0;  // in time - 2;
 
   for (const auto& frame : dataframes) {  //loop on DIGI
-    bool isTDC( frame[kIntimeSample].mode() );
-    double rawData( double(frame[kIntimeSample].data()) );
-    bool isBusy( isTDC && rawData==0 );
-
+    bool isTDC(frame[kIntimeSample].mode());
+    double rawData(double(frame[kIntimeSample].data()));
+    bool isBusy(isTDC && rawData == 0);
 
     double adcLSB = adcLSB_;
     double noise = 0.;
-    if(new_digi_) {
-      HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_.getSiCellOpCharacteristics(frame.id());
+    if (new_digi_) {
+      HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop =
+          noise_map_.getSiCellOpCharacteristics(frame.id());
       HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);
       adcLSB = noise_map_.getLSBPerGain()[gain];
       noise = siop.core.noise;
     }
 
     double amplitude = 0.;
-    if(isBusy) {
+    if (isBusy) {
       continue;
     }
-    if (isTDC) {  
+    if (isTDC) {
       amplitude = (std::floor(tdcOnset_ / adcLSB) + 1.0) * adcLSB + rawData * tdcLSB_;
     } else {  //ADC mode
       double data = rawData;
@@ -89,7 +90,7 @@ void HGCalVFELinearizationImpl::linearize(const std::vector<HGCalDataFrame>& dat
       }
       amplitude = std::max(0., data) * adcLSB;
     }
-    if(amplitude<3.*noise) {
+    if (amplitude < 3. * noise) {
       continue;
     }
     uint32_t amplitude_int = uint32_t(std::floor(amplitude / linLSB_ + 0.5));

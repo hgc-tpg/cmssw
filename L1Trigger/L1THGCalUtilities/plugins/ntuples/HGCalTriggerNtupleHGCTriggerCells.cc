@@ -28,7 +28,7 @@ private:
                std::unordered_map<uint32_t, double>& simhits_ee,
                std::unordered_map<uint32_t, double>& simhits_fh,
                std::unordered_map<uint32_t, double>& simhits_bh);
-  unsigned sector_uv(unsigned layer, std::pair<int,int>& uv);
+  unsigned sector_uv(unsigned layer, std::pair<int, int>& uv);
   void clear() final;
 
   HGCalTriggerTools triggerTools_;
@@ -151,6 +151,7 @@ void HGCalTriggerNtupleHGCTriggerCells::initialize(TTree& tree,
 }
 
 void HGCalTriggerNtupleHGCTriggerCells::fill(const edm::Event& e, const HGCalTriggerNtupleEventSetup& es) {
+  triggerTools_.setGeometry(es.geometry.product());
   // retrieve trigger cells
   edm::Handle<l1t::HGCalTriggerCellBxCollection> trigger_cells_h;
   e.getByToken(trigger_cells_token_, trigger_cells_h);
@@ -191,8 +192,6 @@ void HGCalTriggerNtupleHGCTriggerCells::fill(const edm::Event& e, const HGCalTri
       }
     }
   }
-
-  triggerTools_.setGeometry(es.geometry.product());
 
   clear();
   for (auto tc_itr = trigger_cells.begin(0); tc_itr != trigger_cells.end(0); tc_itr++) {
@@ -340,45 +339,54 @@ void HGCalTriggerNtupleHGCTriggerCells::simhits(const edm::Event& e,
   }
 }
 
-unsigned HGCalTriggerNtupleHGCTriggerCells::sector_uv(unsigned layer, std::pair<int,int>& uv) {
+unsigned HGCalTriggerNtupleHGCTriggerCells::sector_uv(unsigned layer, std::pair<int, int>& uv) {
   unsigned sector(0);
   int offset;
 
-  if(layer<=28) { // CE-E    
-    if(uv.first>0 && uv.second>=0) return sector;
+  if (layer <= 28) {  // CE-E
+    if (uv.first > 0 && uv.second >= 0)
+      return sector;
 
-    offset=0;
-    if(uv.first>=uv.second && uv.second<0) sector=2;
-    else sector=1;
+    offset = 0;
+    if (uv.first >= uv.second && uv.second < 0)
+      sector = 2;
+    else
+      sector = 1;
 
-  } else if((layer%2)==1) { // CE-H Odd
-    if(uv.first>=0 && uv.second>=0) return sector;
+  } else if ((layer % 2) == 1) {  // CE-H Odd
+    if (uv.first >= 0 && uv.second >= 0)
+      return sector;
 
-    offset=-1;    
-    if(uv.first>uv.second && uv.second<0) sector=2;
-    else sector=1;
+    offset = -1;
+    if (uv.first > uv.second && uv.second < 0)
+      sector = 2;
+    else
+      sector = 1;
 
-  } else { // CE-H Even
-    if(uv.first>=1 && uv.second>=1) return sector;
+  } else {  // CE-H Even
+    if (uv.first >= 1 && uv.second >= 1)
+      return sector;
 
-    offset=1;
-    if(uv.first>=uv.second && uv.second<1) sector=2;
-    else sector=1;
+    offset = 1;
+    if (uv.first >= uv.second && uv.second < 1)
+      sector = 2;
+    else
+      sector = 1;
   }
 
-  int up,vp;
+  int up, vp;
 
-  if(sector==1) {
-    up=uv.second-uv.first;
-    vp=-uv.first+offset;    
+  if (sector == 1) {
+    up = uv.second - uv.first;
+    vp = -uv.first + offset;
 
   } else {
-    up=-uv.second+offset;
-    vp=uv.first-uv.second+offset;
+    up = -uv.second + offset;
+    vp = uv.first - uv.second + offset;
   }
 
-  uv.first=up;
-  uv.second=vp;
+  uv.first = up;
+  uv.second = vp;
   return sector;
 }
 

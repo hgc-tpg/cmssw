@@ -29,7 +29,7 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 import glob
-input_files = glob.glob('../../../../../data/ttbar_D86_12_1_X_PU200_20210920/Events_*.root')
+input_files = glob.glob('../../../../../data/ttbar_D86_12_1_0_pre5_PU200_20211101/Events_*.root')
 inputs = ['file:'+f for f in input_files]
 
 # Input source
@@ -65,7 +65,7 @@ process.configurationMetadata = cms.untracked.PSet(
 # Output definition
 process.TFileService = cms.Service(
     "TFileService",
-    fileName = cms.string("../../../../../data/ttbar_D86_12_1_X_PU200_20210920_ntuple_211018.root")
+    fileName = cms.string("../../../../../data/ttbar_D86_12_1_0_pre5_PU200_20211101_ntuple_211104.root")
     #  fileName = cms.string("ntuple.root")
     )
 
