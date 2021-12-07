@@ -199,6 +199,26 @@ float HGCalShowerShape::sigmaEtaEtaTot(const l1t::HGCalMulticluster& c3d) const 
   return SeeTot;
 }
 
+float HGCalShowerShape::varEtaEta(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_energy_eta;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      tc_energy_eta.emplace_back(std::make_pair(id_tc.second->energy(), id_tc.second->eta()));
+    }
+  }
+
+  float varee = varXX(tc_energy_eta, c3d.eta());
+
+  return varee;
+}
+
 float HGCalShowerShape::sigmaPhiPhiTot(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
 
@@ -217,6 +237,26 @@ float HGCalShowerShape::sigmaPhiPhiTot(const l1t::HGCalMulticluster& c3d) const 
   float SppTot = sigmaPhiPhi(tc_energy_phi, c3d.phi());
 
   return SppTot;
+}
+
+float HGCalShowerShape::varPhiPhi(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_energy_phi;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      tc_energy_phi.emplace_back(std::make_pair(id_tc.second->energy(), id_tc.second->phi()));
+    }
+  }
+
+  float varphiphi = varPhiPhi(tc_energy_phi, c3d.phi());
+
+  return varphiphi;
 }
 
 float HGCalShowerShape::sigmaRRTot(const l1t::HGCalMulticluster& c3d) const {
@@ -242,6 +282,31 @@ float HGCalShowerShape::sigmaRRTot(const l1t::HGCalMulticluster& c3d) const {
   float Szz = sigmaXX(tc_energy_r, r_mean);
 
   return Szz;
+}
+
+float HGCalShowerShape::varRR(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+
+  std::vector<std::pair<float, float>> tc_energy_r;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      float r = (id_tc.second->position().z() != 0.
+                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
+                           std::abs(id_tc.second->position().z())
+                     : 0.);
+      tc_energy_r.emplace_back(std::make_pair(id_tc.second->energy(), r));
+    }
+  }
+
+  float r_mean = meanX(tc_energy_r);
+  float vrr = varXX(tc_energy_r, r_mean);
+
+  return vrr;
 }
 
 float HGCalShowerShape::sigmaEtaEtaMax(const l1t::HGCalMulticluster& c3d) const {
@@ -458,7 +523,26 @@ float HGCalShowerShape::sigmaZZ(const l1t::HGCalMulticluster& c3d) const {
 
   return Szz;
 }
+float HGCalShowerShape::varZZ(const l1t::HGCalMulticluster& c3d) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
 
+  std::vector<std::pair<float, float>> tc_energy_z;
+
+  for (const auto& id_clu : clustersPtrs) {
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      tc_energy_z.emplace_back(std::make_pair(id_tc.second->energy(), id_tc.second->position().z()));
+    }
+  }
+
+  float z_mean = meanX(tc_energy_z);
+  float varzz = varXX(tc_energy_z, z_mean);
+
+  return varzz;
+}
 float HGCalShowerShape::sigmaEtaEtaTot(const l1t::HGCalCluster& c2d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& cellsPtrs = c2d.constituents();
 
@@ -519,10 +603,14 @@ void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTrigge
   c3d.maxLayer(maxLayer(c3d));
   c3d.sigmaEtaEtaTot(sigmaEtaEtaTot(c3d));
   c3d.sigmaEtaEtaMax(sigmaEtaEtaMax(c3d));
+  c3d.varEtaEta(varEtaEta(c3d));
   c3d.sigmaPhiPhiTot(sigmaPhiPhiTot(c3d));
   c3d.sigmaPhiPhiMax(sigmaPhiPhiMax(c3d));
+  c3d.varPhiPhi(varPhiPhi(c3d));
   c3d.sigmaZZ(sigmaZZ(c3d));
+  c3d.varZZ(varZZ(c3d));
   c3d.sigmaRRTot(sigmaRRTot(c3d));
+  c3d.varRR(varRR(c3d));
   c3d.sigmaRRMax(sigmaRRMax(c3d));
   c3d.sigmaRRMean(sigmaRRMean(c3d));
   c3d.eMax(eMax(c3d));

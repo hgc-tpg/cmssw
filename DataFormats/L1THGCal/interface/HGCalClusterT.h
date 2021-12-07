@@ -150,6 +150,10 @@ namespace l1t {
     float sigmaPhiPhiTot() const { return sigmaPhiPhiTot_; }
     float sigmaZZ() const { return sigmaZZ_; }
     float sigmaRRTot() const { return sigmaRRTot_; }
+    float varRR() const { return varRR_; }
+    float varZZ() const { return varZZ_; }
+    float varEtaEta() const { return varEtaEta_; }
+    float varPhiPhi() const { return varPhiPhi_; }
     float sigmaRRMax() const { return sigmaRRMax_; }
     float sigmaRRMean() const { return sigmaRRMean_; }
     float zBarycenter() const { return zBarycenter_; }
@@ -170,6 +174,10 @@ namespace l1t {
     void sigmaPhiPhiTot(float sigmaPhiPhiTot) { sigmaPhiPhiTot_ = sigmaPhiPhiTot; }
     void sigmaRRMax(float sigmaRRMax) { sigmaRRMax_ = sigmaRRMax; }
     void sigmaRRTot(float sigmaRRTot) { sigmaRRTot_ = sigmaRRTot; }
+    void varRR(float varRR) { varRR_ = varRR; }
+    void varZZ(float varZZ) { varZZ_ = varZZ; }
+    void varEtaEta(float varEtaEta) { varEtaEta_ = varEtaEta; }
+    void varPhiPhi(float varPhiPhi) { varPhiPhi_ = varPhiPhi; }
     void sigmaRRMean(float sigmaRRMean) { sigmaRRMean_ = sigmaRRMean; }
     void sigmaZZ(float sigmaZZ) { sigmaZZ_ = sigmaZZ; }
     void zBarycenter(float zBarycenter) { zBarycenter_ = zBarycenter; }
@@ -212,6 +220,10 @@ namespace l1t {
     float sigmaEtaEtaTot_ = 0.;
     float sigmaPhiPhiTot_ = 0.;
     float sigmaRRTot_ = 0.;
+    float varRR_ = 0.;
+    float varZZ_ = 0.;
+    float varEtaEta_ = 0.;
+    float varPhiPhi_ = 0.;
     float sigmaRRMean_ = 0.;
     float sigmaZZ_ = 0.;
     float zBarycenter_ = 0.;

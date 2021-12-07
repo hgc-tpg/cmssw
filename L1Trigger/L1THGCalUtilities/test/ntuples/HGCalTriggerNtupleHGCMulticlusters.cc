@@ -43,6 +43,10 @@ private:
   std::vector<float> cl3d_srrtot_;
   std::vector<float> cl3d_srrmax_;
   std::vector<float> cl3d_srrmean_;
+  std::vector<float> cl3d_varrr_;
+  std::vector<float> cl3d_varzz_;
+  std::vector<float> cl3d_varee_;
+  std::vector<float> cl3d_varpp_;
   std::vector<float> cl3d_emaxe_;
   std::vector<float> cl3d_hoe_;
   std::vector<float> cl3d_meanz_;
@@ -105,6 +109,10 @@ void HGCalTriggerNtupleHGCMulticlusters::initialize(TTree& tree,
   tree.Branch(withPrefix("srrtot"), &cl3d_srrtot_);
   tree.Branch(withPrefix("srrmax"), &cl3d_srrmax_);
   tree.Branch(withPrefix("srrmean"), &cl3d_srrmean_);
+  tree.Branch(withPrefix("varrr"), &cl3d_varrr_);
+  tree.Branch(withPrefix("varzz"), &cl3d_varzz_);
+  tree.Branch(withPrefix("varee"), &cl3d_varee_);
+  tree.Branch(withPrefix("varpp"), &cl3d_varpp_);
   tree.Branch(withPrefix("emaxe"), &cl3d_emaxe_);
   tree.Branch(withPrefix("hoe"), &cl3d_hoe_);
   tree.Branch(withPrefix("meanz"), &cl3d_meanz_);
@@ -149,6 +157,10 @@ void HGCalTriggerNtupleHGCMulticlusters::fill(const edm::Event& e, const HGCalTr
     cl3d_srrtot_.emplace_back(cl3d_itr->sigmaRRTot());
     cl3d_srrmax_.emplace_back(cl3d_itr->sigmaRRMax());
     cl3d_srrmean_.emplace_back(cl3d_itr->sigmaRRMean());
+    cl3d_varrr_.emplace_back(cl3d_itr->varRR());
+    cl3d_varzz_.emplace_back(cl3d_itr->varZZ());
+    cl3d_varee_.emplace_back(cl3d_itr->varEtaEta());
+    cl3d_varpp_.emplace_back(cl3d_itr->varPhiPhi());
     cl3d_emaxe_.emplace_back(cl3d_itr->eMax() / cl3d_itr->energy());
     cl3d_hoe_.emplace_back(cl3d_itr->hOverE());
     cl3d_meanz_.emplace_back(std::abs(cl3d_itr->zBarycenter()));
@@ -212,6 +224,10 @@ void HGCalTriggerNtupleHGCMulticlusters::clear() {
   cl3d_srrtot_.clear();
   cl3d_srrmax_.clear();
   cl3d_srrmean_.clear();
+  cl3d_varrr_.clear();
+  cl3d_varzz_.clear();
+  cl3d_varee_.clear();
+  cl3d_varpp_.clear();
   cl3d_emaxe_.clear();
   cl3d_hoe_.clear();
   cl3d_meanz_.clear();
