@@ -596,6 +596,55 @@ float HGCalShowerShape::sigmaRRTot(const l1t::HGCalCluster& c2d) const {
   return Srr;
 }
 
+float HGCalShowerShape::sum_X(const l1t::HGCalMulticluster& c3d, const HGCalTriggerGeometryBase& triggerGeometry, int n_layer, int offset) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+  unsigned nlayers =  triggerGeometry.lastTriggerLayer();
+  std::vector<double> layers(nlayers,0);
+  for (const auto& id_clu : clustersPtrs){
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+  
+    for(const auto& id_tc : triggerCells) {
+      if(!pass(*id_tc.second, c3d)) continue;
+      unsigned layer = triggerGeometry.triggerLayer(id_tc.second->detId());     
+      if (layer ==0 || layer > nlayers) continue;
+      layers[layer - 1] += id_tc.second->pt(); //shift by -1 because layer 0 doesn't exist
+    } 
+  }
+  double sum_pt = 0;
+  for(int i = offset; i <= offset  + n_layer; i++)  sum_pt += layers[i];
+  double tot = 0;
+  for(unsigned i =0; i < layers.size(); ++i)  tot += layers[i];  
+  return sum_pt/tot;
+}
+
+int HGCalShowerShape::bitmap(const l1t::HGCalMulticluster& c3d,  const HGCalTriggerGeometryBase& triggerGeometry, int start, int end, float threshold) const {
+  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
+  unsigned nlayers =  triggerGeometry.lastTriggerLayer();
+  std::vector<double> layers(nlayers,0);
+  for (const auto& id_clu : clustersPtrs){
+    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
+
+    for(const auto& id_tc : triggerCells) {
+      if(!pass(*id_tc.second, c3d)) continue;
+      unsigned layer = triggerGeometry.triggerLayer(id_tc.second->detId());
+      if (layer ==0 || layer > nlayers) continue;
+      layers[layer - 1] += id_tc.second->pt(); //shift by -1 because layer 0 doesn't exist
+    }
+  }
+  //cout << "start " << start << " end " << end << " threshold " << threshold<< endl; 
+  for (float i:layers) cout << i << " ";
+  cout << endl;
+  double tot = 0;
+  for(unsigned i =0; i < layers.size(); ++i)  tot += layers[i];
+  cout << "tot pt "<< tot <<endl;
+  int bitmap = 0;
+  for(int i = start; i < end -1; i++)if(layers[i] > threshold) {
+    //cout << "layer " << i<< " had energy in it: " << layers[i] << "adding to bitmap: "<< (pow(2,end-i)) <<endl;
+    bitmap += (pow(2,end-i));
+    }
+  return bitmap;
+}
+
 void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTriggerGeometryBase& triggerGeometry) const {
   c3d.showerLength(showerLength(c3d));
   c3d.coreShowerLength(coreShowerLength(c3d, triggerGeometry));
@@ -620,4 +669,21 @@ void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTrigge
   c3d.layer90percent(percentileLayer(c3d, triggerGeometry, 0.90));
   c3d.triggerCells67percent(percentileTriggerCells(c3d, 0.67));
   c3d.triggerCells90percent(percentileTriggerCells(c3d, 0.90));
+  c3d.first1layers(sum_X(c3d, triggerGeometry, 0, 0));
+  c3d.first3layers(sum_X(c3d, triggerGeometry, 2, 0));
+  c3d.first5layers(sum_X(c3d, triggerGeometry, 4, 0));
+  c3d.firstHcal1layers(sum_X(c3d,triggerGeometry, 0, triggerTools_.layers(ForwardSubdetector::HGCEE)/2 ));
+  c3d.firstHcal3layers(sum_X(c3d,triggerGeometry, 2, triggerTools_.layers(ForwardSubdetector::HGCEE)/2 ));
+  c3d.firstHcal5layers(sum_X(c3d,triggerGeometry, 4, triggerTools_.layers(ForwardSubdetector::HGCEE)/2 ));
+  c3d.last1layers(sum_X(c3d,triggerGeometry, 0, triggerGeometry.lastTriggerLayer()-1));
+  c3d.last3layers(sum_X(c3d, triggerGeometry, 2, triggerGeometry.lastTriggerLayer()-3));
+  c3d.last5layers(sum_X(c3d, triggerGeometry,4, triggerGeometry.lastTriggerLayer()-5));
+  c3d.Emax1layers(sum_X(c3d, triggerGeometry,0 , 6));
+  c3d.Emax3layers(sum_X(c3d, triggerGeometry,2 , 5));
+  c3d.Emax5layers(sum_X(c3d, triggerGeometry,4 , 4));
+  c3d.EoT(sum_X(c3d, triggerGeometry,triggerTools_.layers(ForwardSubdetector::HGCEE)/2 -1,0));
+  c3d.ebm0(bitmap(c3d, triggerGeometry, 0, triggerTools_.layers(ForwardSubdetector::HGCEE)/2, 0));
+  c3d.ebm1(bitmap(c3d, triggerGeometry, 0, triggerTools_.layers(ForwardSubdetector::HGCEE)/2, 1));
+  c3d.hbm(bitmap(c3d, triggerGeometry, triggerTools_.layers(ForwardSubdetector::HGCEE)/2, triggerGeometry.lastTriggerLayer(), 0)); 
 }
+

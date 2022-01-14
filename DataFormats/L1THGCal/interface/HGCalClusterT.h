@@ -162,6 +162,22 @@ namespace l1t {
     float layer90percent() const { return layer90percent_; }
     float triggerCells67percent() const { return triggerCells67percent_; }
     float triggerCells90percent() const { return triggerCells90percent_; }
+    float first1layers() const { return first1layers_; }
+    float first3layers() const { return first3layers_; }
+    float first5layers() const { return first5layers_; }
+    float firstHcal1layers() const { return firstHcal1layers_; }
+    float firstHcal3layers() const { return firstHcal3layers_; }
+    float firstHcal5layers() const { return firstHcal5layers_; }
+    float last1layers() const { return last1layers_; }
+    float last3layers() const { return last3layers_; }
+    float last5layers() const { return last5layers_; }
+    float Emax1layers() const { return Emax1layers_; }
+    float Emax3layers() const { return Emax3layers_; }
+    float Emax5layers() const { return Emax5layers_; }
+    float EoT() const {return EoT_;}
+    int ebm0() const {return ebm0_;}
+    int ebm1() const {return ebm1_;}
+    int hbm() const {return hbm_;}
 
     void showerLength(int showerLength) { showerLength_ = showerLength; }
     void coreShowerLength(int coreShowerLength) { coreShowerLength_ = coreShowerLength; }
@@ -186,7 +202,23 @@ namespace l1t {
     void layer90percent(float layer90percent) { layer90percent_ = layer90percent; }
     void triggerCells67percent(float triggerCells67percent) { triggerCells67percent_ = triggerCells67percent; }
     void triggerCells90percent(float triggerCells90percent) { triggerCells90percent_ = triggerCells90percent; }
-
+    void first1layers(float first1layers) { first1layers_ = first1layers; }
+    void first3layers(float first3layers) { first3layers_ = first3layers; }
+    void first5layers(float first5layers) { first5layers_ = first5layers; }
+    void firstHcal1layers(float firstHcal1layers) { firstHcal1layers_ = firstHcal1layers; }
+    void firstHcal3layers(float firstHcal3layers) { firstHcal3layers_ = firstHcal3layers; }
+    void firstHcal5layers(float firstHcal5layers) { firstHcal5layers_ = firstHcal5layers; }
+    void last1layers(float last1layers) { last1layers_ = last1layers; }
+    void last3layers(float last3layers) { last3layers_ = last3layers; }
+    void last5layers(float last5layers) { last5layers_ = last5layers; }
+    void Emax1layers(float Emax1layers) { Emax1layers_ = Emax1layers; }
+    void Emax3layers(float Emax3layers) { Emax3layers_ = Emax3layers; }
+    void Emax5layers(float Emax5layers) { Emax5layers_ = Emax5layers; }
+    void EoT(float EoT) { EoT_= EoT;}
+    void ebm0(int ebm0) { ebm0_ = ebm0;}
+    void ebm1(int ebm1) { ebm1_ = ebm1;}
+    void hbm(int hbm) { hbm_ = hbm;}
+   
     /* operators */
     bool operator<(const HGCalClusterT<C>& cl) const { return mipPt() < cl.mipPt(); }
     bool operator>(const HGCalClusterT<C>& cl) const { return cl < *this; }
@@ -232,6 +264,22 @@ namespace l1t {
     float layer90percent_ = 0.;
     float triggerCells67percent_ = 0.;
     float triggerCells90percent_ = 0.;
+    float first1layers_ = 0.;
+    float first3layers_ = 0.;
+    float first5layers_ = 0.;
+    float firstHcal1layers_ = 0.;
+    float firstHcal3layers_ = 0.;
+    float firstHcal5layers_ = 0.;
+    float last1layers_ = 0.;
+    float last3layers_ = 0.;
+    float last5layers_ = 0.;
+    float Emax1layers_ = 0.;
+    float Emax3layers_ = 0.;
+    float Emax5layers_ = 0.;
+    float EoT_= 0.;
+    int ebm0_ = 0;
+    int ebm1_ = 0;
+    int hbm_ = 0;
 
     void updateP4AndPosition(const edm::Ptr<C>& c, bool updateCentre = true, float fraction = 1.) {
       double cMipt = c->mipPt() * fraction;
