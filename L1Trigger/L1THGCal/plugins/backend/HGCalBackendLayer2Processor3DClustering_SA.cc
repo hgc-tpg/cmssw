@@ -87,14 +87,8 @@ public:
     }
 
     // Configuration
-<<<<<<< HEAD
     const std::pair<const HGCalTriggerGeometryBase* const, const edm::ParameterSet&> configuration{geometry(), conf_};
-    multiclusteringHistoClusteringWrapper_->configure(configuration);
     multiclusteringSortingTruncationWrapper_->configure(configuration);
-=======
-    const std::pair<const edm::EventSetup&, const edm::ParameterSet&> sortTuncateConfig{es, conf_};
-    multiclusteringSortingTruncationWrapper_->configure(sortTuncateConfig);
->>>>>>> c7d2bb029f5f... First commit of S2 emulator
 
     for (auto& fpga_tcs : tcs_per_fpga) {
       /* call to multiclustering and compute shower shape*/
@@ -112,7 +106,7 @@ public:
       HGCalTriggerBackendDetId stage2_fpga_id(fpga_tcs.first);
       const auto stage2_sector = stage2_fpga_id.sector();
       const auto zSide = stage2_fpga_id.zside();
-      const auto clusteringConfig = std::make_tuple(std::ref(es), std::ref(conf_), stage2_sector, zSide);
+      const auto clusteringConfig = std::make_tuple(geometry(), std::ref(conf_), stage2_sector, zSide);
       multiclusteringHistoClusteringWrapper_->configure(clusteringConfig);
 
       // Process

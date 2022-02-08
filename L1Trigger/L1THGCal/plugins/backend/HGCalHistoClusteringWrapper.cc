@@ -23,7 +23,7 @@ public:
   ~HGCalHistoClusteringWrapper() override {}
 
   void configure(
-      const std::pair<const HGCalTriggerGeometryBase* const, const edm::ParameterSet&>& configuration) override;
+      const std::tuple<const HGCalTriggerGeometryBase* const, const edm::ParameterSet&, const unsigned int, const int>& configuration) override;
 
   void process(const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& inputClusters,
                std::pair<l1t::HGCalMulticlusterBxCollection&, l1t::HGCalClusterBxCollection&>&
@@ -210,7 +210,7 @@ void HGCalHistoClusteringWrapper::clusterizeHisto( l1thgcfirmware::HGCalTriggerC
 
 void HGCalHistoClusteringWrapper::configure(
     const std::tuple<const HGCalTriggerGeometryBase* const, const edm::ParameterSet&, const unsigned int, const int>& configuration) {
-  setGeometry(configuration.first);
+  setGeometry(std::get<0>(configuration));
 
   theConfiguration_.setSector( std::get<2>(configuration) );
   theConfiguration_.setZSide( std::get<3>(configuration) );
