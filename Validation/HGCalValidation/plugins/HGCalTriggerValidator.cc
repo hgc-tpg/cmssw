@@ -124,7 +124,7 @@ HGCalTriggerValidator::HGCalTriggerValidator(const edm::ParameterSet &iConfig)
       clusters_token_{consumes<l1t::HGCalClusterBxCollection>(iConfig.getParameter<edm::InputTag>("Clusters"))},
       multiclusters_token_{consumes<l1t::HGCalMulticlusterBxCollection>(iConfig.getParameter<edm::InputTag>("Multiclusters"))},
       towers_token_{consumes<l1t::HGCalTowerBxCollection>(iConfig.getParameter<edm::InputTag>("Towers"))},
-      triggerGeomToken_{esConsumes<HGCalTriggerGeometryBase, CaloGeometryRecord, edm::Transition::BeginRun>()},
+      triggerGeomToken_(esConsumes<HGCalTriggerGeometryBase, CaloGeometryRecord>()),
       id_{HGCalTriggerClusterIdentificationFactory::get()->create("HGCalTriggerClusterIdentificationBDT")}{
     
       id_->initialize(iConfig.getParameter<edm::ParameterSet>("EGIdentification"));
@@ -211,7 +211,7 @@ void HGCalTriggerValidator::dqmAnalyze(edm::Event const &iEvent,
   int tower_n = 0;
 
   auto const triggerGeometry_ = iSetup.getHandle(triggerGeomToken_);
-  triggerTools_->setGeometry(triggerGeometry_.product()); //const HGCalTriggerGeometryBase* const
+  triggerTools_->setGeometry(triggerGeometry_.product());
   
   // retrieve trigger cells
   edm::Handle<l1t::HGCalTriggerCellBxCollection> trigger_cells_h;
