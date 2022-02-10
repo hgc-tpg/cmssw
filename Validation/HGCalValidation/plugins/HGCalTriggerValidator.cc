@@ -7,8 +7,10 @@
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/ESHandle.h"
 #include "DataFormats/Common/interface/Handle.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Utilities/interface/ESGetToken.h"
+
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -22,6 +24,9 @@
 #include "DataFormats/L1THGCal/interface/HGCalCluster.h"
 #include "DataFormats/L1THGCal/interface/HGCalMulticluster.h"
 #include "DataFormats/L1THGCal/interface/HGCalTower.h"
+
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "L1Trigger/L1THGCal/interface/HGCalTriggerGeometryBase.h"
 
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerTools.h"
 
@@ -97,7 +102,7 @@ public:
 
 private:
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &, Histograms &) const override;
-  void dqmAnalyze(edm::Event const &, edm::EventSetup const &, Histograms const &) const override;
+  void dqmAnalyze(edm::Event const &, const edm::EventSetup &, Histograms const &) const override;
 
 private:
   // ----------member data ---------------------------
@@ -106,6 +111,8 @@ private:
   edm::EDGetToken multiclusters_token_;
   edm::EDGetToken towers_token_;
 
+  edm::ESGetToken<HGCalTriggerGeometryBase, CaloGeometryRecord> triggerGeomToken_;
+  
   std::unique_ptr<HGCalTriggerClusterIdentificationBase> id_;
 
   std::shared_ptr<HGCalTriggerTools> triggerTools_;
@@ -113,14 +120,16 @@ private:
 
 HGCalTriggerValidator::HGCalTriggerValidator(const edm::ParameterSet &iConfig)
     : trigger_cells_token_{consumes<l1t::HGCalTriggerCellBxCollection>(
-          iConfig.getParameter<edm::InputTag>("TriggerCells"))},
+      iConfig.getParameter<edm::InputTag>("TriggerCells"))},
       clusters_token_{consumes<l1t::HGCalClusterBxCollection>(iConfig.getParameter<edm::InputTag>("Clusters"))},
-      multiclusters_token_{
-          consumes<l1t::HGCalMulticlusterBxCollection>(iConfig.getParameter<edm::InputTag>("Multiclusters"))},
+      multiclusters_token_{consumes<l1t::HGCalMulticlusterBxCollection>(iConfig.getParameter<edm::InputTag>("Multiclusters"))},
       towers_token_{consumes<l1t::HGCalTowerBxCollection>(iConfig.getParameter<edm::InputTag>("Towers"))},
-      id_{HGCalTriggerClusterIdentificationFactory::get()->create("HGCalTriggerClusterIdentificationBDT")} {
-  id_->initialize(iConfig.getParameter<edm::ParameterSet>("EGIdentification"));
-  triggerTools_ = std::make_shared<HGCalTriggerTools>();
+      triggerGeomToken_{esConsumes<HGCalTriggerGeometryBase, CaloGeometryRecord, edm::Transition::BeginRun>()},
+      id_{HGCalTriggerClusterIdentificationFactory::get()->create("HGCalTriggerClusterIdentificationBDT")}{
+    
+      id_->initialize(iConfig.getParameter<edm::ParameterSet>("EGIdentification"));
+  
+      triggerTools_ = std::make_shared<HGCalTriggerTools>();
 }
 
 HGCalTriggerValidator::~HGCalTriggerValidator() {}
@@ -194,15 +203,16 @@ void HGCalTriggerValidator::bookHistograms(DQMStore::IBooker &iBooker,
 }
 
 void HGCalTriggerValidator::dqmAnalyze(edm::Event const &iEvent,
-                                       edm::EventSetup const &iSetup,
+                                       const edm::EventSetup &iSetup,
                                        Histograms const &histograms) const {
   int tc_n = 0;
   int cl_n = 0;
   int cl3d_n = 0;
   int tower_n = 0;
 
-  triggerTools_->eventSetup(iSetup);
-
+  auto const triggerGeometry_ = iSetup.getHandle(triggerGeomToken_);
+  triggerTools_->setGeometry(triggerGeometry_.product()); //const HGCalTriggerGeometryBase* const
+  
   // retrieve trigger cells
   edm::Handle<l1t::HGCalTriggerCellBxCollection> trigger_cells_h;
   iEvent.getByToken(trigger_cells_token_, trigger_cells_h);
