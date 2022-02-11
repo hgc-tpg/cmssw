@@ -101,8 +101,9 @@ public:
   ~HGCalTriggerValidator() override;
 
 private:
+  void dqmBeginRun(edm::Run const &, edm::EventSetup const &, Histograms &) const override;
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &, Histograms &) const override;
-  void dqmAnalyze(edm::Event const &, const edm::EventSetup &, Histograms const &) const override;
+  void dqmAnalyze(edm::Event const &, edm::EventSetup const &, Histograms const &) const override;
 
 private:
   // ----------member data ---------------------------
@@ -124,7 +125,7 @@ HGCalTriggerValidator::HGCalTriggerValidator(const edm::ParameterSet &iConfig)
       clusters_token_{consumes<l1t::HGCalClusterBxCollection>(iConfig.getParameter<edm::InputTag>("Clusters"))},
       multiclusters_token_{consumes<l1t::HGCalMulticlusterBxCollection>(iConfig.getParameter<edm::InputTag>("Multiclusters"))},
       towers_token_{consumes<l1t::HGCalTowerBxCollection>(iConfig.getParameter<edm::InputTag>("Towers"))},
-      triggerGeomToken_(esConsumes<HGCalTriggerGeometryBase, CaloGeometryRecord>()),
+      triggerGeomToken_(esConsumes<HGCalTriggerGeometryBase, CaloGeometryRecord, edm::Transition::BeginRun>()),
       id_{HGCalTriggerClusterIdentificationFactory::get()->create("HGCalTriggerClusterIdentificationBDT")}{
     
       id_->initialize(iConfig.getParameter<edm::ParameterSet>("EGIdentification"));
@@ -133,6 +134,11 @@ HGCalTriggerValidator::HGCalTriggerValidator(const edm::ParameterSet &iConfig)
 }
 
 HGCalTriggerValidator::~HGCalTriggerValidator() {}
+
+void HGCalTriggerValidator::dqmBeginRun(edm::Run const &iRun, edm::EventSetup const &iSetup, Histograms &histograms) const {
+  auto const triggerGeometry = iSetup.getHandle(triggerGeomToken_);
+  triggerTools_->setGeometry(triggerGeometry.product());
+}
 
 void HGCalTriggerValidator::bookHistograms(DQMStore::IBooker &iBooker,
                                            edm::Run const &,
@@ -203,15 +209,12 @@ void HGCalTriggerValidator::bookHistograms(DQMStore::IBooker &iBooker,
 }
 
 void HGCalTriggerValidator::dqmAnalyze(edm::Event const &iEvent,
-                                       const edm::EventSetup &iSetup,
+                                       edm::EventSetup const &iSetup,
                                        Histograms const &histograms) const {
   int tc_n = 0;
   int cl_n = 0;
   int cl3d_n = 0;
   int tower_n = 0;
-
-  auto const triggerGeometry_ = iSetup.getHandle(triggerGeomToken_);
-  triggerTools_->setGeometry(triggerGeometry_.product());
   
   // retrieve trigger cells
   edm::Handle<l1t::HGCalTriggerCellBxCollection> trigger_cells_h;
