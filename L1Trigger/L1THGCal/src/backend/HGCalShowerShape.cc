@@ -179,25 +179,7 @@ float HGCalShowerShape::percentileTriggerCells(const l1t::HGCalMulticluster& c3d
                                               : 0.);
 }
 
-float HGCalShowerShape::sigmaEtaEtaTot(const l1t::HGCalMulticluster& c3d) const {
-  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
-
-  std::vector<std::pair<float, float>> tc_energy_eta;
-
-  for (const auto& id_clu : clustersPtrs) {
-    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
-
-    for (const auto& id_tc : triggerCells) {
-      if (!pass(*id_tc.second, c3d))
-        continue;
-      tc_energy_eta.emplace_back(std::make_pair(id_tc.second->energy(), id_tc.second->eta()));
-    }
-  }
-
-  float SeeTot = sigmaXX(tc_energy_eta, c3d.eta());
-
-  return SeeTot;
-}
+float HGCalShowerShape::sigmaEtaEtaTot(const l1t::HGCalMulticluster& c3d) const { return sqrt(varEtaEta(c3d)); }
 
 float HGCalShowerShape::varEtaEta(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
@@ -219,25 +201,7 @@ float HGCalShowerShape::varEtaEta(const l1t::HGCalMulticluster& c3d) const {
   return varee;
 }
 
-float HGCalShowerShape::sigmaPhiPhiTot(const l1t::HGCalMulticluster& c3d) const {
-  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
-
-  std::vector<std::pair<float, float>> tc_energy_phi;
-
-  for (const auto& id_clu : clustersPtrs) {
-    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
-
-    for (const auto& id_tc : triggerCells) {
-      if (!pass(*id_tc.second, c3d))
-        continue;
-      tc_energy_phi.emplace_back(std::make_pair(id_tc.second->energy(), id_tc.second->phi()));
-    }
-  }
-
-  float SppTot = sigmaPhiPhi(tc_energy_phi, c3d.phi());
-
-  return SppTot;
-}
+float HGCalShowerShape::sigmaPhiPhiTot(const l1t::HGCalMulticluster& c3d) const { return sqrt(varPhiPhi(c3d)); }
 
 float HGCalShowerShape::varPhiPhi(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
@@ -259,30 +223,7 @@ float HGCalShowerShape::varPhiPhi(const l1t::HGCalMulticluster& c3d) const {
   return varphiphi;
 }
 
-float HGCalShowerShape::sigmaRRTot(const l1t::HGCalMulticluster& c3d) const {
-  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
-
-  std::vector<std::pair<float, float>> tc_energy_r;
-
-  for (const auto& id_clu : clustersPtrs) {
-    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
-
-    for (const auto& id_tc : triggerCells) {
-      if (!pass(*id_tc.second, c3d))
-        continue;
-      float r = (id_tc.second->position().z() != 0.
-                     ? std::sqrt(pow(id_tc.second->position().x(), 2) + pow(id_tc.second->position().y(), 2)) /
-                           std::abs(id_tc.second->position().z())
-                     : 0.);
-      tc_energy_r.emplace_back(std::make_pair(id_tc.second->energy(), r));
-    }
-  }
-
-  float r_mean = meanX(tc_energy_r);
-  float Szz = sigmaXX(tc_energy_r, r_mean);
-
-  return Szz;
-}
+float HGCalShowerShape::sigmaRRTot(const l1t::HGCalMulticluster& c3d) const { return sqrt(varRR(c3d)); }
 
 float HGCalShowerShape::varRR(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
@@ -503,26 +444,7 @@ float HGCalShowerShape::meanZ(const l1t::HGCalMulticluster& c3d) const {
   return meanX(tc_energy_z);
 }
 
-float HGCalShowerShape::sigmaZZ(const l1t::HGCalMulticluster& c3d) const {
-  const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
-
-  std::vector<std::pair<float, float>> tc_energy_z;
-
-  for (const auto& id_clu : clustersPtrs) {
-    const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
-
-    for (const auto& id_tc : triggerCells) {
-      if (!pass(*id_tc.second, c3d))
-        continue;
-      tc_energy_z.emplace_back(std::make_pair(id_tc.second->energy(), id_tc.second->position().z()));
-    }
-  }
-
-  float z_mean = meanX(tc_energy_z);
-  float Szz = sigmaXX(tc_energy_z, z_mean);
-
-  return Szz;
-}
+float HGCalShowerShape::sigmaZZ(const l1t::HGCalMulticluster& c3d) const { return sqrt(varZZ(c3d)); }
 float HGCalShowerShape::varZZ(const l1t::HGCalMulticluster& c3d) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
 
@@ -596,56 +518,60 @@ float HGCalShowerShape::sigmaRRTot(const l1t::HGCalCluster& c2d) const {
   return Srr;
 }
 
-float HGCalShowerShape::sum_X(const l1t::HGCalMulticluster& c3d, const HGCalTriggerGeometryBase& triggerGeometry, int n_layer, int offset) const {
+float HGCalShowerShape::sumLayers(const l1t::HGCalMulticluster& c3d, int start, int end) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
-  unsigned nlayers =  triggerGeometry.lastTriggerLayer();
-  std::vector<double> layers(nlayers,0);
-  for (const auto& id_clu : clustersPtrs){
+  unsigned nlayers = triggerTools_.getTriggerGeometry()->lastTriggerLayer();
+  std::vector<double> layers(nlayers, 0);
+  for (const auto& id_clu : clustersPtrs) {
     const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
-  
-    for(const auto& id_tc : triggerCells) {
-      if(!pass(*id_tc.second, c3d)) continue;
-      unsigned layer = triggerGeometry.triggerLayer(id_tc.second->detId());     
-      if (layer ==0 || layer > nlayers) continue;
-      layers[layer - 1] += id_tc.second->pt(); //shift by -1 because layer 0 doesn't exist
-    } 
+
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      unsigned layer = triggerTools_.getTriggerGeometry()->triggerLayer(id_tc.second->detId());
+      if (layer > nlayers)
+        continue;
+      layers[layer] += id_tc.second->pt();
+    }
   }
   double sum_pt = 0;
-  for(int i = offset; i <= offset  + n_layer; i++)  sum_pt += layers[i];
+  for (int i = start; i <= end; i++)
+    sum_pt += layers[i];
   double tot = 0;
-  for(unsigned i =0; i < layers.size(); ++i)  tot += layers[i];  
-  return sum_pt/tot;
+  for (unsigned i = 1; i < layers.size(); ++i)
+    tot += layers[i];
+  return sum_pt / tot;
 }
 
-int HGCalShowerShape::bitmap(const l1t::HGCalMulticluster& c3d,  const HGCalTriggerGeometryBase& triggerGeometry, int start, int end, float threshold) const {
+int HGCalShowerShape::bitmap(const l1t::HGCalMulticluster& c3d, int start, int end, float threshold) const {
   const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalCluster>>& clustersPtrs = c3d.constituents();
-  unsigned nlayers =  triggerGeometry.lastTriggerLayer();
-  std::vector<double> layers(nlayers,0);
-  for (const auto& id_clu : clustersPtrs){
+  unsigned nlayers = triggerTools_.getTriggerGeometry()->lastTriggerLayer();
+  std::vector<double> layers(nlayers, 0);
+  for (const auto& id_clu : clustersPtrs) {
     const std::unordered_map<uint32_t, edm::Ptr<l1t::HGCalTriggerCell>>& triggerCells = id_clu.second->constituents();
 
-    for(const auto& id_tc : triggerCells) {
-      if(!pass(*id_tc.second, c3d)) continue;
-      unsigned layer = triggerGeometry.triggerLayer(id_tc.second->detId());
-      if (layer ==0 || layer > nlayers) continue;
-      layers[layer - 1] += id_tc.second->pt(); //shift by -1 because layer 0 doesn't exist
+    for (const auto& id_tc : triggerCells) {
+      if (!pass(*id_tc.second, c3d))
+        continue;
+      unsigned layer = triggerTools_.getTriggerGeometry()->triggerLayer(id_tc.second->detId());
+      if (layer > nlayers)
+        continue;
+      layers[layer] += id_tc.second->pt();
     }
   }
-  //cout << "start " << start << " end " << end << " threshold " << threshold<< endl; 
-  for (float i:layers) cout << i << " ";
-  cout << endl;
   double tot = 0;
-  for(unsigned i =0; i < layers.size(); ++i)  tot += layers[i];
-  cout << "tot pt "<< tot <<endl;
+  for (unsigned i = 1; i < layers.size(); ++i)
+    tot += layers[i];
   int bitmap = 0;
-  for(int i = start; i < end -1; i++)if(layers[i] > threshold) {
-    //cout << "layer " << i<< " had energy in it: " << layers[i] << "adding to bitmap: "<< (pow(2,end-i)) <<endl;
-    bitmap += (pow(2,end-i));
-    }
+  for (int i = start; i <= end; i++) {
+    bitmap = bitmap << (layers[i] >= threshold);
+  }
   return bitmap;
 }
 
 void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTriggerGeometryBase& triggerGeometry) const {
+  unsigned hcal_offset = triggerTools_.layers(ForwardSubdetector::HGCEE) / 2;
+  unsigned lastlayer = triggerGeometry.lastTriggerLayer();
   c3d.showerLength(showerLength(c3d));
   c3d.coreShowerLength(coreShowerLength(c3d, triggerGeometry));
   c3d.firstLayer(firstLayer(c3d));
@@ -669,21 +595,20 @@ void HGCalShowerShape::fillShapes(l1t::HGCalMulticluster& c3d, const HGCalTrigge
   c3d.layer90percent(percentileLayer(c3d, triggerGeometry, 0.90));
   c3d.triggerCells67percent(percentileTriggerCells(c3d, 0.67));
   c3d.triggerCells90percent(percentileTriggerCells(c3d, 0.90));
-  c3d.first1layers(sum_X(c3d, triggerGeometry, 0, 0));
-  c3d.first3layers(sum_X(c3d, triggerGeometry, 2, 0));
-  c3d.first5layers(sum_X(c3d, triggerGeometry, 4, 0));
-  c3d.firstHcal1layers(sum_X(c3d,triggerGeometry, 0, triggerTools_.layers(ForwardSubdetector::HGCEE)/2 ));
-  c3d.firstHcal3layers(sum_X(c3d,triggerGeometry, 2, triggerTools_.layers(ForwardSubdetector::HGCEE)/2 ));
-  c3d.firstHcal5layers(sum_X(c3d,triggerGeometry, 4, triggerTools_.layers(ForwardSubdetector::HGCEE)/2 ));
-  c3d.last1layers(sum_X(c3d,triggerGeometry, 0, triggerGeometry.lastTriggerLayer()-1));
-  c3d.last3layers(sum_X(c3d, triggerGeometry, 2, triggerGeometry.lastTriggerLayer()-3));
-  c3d.last5layers(sum_X(c3d, triggerGeometry,4, triggerGeometry.lastTriggerLayer()-5));
-  c3d.Emax1layers(sum_X(c3d, triggerGeometry,0 , 6));
-  c3d.Emax3layers(sum_X(c3d, triggerGeometry,2 , 5));
-  c3d.Emax5layers(sum_X(c3d, triggerGeometry,4 , 4));
-  c3d.EoT(sum_X(c3d, triggerGeometry,triggerTools_.layers(ForwardSubdetector::HGCEE)/2 -1,0));
-  c3d.ebm0(bitmap(c3d, triggerGeometry, 0, triggerTools_.layers(ForwardSubdetector::HGCEE)/2, 0));
-  c3d.ebm1(bitmap(c3d, triggerGeometry, 0, triggerTools_.layers(ForwardSubdetector::HGCEE)/2, 1));
-  c3d.hbm(bitmap(c3d, triggerGeometry, triggerTools_.layers(ForwardSubdetector::HGCEE)/2, triggerGeometry.lastTriggerLayer(), 0)); 
+  c3d.first1layers(sumLayers(c3d, 1, 1));
+  c3d.first3layers(sumLayers(c3d, 1, 3));
+  c3d.first5layers(sumLayers(c3d, 1, 5));
+  c3d.firstHcal1layers(sumLayers(c3d, hcal_offset, hcal_offset));
+  c3d.firstHcal3layers(sumLayers(c3d, hcal_offset, hcal_offset + 2));
+  c3d.firstHcal5layers(sumLayers(c3d, hcal_offset, hcal_offset + 4));
+  c3d.last1layers(sumLayers(c3d, lastlayer, lastlayer));
+  c3d.last3layers(sumLayers(c3d, lastlayer - 2, lastlayer));
+  c3d.last5layers(sumLayers(c3d, lastlayer - 4, lastlayer));
+  c3d.emax1layers(sumLayers(c3d, 7, 7));
+  c3d.emax3layers(sumLayers(c3d, 6, 8));
+  c3d.emax5layers(sumLayers(c3d, 5, 9));
+  c3d.eot(sumLayers(c3d, 1, hcal_offset));
+  c3d.ebm0(bitmap(c3d, 1, hcal_offset, 0));
+  c3d.ebm1(bitmap(c3d, 1, hcal_offset, 1));
+  c3d.hbm(bitmap(c3d, hcal_offset, lastlayer, 0));
 }
-

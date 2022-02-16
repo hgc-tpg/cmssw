@@ -171,13 +171,13 @@ namespace l1t {
     float last1layers() const { return last1layers_; }
     float last3layers() const { return last3layers_; }
     float last5layers() const { return last5layers_; }
-    float Emax1layers() const { return Emax1layers_; }
-    float Emax3layers() const { return Emax3layers_; }
-    float Emax5layers() const { return Emax5layers_; }
-    float EoT() const {return EoT_;}
-    int ebm0() const {return ebm0_;}
-    int ebm1() const {return ebm1_;}
-    int hbm() const {return hbm_;}
+    float emax1layers() const { return emax1layers_; }
+    float emax3layers() const { return emax3layers_; }
+    float emax5layers() const { return emax5layers_; }
+    float eot() const { return eot_; }
+    int ebm0() const { return ebm0_; }
+    int ebm1() const { return ebm1_; }
+    int hbm() const { return hbm_; }
 
     void showerLength(int showerLength) { showerLength_ = showerLength; }
     void coreShowerLength(int coreShowerLength) { coreShowerLength_ = coreShowerLength; }
@@ -211,14 +211,14 @@ namespace l1t {
     void last1layers(float last1layers) { last1layers_ = last1layers; }
     void last3layers(float last3layers) { last3layers_ = last3layers; }
     void last5layers(float last5layers) { last5layers_ = last5layers; }
-    void Emax1layers(float Emax1layers) { Emax1layers_ = Emax1layers; }
-    void Emax3layers(float Emax3layers) { Emax3layers_ = Emax3layers; }
-    void Emax5layers(float Emax5layers) { Emax5layers_ = Emax5layers; }
-    void EoT(float EoT) { EoT_= EoT;}
-    void ebm0(int ebm0) { ebm0_ = ebm0;}
-    void ebm1(int ebm1) { ebm1_ = ebm1;}
-    void hbm(int hbm) { hbm_ = hbm;}
-   
+    void emax1layers(float emax1layers) { emax1layers_ = emax1layers; }
+    void emax3layers(float emax3layers) { emax3layers_ = emax3layers; }
+    void emax5layers(float emax5layers) { emax5layers_ = emax5layers; }
+    void eot(float eot) { eot_ = eot; }
+    void ebm0(int ebm0) { ebm0_ = ebm0; }
+    void ebm1(int ebm1) { ebm1_ = ebm1; }
+    void hbm(int hbm) { hbm_ = hbm; }
+
     /* operators */
     bool operator<(const HGCalClusterT<C>& cl) const { return mipPt() < cl.mipPt(); }
     bool operator>(const HGCalClusterT<C>& cl) const { return cl < *this; }
@@ -273,10 +273,10 @@ namespace l1t {
     float last1layers_ = 0.;
     float last3layers_ = 0.;
     float last5layers_ = 0.;
-    float Emax1layers_ = 0.;
-    float Emax3layers_ = 0.;
-    float Emax5layers_ = 0.;
-    float EoT_= 0.;
+    float emax1layers_ = 0.;
+    float emax3layers_ = 0.;
+    float emax5layers_ = 0.;
+    float eot_ = 0.;
     int ebm0_ = 0;
     int ebm1_ = 0;
     int hbm_ = 0;
