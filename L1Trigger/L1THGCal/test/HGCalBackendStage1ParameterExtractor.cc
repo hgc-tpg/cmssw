@@ -1,7 +1,8 @@
 #include <iostream>
-#include <fstream>   // std::ofstream
+#include <fstream>  // std::ofstream
 #include <vector>
 #include <cstdlib>
+#include <any>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
@@ -29,7 +30,7 @@
 #include "DataFormats/ForwardDetId/interface/HGCalTriggerBackendDetId.h"
 
 #include <nlohmann/json.hpp>
-using json = nlohmann::ordered_json; // using ordered_json for readability
+using json = nlohmann::ordered_json;  // using ordered_json for readability
 
 class HGCalBackendStage1ParameterExtractor : public edm::stream::EDAnalyzer<> {
 public:
@@ -40,7 +41,7 @@ public:
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
 
 private:
-  bool checkMappingConsistency(); // this I'm not sure what it does
+  bool checkMappingConsistency();
   void fillMetaData(json& json_file);
   void fillMethodConfig(json& json_file);
   void fillTriggerGeometry(json& json_file);
@@ -49,148 +50,128 @@ private:
   edm::ESGetToken<HGCalTriggerGeometryBase, CaloGeometryRecord> triggerGeomToken_;
 
   // Metadata
-  std::string cmssw_version_;  
+  std::string cmssw_version_;
   int the_fpga_;
 
   // geometry data
-  std::vector<unsigned> disconnected_layers_;
-  std::vector<unsigned> disconnected_modules_;
+  std::vector<uint32_t> disconnected_layers_;
+  std::vector<uint32_t> disconnected_modules_;
   std::string json_mapping_file_;
   std::string L1T_links_mapping_;
   std::string L1T_modules_mapping_;
-  unsigned scintillator_links_per_module_;
-  unsigned scintillator_module_size_;
-  unsigned scintillator_trigger_cell_size_;
+  uint32_t scintillator_links_per_module_;
+  uint32_t scintillator_module_size_;
+  uint32_t scintillator_trigger_cell_size_;
   std::string trigger_geom_;
 
   // truncation parameters
   double roz_min_;
   double roz_max_;
-  unsigned roz_bins_;
-  std::vector<unsigned> max_tcs_per_bins_;
+  uint32_t roz_bins_;
+  std::vector<uint32_t> max_tcs_per_bins_;
   std::vector<double> phi_edges_;
 
   // TC map parameters:
-  std::map<std::pair<unsigned,unsigned>, unsigned> tc_coord_uv_;
+  std::map<std::pair<uint32_t, uint32_t>, uint32_t> tc_coord_uv_;
 
   // output json name:
   std::string outJSONname_;
 
   // mapping consistency check result
-  bool no_trigger_ =false;
+  bool no_trigger_ = false;
 
-  typedef std::unordered_map< uint32_t, std::unordered_set< uint32_t > > trigger_map_set;
+  typedef std::unordered_map<uint32_t, std::unordered_set<uint32_t>> trigger_map_set;
 };
 
 HGCalBackendStage1ParameterExtractor::HGCalBackendStage1ParameterExtractor(const edm::ParameterSet& conf)
-  : triggerGeomToken_(esConsumes<HGCalTriggerGeometryBase, CaloGeometryRecord, edm::Transition::BeginRun>())
+    : triggerGeomToken_(esConsumes<HGCalTriggerGeometryBase, CaloGeometryRecord, edm::Transition::BeginRun>())
 
-{  
-  // Get name of output JSON config file
+{
+  // get name of output JSON config file
   outJSONname_ = conf.getParameter<std::string>("outJSONname");
 
+  // get ID of tested FPGA
   the_fpga_ = conf.getParameter<int>("testedFpga");
 
-  // Get meta data
+  // get meta data
   const edm::ParameterSet& metaData = conf.getParameterSet("MetaData");
   cmssw_version_ = metaData.getParameter<std::string>("CMSSW_version");
 
-  // Get geometry configuration
+  // get geometry configuration
   const edm::ParameterSet& triggerGeom = conf.getParameterSet("TriggerGeometryParam");
-  disconnected_layers_ = triggerGeom.getParameter<std::vector<unsigned>>("DisconnectedLayers");
-  disconnected_modules_ = triggerGeom.getParameter<std::vector<unsigned>>("DisconnectedModules");
+  disconnected_layers_ = triggerGeom.getParameter<std::vector<uint32_t>>("DisconnectedLayers");
+  disconnected_modules_ = triggerGeom.getParameter<std::vector<uint32_t>>("DisconnectedModules");
   json_mapping_file_ = triggerGeom.getParameter<edm::FileInPath>("JsonMappingFile").relativePath();
   L1T_links_mapping_ = triggerGeom.getParameter<edm::FileInPath>("L1TLinksMapping").relativePath();
   L1T_modules_mapping_ = triggerGeom.getParameter<edm::FileInPath>("L1TModulesMapping").relativePath();
-  scintillator_links_per_module_ = triggerGeom.getParameter<unsigned>("ScintillatorLinksPerModule");
-  scintillator_module_size_ = triggerGeom.getParameter<unsigned>("ScintillatorModuleSize");
-  scintillator_trigger_cell_size_ = triggerGeom.getParameter<unsigned>("ScintillatorTriggerCellSize");
+  scintillator_links_per_module_ = triggerGeom.getParameter<uint32_t>("ScintillatorLinksPerModule");
+  scintillator_module_size_ = triggerGeom.getParameter<uint32_t>("ScintillatorModuleSize");
+  scintillator_trigger_cell_size_ = triggerGeom.getParameter<uint32_t>("ScintillatorTriggerCellSize");
   trigger_geom_ = triggerGeom.getParameter<std::string>("TriggerGeometryName");
-  
 
-
+  // get TCid -> uv coordinate correspondance
   const edm::ParameterSet& TCcoord_uv = conf.getParameterSet("TCcoord_UV");
-  std::vector<unsigned> tc_coord_u = TCcoord_uv.getParameter<std::vector<unsigned>>("TCu");
-  std::vector<unsigned> tc_coord_v = TCcoord_uv.getParameter<std::vector<unsigned>>("TCv");
-  
-  if(tc_coord_u.size() != tc_coord_v.size())
+  std::vector<uint32_t> tc_coord_u = TCcoord_uv.getParameter<std::vector<uint32_t>>("TCu");
+  std::vector<uint32_t> tc_coord_v = TCcoord_uv.getParameter<std::vector<uint32_t>>("TCv");
+  if (tc_coord_u.size() != tc_coord_v.size())
     throw cms::Exception("BadParameter") << "TCu and TCv vectors should be of same size";
-  
- 
-  for (size_t i=0; i<tc_coord_u.size(); ++i) 
-    tc_coord_uv_.emplace(std::make_pair(tc_coord_u.at(i),tc_coord_v.at(i)), i);
+  for (size_t i = 0; i < tc_coord_u.size(); ++i)
+    tc_coord_uv_.emplace(std::make_pair(tc_coord_u.at(i), tc_coord_v.at(i)), i);
 
   // Get truncation parameters
-  const edm::ParameterSet& truncationParamConfig = conf.getParameterSet("BackendStage1Params").getParameterSet("truncation_parameters");
+  const edm::ParameterSet& truncationParamConfig =
+      conf.getParameterSet("BackendStage1Params").getParameterSet("truncation_parameters");
   roz_min_ = truncationParamConfig.getParameter<double>("rozMin");
   roz_max_ = truncationParamConfig.getParameter<double>("rozMax");
-  roz_bins_ = truncationParamConfig.getParameter<unsigned>("rozBins");
-  max_tcs_per_bins_ = truncationParamConfig.getParameter<std::vector<unsigned>>("maxTcsPerBin");
+  roz_bins_ = truncationParamConfig.getParameter<uint32_t>("rozBins");
+  max_tcs_per_bins_ = truncationParamConfig.getParameter<std::vector<uint32_t>>("maxTcsPerBin");
   phi_edges_ = truncationParamConfig.getParameter<std::vector<double>>("phiSectorEdges");
-
-
 }
 
 HGCalBackendStage1ParameterExtractor::~HGCalBackendStage1ParameterExtractor() {}
 
-void HGCalBackendStage1ParameterExtractor::beginRun(const edm::Run& /*run*/, const edm::EventSetup& es)
-{
-  // can't this be done in initialization?
+void HGCalBackendStage1ParameterExtractor::beginRun(const edm::Run& /*run*/, const edm::EventSetup& es) {
   triggerGeometry_ = es.getHandle(triggerGeomToken_);
 
-  // check what that does
+  // note: identical function in geometry tester; should it be imported instead?
   no_trigger_ = !checkMappingConsistency();
-  
+
   json outJSON;
-  fillMetaData(outJSON);
-  fillMethodConfig(outJSON);
 
-  std::cout << "CMSSW version = "<< outJSON["MetaData"]["CMSSWversion"] << std::endl;
-  std::cout << "Geometry version = "<< outJSON["TriggerGeometry"]["TriggerGeometryName"] << std::endl;
-  std::cout << "rozmin = " << outJSON["TruncationConfig"]["rozMin"] << std::endl;
+  // fill MetaData
+  outJSON["MetaData"]["CMSSWversion"] = cmssw_version_;
+  outJSON["MetaData"]["fpgaId"] = the_fpga_;
 
+  // fill geometry configuration
+  outJSON["TriggerGeometryConfig"]["TriggerGeometryName"] = trigger_geom_;
+  outJSON["TriggerGeometryConfig"]["DisconnectedLayers"] = disconnected_layers_;
+  outJSON["TriggerGeometryConfig"]["DisconnectedModules"] = disconnected_modules_;
+  outJSON["TriggerGeometryConfig"]["JsonMappingFile"] = json_mapping_file_;
+  outJSON["TriggerGeometryConfig"]["L1TLinksMapping"] = L1T_links_mapping_;
+  outJSON["TriggerGeometryConfig"]["L1TModulesMapping"] = L1T_modules_mapping_;
+  outJSON["TriggerGeometryConfig"]["ScintillatorLinksPerModule"] = scintillator_links_per_module_;
+  outJSON["TriggerGeometryConfig"]["ScintillatorModuleSize"] = scintillator_module_size_;
+  outJSON["TriggerGeometryConfig"]["ScintillatorTriggerCellSize"] = scintillator_trigger_cell_size_;
+
+  // fill truncation parameters
+  outJSON["TruncationConfig"]["rozMin"] = roz_min_;
+  outJSON["TruncationConfig"]["rozMax"] = roz_max_;
+  outJSON["TruncationConfig"]["rozBins"] = roz_bins_;
+  outJSON["TruncationConfig"]["maxTcsPerBin"] = max_tcs_per_bins_;
+  outJSON["TruncationConfig"]["phiSectorEdges"] = phi_edges_;
+
+  // fill trigger geometry
   fillTriggerGeometry(outJSON);
 
+  // write out JSON file
   std::ofstream outputfile(outJSONname_.c_str());
   outputfile << std::setw(4) << outJSON << std::endl;
-
-
 }
-/*****************************/
-/* are these really useful ? */
-/*****************************/
-void HGCalBackendStage1ParameterExtractor::fillMetaData(json& json_file) {
-
-  json_file["MetaData"]["CMSSWversion"] = cmssw_version_;
-  json_file["MetaData"]["fpgaId"] = the_fpga_;
-
-  json_file["TriggerGeometry"]["TriggerGeometryName"] = trigger_geom_;
-  json_file["TriggerGeometry"]["DisconnectedLayers"] = disconnected_layers_;
-  json_file["TriggerGeometry"]["DisconnectedModules"] = disconnected_modules_;
-  json_file["TriggerGeometry"]["JsonMappingFile"] = json_mapping_file_;
-  json_file["TriggerGeometry"]["L1TLinksMapping"] = L1T_links_mapping_;
-  json_file["TriggerGeometry"]["L1TModulesMapping"] = L1T_modules_mapping_;
-  json_file["TriggerGeometry"]["ScintillatorLinksPerModule"] = scintillator_links_per_module_;
-  json_file["TriggerGeometry"]["ScintillatorModuleSize"] = scintillator_module_size_;
-  json_file["TriggerGeometry"]["ScintillatorTriggerCellSize"] = scintillator_trigger_cell_size_;
-
-}
-void HGCalBackendStage1ParameterExtractor::fillMethodConfig(json& json_file) {
-
-  json_file["TruncationConfig"]["rozMin"] = roz_min_;
-  json_file["TruncationConfig"]["rozMax"] = roz_max_;
-  json_file["TruncationConfig"]["rozBins"] = roz_bins_;
-  json_file["TruncationConfig"]["maxTcsPerBin"] = max_tcs_per_bins_;
-  json_file["TruncationConfig"]["phiSectorEdges"] = phi_edges_;
-}
-
 
 bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
-  // could import that function from GeometryTester instead? (avoiding duplication)
-
   try {
     // Set of (subdet,layer,waferU,waferV) with module mapping errors
-    std::set<std::tuple<unsigned, unsigned, int, int>> module_errors;
+    std::set<std::tuple<uint32_t, uint32_t, int, int>> module_errors;
     trigger_map_set modules_to_triggercells;
     trigger_map_set modules_to_cells;
     trigger_map_set triggercells_to_cells;
@@ -246,7 +227,7 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
     // HSc
     for (const auto& id : triggerGeometry_->hscGeometry()->getValidDetIds()) {
       // fill trigger cells
-      unsigned layer = HGCScintillatorDetId(id).layer();
+      uint32_t layer = HGCScintillatorDetId(id).layer();
       if (HGCScintillatorDetId(id).type() != triggerGeometry_->hscTopology().dddConstants().getTypeTrap(layer)) {
         std::cout << "Sci cell type = " << HGCScintillatorDetId(id).type()
                   << " != " << triggerGeometry_->hscTopology().dddConstants().getTypeTrap(layer) << "\n";
@@ -282,7 +263,7 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
 
     if (module_errors.size() > 0) {
       throw cms::Exception("BadGeometry") << "HGCalTriggerGeometry: Found  module mapping problems. Check the produced "
-	"tree to see the list of problematic wafers";
+                                             "tree to see the list of problematic wafers";
     }
 
     edm::LogPrint("TriggerCellCheck") << "Checking cell -> trigger cell -> cell consistency";
@@ -304,8 +285,8 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
         if (cells_geom.find(cell) == cells_geom.end()) {
           if (id.det() == DetId::HGCalHSc) {
             edm::LogProblem("BadTriggerCell")
-	      << "Error: \n Cell " << cell << "(" << HGCScintillatorDetId(cell)
-	      << ")\n has not been found in \n trigger cell " << HGCScintillatorDetId(id);
+                << "Error: \n Cell " << cell << "(" << HGCScintillatorDetId(cell)
+                << ")\n has not been found in \n trigger cell " << HGCScintillatorDetId(id);
             std::stringstream output;
             output << " Available cells are:\n";
             for (auto cell_geom : cells_geom)
@@ -313,8 +294,8 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
             edm::LogProblem("BadTriggerCell") << output.str();
           } else if (HFNoseTriggerDetId(id).subdet() == HGCalTriggerSubdetector::HFNoseTrigger) {
             edm::LogProblem("BadTriggerCell")
-	      << "Error: \n Cell " << cell << "(" << HFNoseDetId(cell) << ")\n has not been found in \n trigger cell "
-	      << HFNoseTriggerDetId(triggercell_cells.first);
+                << "Error: \n Cell " << cell << "(" << HFNoseDetId(cell) << ")\n has not been found in \n trigger cell "
+                << HFNoseTriggerDetId(triggercell_cells.first);
             std::stringstream output;
             output << " Available cells are:\n";
             for (auto cell_geom : cells_geom)
@@ -323,8 +304,8 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
           } else if (HGCalTriggerDetId(id).subdet() == HGCalTriggerSubdetector::HGCalEETrigger ||
                      HGCalTriggerDetId(id).subdet() == HGCalTriggerSubdetector::HGCalHSiTrigger) {
             edm::LogProblem("BadTriggerCell")
-	      << "Error: \n Cell " << cell << "(" << HGCSiliconDetId(cell)
-	      << ")\n has not been found in \n trigger cell " << HGCalTriggerDetId(triggercell_cells.first);
+                << "Error: \n Cell " << cell << "(" << HGCSiliconDetId(cell)
+                << ")\n has not been found in \n trigger cell " << HGCalTriggerDetId(triggercell_cells.first);
             std::stringstream output;
             output << " Available cells are:\n";
             for (auto cell_geom : cells_geom)
@@ -332,14 +313,14 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
             edm::LogProblem("BadTriggerCell") << output.str();
           } else {
             edm::LogProblem("BadTriggerCell")
-	      << "Unknown detector type " << id.det() << " " << id.subdetId() << " " << id.rawId() << "\n";
+                << "Unknown detector type " << id.det() << " " << id.subdetId() << " " << id.rawId() << "\n";
             edm::LogProblem("BadTriggerCell") << " cell " << std::hex << cell << std::dec << " "
                                               << "\n";
             edm::LogProblem("BadTriggerCell")
-	      << "Cell ID " << HGCSiliconDetId(cell) << " or " << HFNoseDetId(cell) << "\n";
+                << "Cell ID " << HGCSiliconDetId(cell) << " or " << HFNoseDetId(cell) << "\n";
           }
           throw cms::Exception("BadGeometry")
-	    << "HGCalTriggerGeometry: Found inconsistency in cell <-> trigger cell mapping";
+              << "HGCalTriggerGeometry: Found inconsistency in cell <-> trigger cell mapping";
         }
       }
     }
@@ -363,7 +344,7 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
             }
             edm::LogProblem("BadModule") << output.str();
             throw cms::Exception("BadGeometry")
-	      << "HGCalTriggerGeometry: Found inconsistency in trigger cell <->  module mapping";
+                << "HGCalTriggerGeometry: Found inconsistency in trigger cell <->  module mapping";
           } else if (id.triggerSubdetId() == HGCalTriggerSubdetector::HFNoseTrigger) {
             HFNoseTriggerDetId cellid(cell);
             edm::LogProblem("BadModule") << "Error : \n Trigger cell " << cell << "(" << cellid
@@ -375,7 +356,7 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
             }
             edm::LogProblem("BadModule") << output.str();
             throw cms::Exception("BadGeometry")
-	      << "HGCalTriggerGeometry: Found inconsistency in trigger cell <->  module mapping";
+                << "HGCalTriggerGeometry: Found inconsistency in trigger cell <->  module mapping";
           } else {
             HGCalTriggerDetId cellid(cell);
             edm::LogProblem("BadModule") << "Error : \n Trigger cell " << cell << "(" << cellid
@@ -387,7 +368,7 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
             }
             edm::LogProblem("BadModule") << output.str();
             throw cms::Exception("BadGeometry")
-	      << "HGCalTriggerGeometry: Found inconsistency in trigger cell <->  module mapping";
+                << "HGCalTriggerGeometry: Found inconsistency in trigger cell <->  module mapping";
           }
         }
       }
@@ -469,7 +450,7 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
           }
           edm::LogProblem("BadStage1") << output.str();
           throw cms::Exception("BadGeometry")
-	    << "HGCalTriggerGeometry: Found inconsistency in Stage1 <-> module mapping";
+              << "HGCalTriggerGeometry: Found inconsistency in Stage1 <-> module mapping";
         }
       }
     }
@@ -508,28 +489,24 @@ bool HGCalBackendStage1ParameterExtractor::checkMappingConsistency() {
           }
           edm::LogProblem("BadStage2") << output.str();
           throw cms::Exception("BadGeometry")
-	    << "HGCalTriggerGeometry: Found inconsistency in Stage2 <-> Stage1 mapping";
+              << "HGCalTriggerGeometry: Found inconsistency in Stage2 <-> Stage1 mapping";
         }
       }
     }
 
   } catch (const cms::Exception& e) {
     edm::LogWarning("HGCalTriggerGeometryTester")
-      << "Problem with the trigger geometry detected. Only the basic cells tree will be filled\n";
+        << "Problem with the trigger geometry detected. Only the basic cells tree will be filled\n";
     edm::LogWarning("HGCalTriggerGeometryTester") << e.message() << "\n";
     return false;
   }
   return true;
 }
 
-
-
-
-void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file)
-{
+void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) {
   trigger_map_set trigger_cells;
 
-  // EE
+  // check geometry and retrieve trigger cells
   std::cout << "Checking EE geometry\n";
   for (const auto& id : triggerGeometry_->eeGeometry()->getValidDetIds()) {
     HGCSiliconDetId detid(id);
@@ -562,7 +539,6 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file)
       itr_insert.first->second.emplace(id);
     }
   }
-
   if (triggerGeometry_->isWithNoseGeometry()) {
     std::cout << "Checking NOSE geometry\n";
     for (const auto& id : triggerGeometry_->noseGeometry()->getValidDetIds()) {
@@ -575,38 +551,42 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file)
     }
   }
 
-  // if problem detected in the trigger geometry, don't produce trigger trees
+  // if problem detected in the trigger geometry, don't produce the TC map
   if (no_trigger_)
     return;
 
-  // Loop over trigger cells
+  // loop over trigger cells
   edm::LogPrint("JSONFilling") << "Filling JSON map";
-  unsigned i = 0; // countertest
   for (const auto& triggercell_cells : trigger_cells) {
-
     DetId id(triggercell_cells.first);
 
+    // get module ID and check if relevant module (sector0, zside=-1)
     uint32_t moduleId = triggerGeometry_->getModuleFromTriggerCell(id);
-    if(moduleId==0) continue;
+    if (moduleId == 0)
+      continue;
     HGCalTriggerModuleDetId tc_module(moduleId);
-    if (!(tc_module.isHGCalModuleDetId()) || (tc_module.zside()>0) || (tc_module.sector()!=0)) continue;
-    
+    if (!(tc_module.isHGCalModuleDetId()) || (tc_module.zside() < 0) || (tc_module.sector() != 0))
+      continue;
+
+    // check that module is connected to a stage 1 FPGA
     HGCalTriggerGeometryBase::geom_set lpgbts = triggerGeometry_->getLpgbtsFromModule(moduleId);
     if (lpgbts.size() == 0)
-      continue;  //Module is not connected to an lpGBT and therefore not to a Stage 1 FPGA
-  
+      continue;
+
     // only retrieve mapping for the tested fpga
     uint32_t fpgaId = triggerGeometry_->getStage1FpgaFromModule(moduleId);
     HGCalTriggerBackendDetId tc_fpga(fpgaId);
-    if (!(tc_fpga.isStage1FPGA()) || (tc_fpga.sector()!=0) || (tc_fpga.zside()>0)) continue;
-    int fpga_label = tc_fpga.label();
-    if (fpga_label != the_fpga_) continue;
-        
+    if (!(tc_fpga.isStage1FPGA()) || (tc_fpga.sector() != 0) || (tc_fpga.zside() < 0))
+      continue;
+    int fpgaLabel = tc_fpga.label();
+    if (fpgaLabel != the_fpga_)
+      continue;
+
+    // retrieve information to be saved
     int triggerCellSubdet = 0;
     int triggerCellLayer = 0;
     int triggerCellUEta = 0;
     int triggerCellVPhi = 0;
-
     if (id.det() == DetId::HGCalHSc) {
       HGCScintillatorDetId id_sc(triggercell_cells.first);
       triggerCellSubdet = id_sc.subdet();
@@ -614,8 +594,8 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file)
       triggerCellUEta = id_sc.ietaAbs();
       triggerCellVPhi = id_sc.iphi();
     } else if (HFNoseTriggerDetId(triggercell_cells.first).det() == DetId::HGCalTrigger &&
-               HFNoseTriggerDetId(triggercell_cells.first).subdet() == HGCalTriggerSubdetector::HFNoseTrigger/*==0*/) {
-      HFNoseTriggerDetId id_nose_trig(triggercell_cells.first); 
+               HFNoseTriggerDetId(triggercell_cells.first).subdet() == HGCalTriggerSubdetector::HFNoseTrigger) {
+      HFNoseTriggerDetId id_nose_trig(triggercell_cells.first);
       triggerCellSubdet = id_nose_trig.subdet();
       triggerCellLayer = id_nose_trig.layer();
       triggerCellUEta = id_nose_trig.triggerCellU();
@@ -627,44 +607,53 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file)
       triggerCellUEta = id_si_trig.triggerCellU();
       triggerCellVPhi = id_si_trig.triggerCellV();
     }
-    
-    //tc id
-    uint32_t tce = triggerCellUEta ,tcp = triggerCellVPhi;
-    if(triggerCellSubdet==10){ // HGCalHSc
-      tcp = (triggerCellVPhi - 1)%4;
-      if (triggerCellUEta<=3) { 
-	tce = triggerCellUEta;
-      } else if(triggerCellUEta<=9) {
-	tce = triggerCellUEta-4;
-      } else if(triggerCellUEta<=13) {
-	tce = triggerCellUEta-10;
-      } else if(triggerCellUEta<=17) {
-	tce = triggerCellUEta-14;
+    GlobalPoint position = triggerGeometry_->getTriggerCellPosition(triggercell_cells.first);
+    float triggerCellX = position.x();
+    float triggerCellY = position.y();
+    float triggerCellZ = position.z();
+    float triggerCellEta = position.eta();
+    float triggerCellPhi = position.phi();
+    float triggerCellRoverZ = sqrt(triggerCellX * triggerCellX + triggerCellY * triggerCellY) / triggerCellZ;
+
+    // transform HGCalHSc TC coordinates to define a TC id in [0,47]
+    uint32_t tce = triggerCellUEta;
+    uint32_t tcp = triggerCellVPhi;
+    if (triggerCellSubdet == 10) {  // HGCalHSc
+      tcp = (triggerCellVPhi - 1) % 4;
+      if (triggerCellUEta <= 3) {
+        tce = triggerCellUEta;
+      } else if (triggerCellUEta <= 9) {
+        tce = triggerCellUEta - 4;
+      } else if (triggerCellUEta <= 13) {
+        tce = triggerCellUEta - 10;
+      } else if (triggerCellUEta <= 17) {
+        tce = triggerCellUEta - 14;
       } else {
-	tce = triggerCellUEta-18;
+        tce = triggerCellUEta - 18;
       }
     }
 
-    uint32_t tcaddress;
-    if (triggerCellSubdet==10) { //HGCalHSc(10)
-      tcaddress = (int(tce)<<2) + int(tcp);
-    } else { //HGCalHSiTrigger(2) or HGCalEE(1)
-      tcaddress = tc_coord_uv_.find(std::make_pair(tce,tcp))->second; 
+    // attribute ID to TC according to subdetector
+    uint32_t tcaddress = 99;
+    if (triggerCellSubdet == 10) {  //HGCalHSc(10)
+      tcaddress = (int(tce) << 2) + int(tcp);
+    } else {  //HGCalHSiTrigger(2) or HGCalEE(1)
+      tcaddress = tc_coord_uv_.find(std::make_pair(tce, tcp))->second;
     }
-    
-    std::unordered_map<std::string, unsigned> TCinfo {
-      {"subdet", triggerCellSubdet},
-      {"layer", triggerCellLayer},
-      {"ueta", tce},
-      {"vphi", tcp}
-    };
-    
-    if(i%100==0)
-      std::cout << i << " TC filled" << std::endl;
-    i++;
-    
-    json_file["TCMap"]["module_hash"][std::to_string(moduleId)]["tc_id"][std::to_string(tcaddress)] = TCinfo;
-  
+
+    // save TC info into JSON
+    std::string strModId = std::to_string(moduleId);
+    std::string strTCAddr = std::to_string(tcaddress);
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["subdet"] = triggerCellSubdet;
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["layer"] = triggerCellLayer;
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["ueta"] = tce;
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["vphi"] = tcp;
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["x"] = triggerCellX;
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["y"] = triggerCellY;
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["z"] = triggerCellZ;
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["roz"] = triggerCellRoverZ;
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["eta"] = triggerCellEta;
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["phi"] = triggerCellPhi;
   }
 }
 
