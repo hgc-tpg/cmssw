@@ -1,33 +1,23 @@
-#include <iostream>
+#include <iostream> // std::cout
 #include <fstream>  // std::ofstream
-#include <vector>
-#include <cstdlib>
-#include <any>
 
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/stream/EDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/FileInPath.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-
+#include "FWCore/Framework/interface/stream/EDAnalyzer.h"
 #include "FWCore/Framework/interface/ESHandle.h"
-#include "FWCore/Framework/interface/ESTransientHandle.h"
-#include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "DataFormats/ForwardDetId/interface/ForwardSubdetector.h"
-#include "DataFormats/ForwardDetId/interface/HFNoseTriggerDetId.h"
 #include "DataFormats/ForwardDetId/interface/HGCalDetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCalTriggerDetId.h"
 #include "DataFormats/ForwardDetId/interface/HGCScintillatorDetId.h"
 #include "DataFormats/ForwardDetId/interface/HGCSiliconDetId.h"
-
-#include "Geometry/Records/interface/CaloGeometryRecord.h"
-
-#include "L1Trigger/L1THGCal/interface/HGCalTriggerGeometryBase.h"
+#include "DataFormats/ForwardDetId/interface/HFNoseTriggerDetId.h"
+#include "DataFormats/ForwardDetId/interface/HGCalTriggerDetId.h"
 #include "DataFormats/ForwardDetId/interface/HGCalTriggerModuleDetId.h"
 #include "DataFormats/ForwardDetId/interface/HGCalTriggerBackendDetId.h"
+
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "L1Trigger/L1THGCal/interface/HGCalTriggerGeometryBase.h"
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::ordered_json;  // using ordered_json for readability
@@ -42,8 +32,7 @@ public:
 
 private:
   bool checkMappingConsistency();
-  void fillMetaData(json& json_file);
-  void fillMethodConfig(json& json_file);
+
   void fillTriggerGeometry(json& json_file);
 
   edm::ESHandle<HGCalTriggerGeometryBase> triggerGeometry_;
