@@ -22,6 +22,7 @@ process.load('Configuration.StandardSequences.DigiToRaw_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
+
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
 )
@@ -42,8 +43,7 @@ process.configurationMetadata = cms.untracked.PSet(
 # Output definition
 
 # load HGCAL TPG simulation
-#process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
-process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitivesNew_cff')
+process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 
 # Eventually modify default geometry parameters
 from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V11_Imp3
@@ -62,15 +62,15 @@ fpga_id = 1
 process.hgcalbackendstage1parameterextractor = cms.EDAnalyzer(
     "HGCalBackendStage1ParameterExtractor",
     outJSONname = cms.string("geometryConfig_backendStage1.json"),
-    testedFpga = cms.int32(fpga_id), #
-    BackendStage1Params = stage1truncation_proc,
+    testedFpga = cms.uint32(fpga_id), #
+    BackendStage1Params = stage1truncation_proc.truncation_parameters,
     TriggerGeometryParam = process.hgcalTriggerGeometryESProducer.TriggerGeometry,
     TCcoord_UV = cms.PSet(
         TCu = cms.vuint32(ordered_tcu),
         TCv = cms.vuint32(ordered_tcv)
     ),
     MetaData = cms.PSet(
-        CMSSW_version = cms.string('CMSSW_12_3_0_pre4')
+        CMSSW_era = cms.string('CMSSW_12_3_0_pre4')
     ),
 )
 
