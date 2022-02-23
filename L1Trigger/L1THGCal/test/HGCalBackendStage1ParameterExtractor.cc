@@ -42,9 +42,7 @@ private:
 
   // Metadata
   std::string detector_version_;
-  std::string cmssw_era_;
-
-  uint32_t the_fpga_;
+  int the_fpga_;
 
   // geometry data
   std::vector<uint32_t> disconnected_layers_;
@@ -76,12 +74,11 @@ HGCalBackendStage1ParameterExtractor::HGCalBackendStage1ParameterExtractor(const
   outJSONname_ = conf.getParameter<std::string>("outJSONname");
 
   // get ID of tested FPGA
-  the_fpga_ = conf.getParameter<uint32_t>("testedFpga");
+  the_fpga_ = conf.getParameter<int>("testedFpga");
 
   // get meta data
   const edm::ParameterSet& metaData = conf.getParameterSet("MetaData");
-  cmssw_era_ = "dummy1";//metaData.getParameter<std::string>("CMSSW_era");
-  detector_version_ = "dummy2";//metaData.getParameter<std::string>("detector_version_");
+  detector_version_ = metaData.getParameter<std::string>("geometryVersion");
 
   // get geometry configuration
   const edm::ParameterSet& triggerGeom = conf.getParameterSet("TriggerGeometryParam");
@@ -116,8 +113,7 @@ void HGCalBackendStage1ParameterExtractor::beginRun(const edm::Run& /*run*/, con
   json outJSON;
 
   // fill MetaData
-  outJSON["MetaData"]["CMSSWEra"] = cmssw_era_;
-  outJSON["MetaData"]["DetectorVersion"] = detector_version_;
+  outJSON["MetaData"]["GeometryVersion"] = detector_version_;
   outJSON["MetaData"]["fpgaId"] = the_fpga_;
 
   // fill geometry configuration
@@ -176,7 +172,7 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
     HGCalTriggerBackendDetId tc_fpga(fpgaId);
     if (!(tc_fpga.isStage1FPGA()) || (tc_fpga.sector() != 0) || (tc_fpga.zside() < 0))
       continue;
-    if ((uint32_t)tc_fpga.label() != the_fpga_)
+    if (tc_fpga.label() != the_fpga_)
       continue;
 
     // retrieve information to be saved

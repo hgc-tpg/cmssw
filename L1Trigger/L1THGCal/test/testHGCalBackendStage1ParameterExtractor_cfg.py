@@ -22,7 +22,6 @@ process.load('Configuration.StandardSequences.DigiToRaw_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
-
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
 )
@@ -59,10 +58,14 @@ ordered_tcv = [0, 1, 1, 0, 2, 3, 3, 2, 2, 3, 3, 2, 0, 1, 1, 0, 7, 7, 6, 6, 7, 7,
 # ID of tested FPGA
 fpga_id = 1
 
+# geometry version
+from Geometry.CMSCommonData.cmsExtendedGeometry2026D49XML_cfi import XMLIdealGeometryESSource
+geometry_version = [s for s in XMLIdealGeometryESSource.geomXMLFiles.value() if "Geometry/HGCalCommonData/data/hgcal/" in s][0].replace('Geometry/HGCalCommonData/data/hgcal/','').replace('/hgcal.xml','')
+
 process.hgcalbackendstage1parameterextractor = cms.EDAnalyzer(
     "HGCalBackendStage1ParameterExtractor",
     outJSONname = cms.string("geometryConfig_backendStage1.json"),
-    testedFpga = cms.uint32(fpga_id), #
+    testedFpga = cms.int32(fpga_id),
     BackendStage1Params = stage1truncation_proc.truncation_parameters,
     TriggerGeometryParam = process.hgcalTriggerGeometryESProducer.TriggerGeometry,
     TCcoord_UV = cms.PSet(
@@ -70,7 +73,7 @@ process.hgcalbackendstage1parameterextractor = cms.EDAnalyzer(
         TCv = cms.vuint32(ordered_tcv)
     ),
     MetaData = cms.PSet(
-        CMSSW_era = cms.string('CMSSW_12_3_0_pre4')
+        geometryVersion = cms.string(geometry_version)
     ),
 )
 
