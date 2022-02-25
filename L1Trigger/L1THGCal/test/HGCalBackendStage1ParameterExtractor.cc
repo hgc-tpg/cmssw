@@ -33,7 +33,7 @@ public:
 
 private:
   void fillTriggerGeometry(json& json_file);
-  std::tuple<uint32_t,uint32_t,uint32_t> getTCaddress(int& tc_ueta, int& tc_vphi, bool& isScint);
+  uint32_t getTCaddress(int& tc_ueta, int& tc_vphi, bool isScint);
 
   HGCalTriggerTools triggerTools_;
 
@@ -138,21 +138,21 @@ void HGCalBackendStage1ParameterExtractor::beginRun(const edm::Run& /*run*/, con
 }
 
 void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) {
-  std::vector<uint32_t> trigger_cells;
+  std::unordered_set<uint32_t> trigger_cells;
 
   // retrieve valid trigger cells
   for (const auto& id : triggerGeometry_->eeGeometry()->getValidDetIds()) {
     HGCSiliconDetId detid(id);
     if (triggerGeometry_->eeTopology().valid(id))
-      trigger_cells.push_back(triggerGeometry_->getTriggerCellFromCell(id));
+      trigger_cells.insert(triggerGeometry_->getTriggerCellFromCell(id));
   }
   for (const auto& id : triggerGeometry_->hsiGeometry()->getValidDetIds()) {
     HGCSiliconDetId detid(id);
     if (triggerGeometry_->hsiTopology().valid(id))
-      trigger_cells.push_back(triggerGeometry_->getTriggerCellFromCell(id));
+      trigger_cells.insert(triggerGeometry_->getTriggerCellFromCell(id));
   }
   for (const auto& id : triggerGeometry_->hscGeometry()->getValidDetIds()) {
-    trigger_cells.push_back(triggerGeometry_->getTriggerCellFromCell(id));
+    trigger_cells.insert(triggerGeometry_->getTriggerCellFromCell(id));
   }
 
   // loop over trigger cells
@@ -203,15 +203,15 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
     float triggerCellPhi = position.phi();
     float triggerCellRoverZ = sqrt(triggerCellX * triggerCellX + triggerCellY * triggerCellY) / triggerCellZ;
     
-    std::tuple<uint32_t,uint32_t,uint32_t> tcAddressAndCoord = getTCaddress(triggerCellUEta, triggerCellVPhi, isScintillatorCell);
+    uint32_t tcAddress = getTCaddress(triggerCellUEta, triggerCellVPhi, isScintillatorCell);
 
     // save TC info into JSON
     std::string strModId = std::to_string(moduleId);
-    std::string strTCAddr = std::to_string(std::get<0>(tcAddressAndCoord));
+    std::string strTCAddr = std::to_string(tcAddress);
     json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["subdet"] = triggerCellSubdet;
     json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["layer"] = triggerCellLayer;
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["ueta"] = std::get<1>(tcAddressAndCoord);
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["vphi"] = std::get<2>(tcAddressAndCoord);
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["ueta"] = triggerCellUEta;
+    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["vphi"] = triggerCellVPhi;
     json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["x"] = triggerCellX;
     json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["y"] = triggerCellY;
     json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["z"] = triggerCellZ;
@@ -221,7 +221,7 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
   }
 }
 
-std::tuple<uint32_t,uint32_t,uint32_t> HGCalBackendStage1ParameterExtractor::getTCaddress(int& tc_ueta, int& tc_vphi, bool& isScintillator) {
+uint32_t HGCalBackendStage1ParameterExtractor::getTCaddress(int& tc_ueta, int& tc_vphi, bool isScintillator) {
 
     // transform HGCalHSc TC coordinates to define a TC address in [0,47]
     if (isScintillator) {  // HGCalHSc
@@ -240,13 +240,11 @@ std::tuple<uint32_t,uint32_t,uint32_t> HGCalBackendStage1ParameterExtractor::get
     }
 
     // attribute ID to TC according to subdetector
-    uint32_t tcaddress = 99;
     if (isScintillator) {  //HGCalHSc(10)
-      tcaddress = (tc_ueta << 2) + tc_vphi;
+      return (tc_ueta << 2) + tc_vphi;
     } else {  //HGCalHSiTrigger(2) or HGCalEE(1)
-      tcaddress = tc_coord_uv_.find(std::make_pair(tc_ueta, tc_vphi))->second;
+      return tc_coord_uv_.find(std::make_pair(tc_ueta, tc_vphi))->second;
     }
-    return std::make_tuple(tcaddress, tc_ueta, tc_vphi);
 
 }
 

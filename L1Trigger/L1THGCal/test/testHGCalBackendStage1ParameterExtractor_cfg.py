@@ -59,8 +59,10 @@ ordered_tcv = [0, 1, 1, 0, 2, 3, 3, 2, 2, 3, 3, 2, 0, 1, 1, 0, 7, 7, 6, 6, 7, 7,
 fpga_id = 1
 
 # geometry version
-from Geometry.CMSCommonData.cmsExtendedGeometry2026D49XML_cfi import XMLIdealGeometryESSource
-geometry_version = [s for s in XMLIdealGeometryESSource.geomXMLFiles.value() if "Geometry/HGCalCommonData/data/hgcal/" in s][0].replace('Geometry/HGCalCommonData/data/hgcal/','').replace('/hgcal.xml','')
+from re import match
+geomXMLcontent = process.XMLIdealGeometryESSource.geomXMLFiles.value()
+hgcal_xml = 'Geometry/HGCalCommonData/data/hgcal/v.*/hgcal.xml'
+geometry_version = "".join(filter(lambda v: match(hgcal_xml,v), geomXMLcontent)).split('/')[4]
 
 process.hgcalbackendstage1parameterextractor = cms.EDAnalyzer(
     "HGCalBackendStage1ParameterExtractor",
