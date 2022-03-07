@@ -14,7 +14,7 @@ using namespace l1thgcfirmware;
 HGCalHistoClusteringImplSA::HGCalHistoClusteringImplSA( ClusterAlgoConfig& config ) : config_(config) {}
 
 void HGCalHistoClusteringImplSA::runAlgorithm(HGCalTriggerCellSAPtrCollections& inputs, HGCalTriggerCellSAPtrCollection& clusteredTCs, HGCalTriggerCellSAPtrCollection& unclusteredTCs, CentroidHelperPtrCollection& prioritizedMaxima, CentroidHelperPtrCollection& readoutFlags, HGCalClusterSAPtrCollection& clusterSums ) const {
-  config_.printConfiguration();
+  // config_.printConfiguration();
 
   HGCalTriggerCellSAPtrCollection triggerCellsIn = triggerCellInput( inputs );
 
@@ -431,7 +431,7 @@ void HGCalHistoClusteringImplSA::clusterizer( HGCalTriggerCellSAPtrCollection& t
           for ( int k = -2; k < 3; ++k ) { // Magic numbers
             int row = a->row() + k;
             if ( row < 0 ) continue;
-
+            if ( row >= int(config_.cRows()) ) continue; // Not in python emulator, but required to avoid out of bounds access
             if ( triggerCellBuffers[iCol][row].size() == 0 ) {
               clock[iCol] += 1 ;
               continue;
