@@ -63,10 +63,9 @@ from re import match
 geomXMLcontent = process.XMLIdealGeometryESSource.geomXMLFiles.value()
 hgcal_xml = 'Geometry/HGCalCommonData/data/hgcal/v.*/hgcal.xml'
 geometry_version = list(filter(lambda v: match(hgcal_xml,v), geomXMLcontent))
-if len(geometry_version) == 0:
-    raise ValueError('No xml file could be found for geometry version extraction')
-if len(geometry_version) > 1:
-    raise ValueError('More than one xml file could be found for geometry version extraction')
+if len(geometry_version) != 1:
+    raise ValueError('Can\'t find geometry version - expected one xml file, but got {}'.format(len(geometry_version)))
+
 geometry_version = geometry_version[0].split('/')[4]
 
 process.hgcalbackendstage1parameterextractor = cms.EDAnalyzer(
