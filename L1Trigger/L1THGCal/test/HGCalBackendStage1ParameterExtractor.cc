@@ -1,5 +1,6 @@
 #include <iostream> // std::cout
 #include <fstream>  // std::ofstream
+#include <any> // std::any
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
@@ -34,6 +35,9 @@ public:
 private:
   void fillTriggerGeometry(json& json_file);
   uint32_t getTCaddress(int& tc_ueta, int& tc_vphi, bool isScint);
+  uint32_t getRoZBin(double roverz);
+  uint32_t getPhiBin(uint32_t roverzbin, double phi);
+  double rotatedphi(double phi, int sector);
 
   HGCalTriggerTools triggerTools_;
 
@@ -54,6 +58,7 @@ private:
   double roz_min_;
   double roz_max_;
   uint32_t roz_bins_;
+  double roz_bin_size_;
   std::vector<uint32_t> max_tcs_per_bins_;
   std::vector<double> phi_edges_;
 
@@ -64,6 +69,7 @@ private:
   std::string outJSONname_;
 
   typedef std::unordered_map<uint32_t, std::unordered_set<uint32_t>> trigger_map_set;
+
 };
 
 HGCalBackendStage1ParameterExtractor::HGCalBackendStage1ParameterExtractor(const edm::ParameterSet& conf)
@@ -101,6 +107,10 @@ HGCalBackendStage1ParameterExtractor::HGCalBackendStage1ParameterExtractor(const
   roz_min_ = truncationParamConfig.getParameter<double>("rozMin");
   roz_max_ = truncationParamConfig.getParameter<double>("rozMax");
   roz_bins_ = truncationParamConfig.getParameter<uint32_t>("rozBins");
+
+  constexpr double margin = 1.001;
+  roz_bin_size_ = (roz_bins_ > 0 ? (roz_max_ - roz_min_) * margin / double(roz_bins_) : 0.);
+
   max_tcs_per_bins_ = truncationParamConfig.getParameter<std::vector<uint32_t>>("maxTcsPerBin");
   phi_edges_ = truncationParamConfig.getParameter<std::vector<double>>("phiSectorEdges");
 }
@@ -126,8 +136,10 @@ void HGCalBackendStage1ParameterExtractor::beginRun(const edm::Run& /*run*/, con
   outJSON["TruncationConfig"]["rozMin"] = roz_min_;
   outJSON["TruncationConfig"]["rozMax"] = roz_max_;
   outJSON["TruncationConfig"]["rozBins"] = roz_bins_;
+  outJSON["TruncationConfig"]["rozBinSize"] = roz_bin_size_;
   outJSON["TruncationConfig"]["maxTcsPerBin"] = max_tcs_per_bins_;
   outJSON["TruncationConfig"]["phiSectorEdges"] = phi_edges_;
+
 
   // fill trigger geometry
   fillTriggerGeometry(outJSON);
@@ -157,6 +169,10 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
 
   // loop over trigger cells
   edm::LogPrint("JSONFilling") << "Filling JSON map";
+
+  //filling tmp json to get TCs per module
+  json tmp_json;
+
   for (const auto& triggercell : trigger_cells) {
     DetId id(triggercell);
     // get module ID and check if relevant module (sector0, zside=1, and connected to FPGA)
@@ -202,22 +218,43 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
     float triggerCellEta = position.eta();
     float triggerCellPhi = position.phi();
     float triggerCellRoverZ = sqrt(triggerCellX * triggerCellX + triggerCellY * triggerCellY) / triggerCellZ;
-    
+    triggerCellRoverZ = (triggerCellRoverZ < roz_min_ ? roz_min_ : triggerCellRoverZ);
+    triggerCellRoverZ = (triggerCellRoverZ > roz_max_ ? roz_max_ : triggerCellRoverZ);
+
+    uint32_t triggerCellRoZBin = getRoZBin(triggerCellRoverZ);
+    double triggerCellRotatedPhi = rotatedphi(triggerCellPhi, tc_fpga.sector());
+    uint32_t triggerCellPhiBin = getPhiBin(triggerCellRoZBin,triggerCellRotatedPhi);
+
     uint32_t tcAddress = getTCaddress(triggerCellUEta, triggerCellVPhi, isScintillatorCell);
 
     // save TC info into JSON
+    json theTC;
+    theTC["tcid"] = tcAddress;
+    theTC["subdet"] = triggerCellSubdet;
+    theTC["layer"] = triggerCellLayer;
+    theTC["ueta"] = triggerCellUEta;
+    theTC["vphi"] = triggerCellVPhi;
+    theTC["x"] = triggerCellX;
+    theTC["y"] = triggerCellY;
+    theTC["z"] = triggerCellZ;
+    theTC["roz"] = triggerCellRoverZ;
+    theTC["eta"] = triggerCellEta;
+    theTC["phi"] = triggerCellPhi;
+    theTC["roz_bin"] = triggerCellRoZBin;
+    theTC["phi_bin"] = triggerCellPhiBin;
+
     std::string strModId = std::to_string(moduleId);
-    std::string strTCAddr = std::to_string(tcAddress);
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["subdet"] = triggerCellSubdet;
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["layer"] = triggerCellLayer;
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["ueta"] = triggerCellUEta;
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["vphi"] = triggerCellVPhi;
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["x"] = triggerCellX;
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["y"] = triggerCellY;
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["z"] = triggerCellZ;
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["roz"] = triggerCellRoverZ;
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["eta"] = triggerCellEta;
-    json_file["TriggerCellMap"]["module_hash"][strModId]["tc_id"][strTCAddr]["phi"] = triggerCellPhi;
+    tmp_json[strModId].push_back(theTC);
+  }
+
+  // fill output JSON
+  for (auto& module_json : tmp_json.items()) {
+    json j1;
+    j1["hash"] = module_json.key();
+    j1["tcs"] = module_json.value();
+     
+
+    json_file["TriggerCellMap"]["Module"].push_back(j1);
   }
 }
 
@@ -246,6 +283,35 @@ uint32_t HGCalBackendStage1ParameterExtractor::getTCaddress(int& tc_ueta, int& t
       return tc_coord_uv_.find(std::make_pair(tc_ueta, tc_vphi))->second;
     }
 
+}
+
+uint32_t HGCalBackendStage1ParameterExtractor::getRoZBin(double roverz) { 
+ 
+  return (roz_bin_size_ > 0. ? unsigned((roverz - roz_min_) / roz_bin_size_) : 0);  
+}
+
+uint32_t HGCalBackendStage1ParameterExtractor::getPhiBin(uint32_t roverzbin, double phi) {
+
+  int phi_bin = 0;
+  if (roverzbin >= phi_edges_.size())
+    return -1;
+  double phi_edge = phi_edges_[roverzbin];
+  if (phi > phi_edge)
+    phi_bin = 1;
+  return phi_bin;
+}
+
+double HGCalBackendStage1ParameterExtractor::rotatedphi(double phi, int sector) {
+  
+  if (sector == 1) {
+    if (phi < M_PI and phi > 0)
+      phi = phi - (2. * M_PI / 3.);
+    else
+      phi = phi + (4. * M_PI / 3.);
+  } else if (sector == 2) {
+    phi = phi + (2. * M_PI / 3.);
+  }
+  return phi;
 }
 
 void HGCalBackendStage1ParameterExtractor::analyze(const edm::Event& e, const edm::EventSetup& es) {}
