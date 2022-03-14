@@ -1,6 +1,5 @@
 #include <iostream> // std::cout
 #include <fstream>  // std::ofstream
-#include <any> // std::any
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
@@ -252,8 +251,6 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
     json j1;
     j1["hash"] = module_json.key();
     j1["tcs"] = module_json.value();
-     
-
     json_file["TriggerCellMap"]["Module"].push_back(j1);
   }
 }
