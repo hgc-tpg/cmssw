@@ -1,5 +1,5 @@
-#include <iostream> // std::cout
-#include <fstream>  // std::ofstream
+#include <iostream>  // std::cout
+#include <fstream>   // std::ofstream
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
@@ -19,6 +19,8 @@
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerGeometryBase.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerTools.h"
+
+#include "L1Trigger/L1THGCal/interface/backend/HGCalStage1TruncationImpl_SA.h"
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::ordered_json;  // using ordered_json for readability
@@ -42,6 +44,8 @@ private:
 
   edm::ESHandle<HGCalTriggerGeometryBase> triggerGeometry_;
   edm::ESGetToken<HGCalTriggerGeometryBase, CaloGeometryRecord> triggerGeomToken_;
+
+  HGCalStage1TruncationImplSA theAlgo_;
 
   // Metadata
   std::string detector_version_;
@@ -68,7 +72,6 @@ private:
   std::string outJSONname_;
 
   typedef std::unordered_map<uint32_t, std::unordered_set<uint32_t>> trigger_map_set;
-
 };
 
 HGCalBackendStage1ParameterExtractor::HGCalBackendStage1ParameterExtractor(const edm::ParameterSet& conf)
@@ -138,7 +141,6 @@ void HGCalBackendStage1ParameterExtractor::beginRun(const edm::Run& /*run*/, con
   outJSON["TruncationConfig"]["rozBinSize"] = roz_bin_size_;
   outJSON["TruncationConfig"]["maxTcsPerBin"] = max_tcs_per_bins_;
   outJSON["TruncationConfig"]["phiSectorEdges"] = phi_edges_;
-
 
   // fill trigger geometry
   fillTriggerGeometry(outJSON);
@@ -217,12 +219,10 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
     float triggerCellEta = position.eta();
     float triggerCellPhi = position.phi();
     float triggerCellRoverZ = sqrt(triggerCellX * triggerCellX + triggerCellY * triggerCellY) / triggerCellZ;
-    triggerCellRoverZ = (triggerCellRoverZ < roz_min_ ? roz_min_ : triggerCellRoverZ);
-    triggerCellRoverZ = (triggerCellRoverZ > roz_max_ ? roz_max_ : triggerCellRoverZ);
 
-    uint32_t triggerCellRoZBin = getRoZBin(triggerCellRoverZ);
-    double triggerCellRotatedPhi = rotatedphi(triggerCellPhi, tc_fpga.sector());
-    uint32_t triggerCellPhiBin = getPhiBin(triggerCellRoZBin,triggerCellRotatedPhi);
+    uint32_t triggerCellRoZBin = theAlgo_.rozBin(triggerCellRoverZ, roz_min_, roz_max_, roz_bins_);
+    double triggerCellRotatedPhi = theAlgo_.rotatedphi(triggerCellX, triggerCellY, triggerCellZ, tc_fpga.sector());
+    uint32_t triggerCellPhiBin = theAlgo_.phiBin(triggerCellRoZBin, triggerCellRotatedPhi, phi_edges_);
 
     uint32_t tcAddress = getTCaddress(triggerCellUEta, triggerCellVPhi, isScintillatorCell);
 
@@ -256,59 +256,28 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
 }
 
 uint32_t HGCalBackendStage1ParameterExtractor::getTCaddress(int& tc_ueta, int& tc_vphi, bool isScintillator) {
-
-    // transform HGCalHSc TC coordinates to define a TC address in [0,47]
-    if (isScintillator) {  // HGCalHSc
-      tc_vphi = (tc_vphi - 1) % 4;
-      if (tc_ueta <= 3) {
-        tc_ueta = tc_ueta;
-      } else if (tc_ueta <= 9) {
-        tc_ueta = tc_ueta - 4;
-      } else if (tc_ueta <= 13) {
-        tc_ueta = tc_ueta - 10;
-      } else if (tc_ueta <= 17) {
-        tc_ueta = tc_ueta - 14;
-      } else {
-        tc_ueta = tc_ueta - 18;
-      }
+  // transform HGCalHSc TC coordinates to define a TC address in [0,47]
+  if (isScintillator) {  // HGCalHSc
+    tc_vphi = (tc_vphi - 1) % 4;
+    if (tc_ueta <= 3) {
+      tc_ueta = tc_ueta;
+    } else if (tc_ueta <= 9) {
+      tc_ueta = tc_ueta - 4;
+    } else if (tc_ueta <= 13) {
+      tc_ueta = tc_ueta - 10;
+    } else if (tc_ueta <= 17) {
+      tc_ueta = tc_ueta - 14;
+    } else {
+      tc_ueta = tc_ueta - 18;
     }
-
-    // attribute ID to TC according to subdetector
-    if (isScintillator) {  //HGCalHSc(10)
-      return (tc_ueta << 2) + tc_vphi;
-    } else {  //HGCalHSiTrigger(2) or HGCalEE(1)
-      return tc_coord_uv_.find(std::make_pair(tc_ueta, tc_vphi))->second;
-    }
-
-}
-
-uint32_t HGCalBackendStage1ParameterExtractor::getRoZBin(double roverz) { 
- 
-  return (roz_bin_size_ > 0. ? unsigned((roverz - roz_min_) / roz_bin_size_) : 0);  
-}
-
-uint32_t HGCalBackendStage1ParameterExtractor::getPhiBin(uint32_t roverzbin, double phi) {
-
-  int phi_bin = 0;
-  if (roverzbin >= phi_edges_.size())
-    return -1;
-  double phi_edge = phi_edges_[roverzbin];
-  if (phi > phi_edge)
-    phi_bin = 1;
-  return phi_bin;
-}
-
-double HGCalBackendStage1ParameterExtractor::rotatedphi(double phi, int sector) {
-  
-  if (sector == 1) {
-    if (phi < M_PI and phi > 0)
-      phi = phi - (2. * M_PI / 3.);
-    else
-      phi = phi + (4. * M_PI / 3.);
-  } else if (sector == 2) {
-    phi = phi + (2. * M_PI / 3.);
   }
-  return phi;
+
+  // attribute ID to TC according to subdetector
+  if (isScintillator) {  //HGCalHSc(10)
+    return (tc_ueta << 2) + tc_vphi;
+  } else {  //HGCalHSiTrigger(2) or HGCalEE(1)
+    return tc_coord_uv_.find(std::make_pair(tc_ueta, tc_vphi))->second;
+  }
 }
 
 void HGCalBackendStage1ParameterExtractor::analyze(const edm::Event& e, const edm::EventSetup& es) {}
