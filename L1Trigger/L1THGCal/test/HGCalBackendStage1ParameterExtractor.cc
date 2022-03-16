@@ -61,7 +61,6 @@ private:
   double roz_min_;
   double roz_max_;
   uint32_t roz_bins_;
-  double roz_bin_size_;
   std::vector<uint32_t> max_tcs_per_bins_;
   std::vector<double> phi_edges_;
 
@@ -110,9 +109,6 @@ HGCalBackendStage1ParameterExtractor::HGCalBackendStage1ParameterExtractor(const
   roz_max_ = truncationParamConfig.getParameter<double>("rozMax");
   roz_bins_ = truncationParamConfig.getParameter<uint32_t>("rozBins");
 
-  constexpr double margin = 1.001;
-  roz_bin_size_ = (roz_bins_ > 0 ? (roz_max_ - roz_min_) * margin / double(roz_bins_) : 0.);
-
   max_tcs_per_bins_ = truncationParamConfig.getParameter<std::vector<uint32_t>>("maxTcsPerBin");
   phi_edges_ = truncationParamConfig.getParameter<std::vector<double>>("phiSectorEdges");
 }
@@ -138,7 +134,6 @@ void HGCalBackendStage1ParameterExtractor::beginRun(const edm::Run& /*run*/, con
   outJSON["TruncationConfig"]["rozMin"] = roz_min_;
   outJSON["TruncationConfig"]["rozMax"] = roz_max_;
   outJSON["TruncationConfig"]["rozBins"] = roz_bins_;
-  outJSON["TruncationConfig"]["rozBinSize"] = roz_bin_size_;
   outJSON["TruncationConfig"]["maxTcsPerBin"] = max_tcs_per_bins_;
   outJSON["TruncationConfig"]["phiSectorEdges"] = phi_edges_;
 
