@@ -89,7 +89,7 @@ public:
   static const int kHGCalModuleVMask = 0xF;
   static const int kHGCalModuleUOffset = 4;
   static const int kHGCalModuleUMask = 0xF;
-  static const int kHGCalLayerOffset = 9;
+  static const int kHGCalLayerOffset = 8;
   static const int kHGCalLayerMask = 0x1F;
   static const int kHGCalTriggerSubdetOffset = 13;
   static const int kHGCalTriggerSubdetMask = 0x3;
