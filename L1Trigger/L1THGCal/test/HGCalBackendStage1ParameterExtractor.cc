@@ -40,6 +40,8 @@ private:
   uint32_t getPhiBin(uint32_t roverzbin, double phi);
   double rotatedphi(double phi, int sector);
 
+  uint32_t getReducedModuleHash(int subdet, int layer, int ueta, int vphi);
+
   HGCalTriggerTools triggerTools_;
 
   edm::ESHandle<HGCalTriggerGeometryBase> triggerGeometry_;
@@ -192,6 +194,7 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
     int triggerCellLayer = 0;
     int triggerCellUEta = 0;
     int triggerCellVPhi = 0;
+    uint32_t triggerCellModuleHash = 0;
 
     bool isScintillatorCell = triggerTools_.isScintillator(id);
     if (isScintillatorCell) {
@@ -207,6 +210,8 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
       triggerCellUEta = id_si_trig.triggerCellU();
       triggerCellVPhi = id_si_trig.triggerCellV();
     }
+    triggerCellModuleHash = getReducedModuleHash(triggerCellSubdet, triggerCellLayer, triggerCellUEta, triggerCellVPhi);
+
     GlobalPoint position = triggerGeometry_->getTriggerCellPosition(triggercell);
     float triggerCellX = position.x();
     float triggerCellY = position.y();
@@ -237,7 +242,7 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
     theTC["roz_bin"] = triggerCellRoZBin;
     theTC["phi_bin"] = triggerCellPhiBin;
 
-    std::string strModId = std::to_string(moduleId);
+    std::string strModId = std::to_string(triggerCellModuleHash);
     tmp_json[strModId].push_back(theTC);
   }
 
@@ -273,6 +278,14 @@ uint32_t HGCalBackendStage1ParameterExtractor::getTCaddress(int& tc_ueta, int& t
   } else {  //HGCalHSiTrigger(2) or HGCalEE(1)
     return tc_coord_uv_.find(std::make_pair(tc_ueta, tc_vphi))->second;
   }
+}
+
+uint32_t HGCalBackendStage1ParameterExtractor::getReducedModuleHash(int subdet, int layer, int ueta, int vphi) {
+
+  uint32_t subdetId = (uint32_t)(subdet==10);
+  uint32_t absoluteLayer = (Subdet<2)? layer : layer+28;
+  uint32_t reducedHash = (subdetId<<14) + (absoluteLayer<<8) + (ueta<<4) + vphi;
+  return reducedHash;
 }
 
 void HGCalBackendStage1ParameterExtractor::analyze(const edm::Event& e, const edm::EventSetup& es) {}
