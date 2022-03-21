@@ -40,7 +40,7 @@ private:
   uint32_t getPhiBin(uint32_t roverzbin, double phi);
   double rotatedphi(double phi, int sector);
 
-  uint32_t getReducedModuleHash(int subdet, int layer, int ueta, int vphi);
+  uint32_t getReducedModuleHash(HGCalTriggerModuleDetId moduleId);
 
   HGCalTriggerTools triggerTools_;
 
@@ -181,6 +181,8 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
     if (!(tc_module.isHGCalModuleDetId()) || (tc_module.zside() < 0) || (tc_module.sector() != 0))
       continue;
 
+    uint32_t moduleHash = getReducedModuleHash(tc_module);
+
     // only retrieve mapping for the tested fpga
     uint32_t fpgaId = triggerGeometry_->getStage1FpgaFromModule(moduleId);
     HGCalTriggerBackendDetId tc_fpga(fpgaId);
@@ -194,7 +196,6 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
     int triggerCellLayer = 0;
     int triggerCellUEta = 0;
     int triggerCellVPhi = 0;
-    uint32_t triggerCellModuleHash = 0;
 
     bool isScintillatorCell = triggerTools_.isScintillator(id);
     if (isScintillatorCell) {
@@ -209,9 +210,9 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
       triggerCellLayer = id_si_trig.layer();
       triggerCellUEta = id_si_trig.triggerCellU();
       triggerCellVPhi = id_si_trig.triggerCellV();
-    }
-    triggerCellModuleHash = getReducedModuleHash(triggerCellSubdet, triggerCellLayer, triggerCellUEta, triggerCellVPhi);
 
+
+    }
     GlobalPoint position = triggerGeometry_->getTriggerCellPosition(triggercell);
     float triggerCellX = position.x();
     float triggerCellY = position.y();
@@ -242,7 +243,7 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
     theTC["roz_bin"] = triggerCellRoZBin;
     theTC["phi_bin"] = triggerCellPhiBin;
 
-    std::string strModId = std::to_string(triggerCellModuleHash);
+    std::string strModId = std::to_string(moduleHash);
     tmp_json[strModId].push_back(theTC);
   }
 
@@ -280,11 +281,17 @@ uint32_t HGCalBackendStage1ParameterExtractor::getTCaddress(int& tc_ueta, int& t
   }
 }
 
-uint32_t HGCalBackendStage1ParameterExtractor::getReducedModuleHash(int subdet, int layer, int ueta, int vphi) {
+uint32_t HGCalBackendStage1ParameterExtractor::getReducedModuleHash(HGCalTriggerModuleDetId moduleId) {
 
-  uint32_t subdetId = (uint32_t)(subdet==10);
-  uint32_t absoluteLayer = (Subdet<2)? layer : layer+28;
-  uint32_t reducedHash = (subdetId<<14) + (absoluteLayer<<8) + (ueta<<4) + vphi;
+  int moduleSubdet = moduleId.triggerSubdetId();
+  int moduleLayer = moduleId.layer();
+  int moduleUEta = moduleId.moduleU(); //returns eta if scintillator
+  int moduleVPhi = moduleId.moduleV(); // returns phi if scintillator
+
+  uint32_t subdetId = (uint32_t)(moduleId.isHScintillator());
+  uint32_t absoluteLayer = (moduleSubdet>=2) ? moduleLayer+28 : moduleLayer;
+  uint32_t reducedHash = (subdetId<<14) + (absoluteLayer<<8) + (moduleUEta<<4) + moduleVPhi;
+
   return reducedHash;
 }
 
