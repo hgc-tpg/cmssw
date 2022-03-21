@@ -119,6 +119,7 @@ HGCalBackendStage1ParameterExtractor::~HGCalBackendStage1ParameterExtractor() {}
 
 void HGCalBackendStage1ParameterExtractor::beginRun(const edm::Run& /*run*/, const edm::EventSetup& es) {
   triggerGeometry_ = es.getHandle(triggerGeomToken_);
+  triggerTools_.setGeometry(triggerGeometry_.product());
 
   json outJSON;
 
@@ -283,14 +284,12 @@ uint32_t HGCalBackendStage1ParameterExtractor::getTCaddress(int& tc_ueta, int& t
 
 uint32_t HGCalBackendStage1ParameterExtractor::getReducedModuleHash(HGCalTriggerModuleDetId moduleId) {
 
-  int moduleSubdet = moduleId.triggerSubdetId();
-  int moduleLayer = moduleId.layer();
+  uint32_t subdetId = (uint32_t)(triggerTools_.isScintillator(moduleId));
+  uint32_t layer = triggerTools_.layerWithOffset(moduleId);
   int moduleUEta = moduleId.moduleU(); //returns eta if scintillator
   int moduleVPhi = moduleId.moduleV(); // returns phi if scintillator
 
-  uint32_t subdetId = (uint32_t)(moduleId.isHScintillator());
-  uint32_t absoluteLayer = (moduleSubdet>=2) ? moduleLayer+28 : moduleLayer;
-  uint32_t reducedHash = (subdetId<<14) + (absoluteLayer<<8) + (moduleUEta<<4) + moduleVPhi;
+  uint32_t reducedHash = (subdetId<<14) + (layer<<8) + (moduleUEta<<4) + moduleVPhi;
 
   return reducedHash;
 }
