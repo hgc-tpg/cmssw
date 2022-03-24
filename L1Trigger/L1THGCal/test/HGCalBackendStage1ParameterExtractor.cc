@@ -40,7 +40,7 @@ private:
   uint32_t getPhiBin(uint32_t roverzbin, double phi);
   double rotatedphi(double phi, int sector);
 
-  uint32_t getReducedModuleHash(HGCalTriggerModuleDetId moduleId);
+  uint32_t getReducedModuleHash(const HGCalTriggerModuleDetId& moduleId);
 
   HGCalTriggerTools triggerTools_;
 
@@ -183,6 +183,8 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
       continue;
 
     uint32_t moduleHash = getReducedModuleHash(tc_module);
+    if (moduleHash == 0)
+      continue;
 
     // only retrieve mapping for the tested fpga
     uint32_t fpgaId = triggerGeometry_->getStage1FpgaFromModule(moduleId);
@@ -211,8 +213,6 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
       triggerCellLayer = id_si_trig.layer();
       triggerCellUEta = id_si_trig.triggerCellU();
       triggerCellVPhi = id_si_trig.triggerCellV();
-
-
     }
     GlobalPoint position = triggerGeometry_->getTriggerCellPosition(triggercell);
     float triggerCellX = position.x();
@@ -282,14 +282,15 @@ uint32_t HGCalBackendStage1ParameterExtractor::getTCaddress(int& tc_ueta, int& t
   }
 }
 
-uint32_t HGCalBackendStage1ParameterExtractor::getReducedModuleHash(HGCalTriggerModuleDetId moduleId) {
-
+uint32_t HGCalBackendStage1ParameterExtractor::getReducedModuleHash(const HGCalTriggerModuleDetId& moduleId) {
   uint32_t subdetId = (uint32_t)(triggerTools_.isScintillator(moduleId));
   uint32_t layer = triggerTools_.layerWithOffset(moduleId);
-  int moduleUEta = moduleId.moduleU(); //returns eta if scintillator
-  int moduleVPhi = moduleId.moduleV(); // returns phi if scintillator
+  int moduleUEta = moduleId.moduleU();  //returns eta if scintillator
+  int moduleVPhi = moduleId.moduleV();  // returns phi if scintillator
+  if (moduleUEta < 0 || moduleVPhi < 0)
+    return 0;
 
-  uint32_t reducedHash = (subdetId<<14) + (layer<<8) + (moduleUEta<<4) + moduleVPhi;
+  uint32_t reducedHash = (subdetId << 14) + (layer << 8) + (moduleUEta << 4) + moduleVPhi;
 
   return reducedHash;
 }
