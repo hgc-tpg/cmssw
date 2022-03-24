@@ -184,7 +184,7 @@ void HGCalBackendStage1ParameterExtractor::fillTriggerGeometry(json& json_file) 
 
     uint32_t moduleHash = getReducedModuleHash(tc_module);
     if (moduleHash == 0)
-      continue;
+      throw cms::Exception("BadModule") << "Invalid module (u/eta,v/phi)";
 
     // only retrieve mapping for the tested fpga
     uint32_t fpgaId = triggerGeometry_->getStage1FpgaFromModule(moduleId);
