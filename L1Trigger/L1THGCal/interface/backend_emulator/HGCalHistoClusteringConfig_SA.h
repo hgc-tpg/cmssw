@@ -73,14 +73,16 @@ namespace l1thgcfirmware {
     unsigned int kernelWidth( unsigned int iBin ) const { return kernelWidths_.at(iBin); }
     unsigned int areaNormalization( unsigned int iBin ) const { return areaNormalizations_.at(iBin); }
     
-    void setROverZRange( const float rOverZRange ) { rOverZRange_ = rOverZRange_; }
-    unsigned int rOverZRange() const { return rOverZRange_; }
-    void setROverZNValues( const float rOverZNValues ) { rOverZNValues_ = rOverZNValues_; }
-    unsigned int rOverZNValues() const { return rOverZNValues_; }
-    void setPhiRange( const float phiRange ) { phiRange_ = phiRange_; }
-    unsigned int phiRange() const { return phiRange_; }
-    void setPhiNValues( const float phiNValues ) { phiNValues_ = phiNValues_; }
-    unsigned int phiNValues() const { return phiNValues_; }
+    void setROverZRange( const float rOverZRange ) { rOverZRange_ = rOverZRange; }
+    float rOverZRange() const { return rOverZRange_; }
+    void setROverZNValues( const float rOverZNValues ) { rOverZNValues_ = rOverZNValues; }
+    float rOverZNValues() const { return rOverZNValues_; }
+    void setPhiRange( const float phiRange ) { phiRange_ = phiRange; }
+    float phiRange() const { return phiRange_; }
+    void setPhiNValues( const float phiNValues ) { phiNValues_ = phiNValues; }
+    float phiNValues() const { return phiNValues_; }
+    void setPtDigiFactor( const float ptDigiFactor ) { ptDigiFactor_ = ptDigiFactor; }
+    float ptDigiFactor() const { return ptDigiFactor_; }
 
     void setThresholdParams( const unsigned int a, const unsigned int b, const int c ) { 
       thresholdMaximaParam_a_ = a;
@@ -170,6 +172,7 @@ namespace l1thgcfirmware {
     float rOverZNValues_;
     float phiRange_;
     float phiNValues_;
+    float ptDigiFactor_;
 
     std::vector<unsigned int> kernelWidths_;
     std::vector<unsigned int> areaNormalizations_;

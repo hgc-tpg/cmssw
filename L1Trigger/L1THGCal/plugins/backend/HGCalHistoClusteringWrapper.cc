@@ -65,7 +65,7 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
       double x = position.x();
       double y = position.y();
       double z = position.z();
-      unsigned int digi_rOverZ = ( std::sqrt(x * x + y * y) / std::abs(z) ) * 4096/ 0.7; // Magic numbers
+      unsigned int digi_rOverZ = ( std::sqrt(x * x + y * y) / std::abs(z) ) * theConfiguration_.rOverZNValues()/ theConfiguration_.rOverZRange();
 
       if (z > 0)
         x = -x;
@@ -87,8 +87,8 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
         continue;
       }
 
-      unsigned int digi_phi = ( phi ) * 1944 / M_PI; // Magic numbers
-      unsigned int digi_energy = ( cluster->pt() ) * 10000; // Magic numbers
+      unsigned int digi_phi = ( phi ) * theConfiguration_.phiNValues() / theConfiguration_.phiRange();
+      unsigned int digi_energy = ( cluster->pt() ) * theConfiguration_.ptDigiFactor();
 
       // The existing S2 firmware is assuming the TCs on one S1->S2 link originate from
       // a 60 degree region of a S1 sector, and the links from one 60 degree region
@@ -155,12 +155,12 @@ l1t::HGCalMulticlusterBxCollection& multiClusters_out
 
     // Convert from digitised quantities
     if ( cluster->w() == 0 || cluster->e() == 0 ) continue;
-    double phi = ( cluster->wphi() / cluster->w() ) * M_PI / 1944;
-    double pt = cluster->e() / 10000.;
+    double phi = ( cluster->wphi() / cluster->w() ) * theConfiguration_.phiRange() / theConfiguration_.phiNValues();
+    double pt = cluster->e() / theConfiguration_.ptDigiFactor();
 
     if ( pt < 0.5 ) continue; // Add (or take) cut threshold to config
 
-    double rOverZ = ( cluster->wroz() / cluster->w() ) * 0.7 / 4096;
+    double rOverZ = ( cluster->wroz() / cluster->w() ) * theConfiguration_.rOverZRange() / theConfiguration_.rOverZNValues();
     double eta = -1.0 * std::log( tan( atan( rOverZ ) / 2 ) );
     eta *= theConfiguration_.zSide();
 
@@ -197,9 +197,8 @@ void HGCalHistoClusteringWrapper::process(
   l1thgcfirmware::CentroidHelperPtrCollection prioritizedMaxima_out_SA;
   l1thgcfirmware::CentroidHelperPtrCollection readoutFlags_out_SA;
   l1thgcfirmware::HGCalClusterSAPtrCollection clusterSums_out_SA;
-  std::cout << "ClusterizeHisto" << std::endl;
   clusterizeHisto(triggerCells_in_SA, clusteredTCs_out_SA, unclusteredTCs_out_SA, prioritizedMaxima_out_SA, readoutFlags_out_SA, clusterSums_out_SA);
-  std::cout << "Convert Algo Outputs" << std::endl;
+  
   convertAlgorithmOutputs( clusterSums_out_SA, unclusteredTCs_out_SA, outputMulticlustersAndRejectedClusters.first );
 }
 
@@ -240,6 +239,17 @@ void HGCalHistoClusteringWrapper::configure(
   const edm::ParameterSet thresholdParams = pset.getParameterSet("thresholdMaximaParams");
   theConfiguration_.setThresholdParams( thresholdParams.getParameter<unsigned int>("a"), thresholdParams.getParameter<unsigned int>("b"), thresholdParams.getParameter<int>("c") );
   theConfiguration_.initializeLUTs();
+
+  // const edm::ParameterSet digitizationPset = pset.getParameterSet("digiParams");
+  const edm::ParameterSet digitizationPset = std::get<1>(configuration).getParameterSet("C3d_parameters").getParameterSet("histoMax_C3d_clustering_parameters").getParameterSet("layer2FwClusteringParameters").getParameterSet("digiParams");
+
+  theConfiguration_.setROverZRange( digitizationPset.getParameter<double>("rOverZRange"));
+  theConfiguration_.setROverZNValues( digitizationPset.getParameter<double>("rOverZNValues"));
+  theConfiguration_.setPhiRange( digitizationPset.getParameter<double>("phiRange"));
+  theConfiguration_.setPhiNValues( digitizationPset.getParameter<double>("phiNValues"));
+  theConfiguration_.setPtDigiFactor( digitizationPset.getParameter<double>("ptDigiFactor"));
+  
+
 };
 
 DEFINE_EDM_PLUGIN(HGCalHistoClusteringWrapperBaseFactory, HGCalHistoClusteringWrapper, "HGCalHistoClusteringWrapper");
