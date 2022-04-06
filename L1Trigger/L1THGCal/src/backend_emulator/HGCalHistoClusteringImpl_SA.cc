@@ -643,6 +643,8 @@ HGCalClusterSAPtrCollection HGCalHistoClusteringImplSA::triggerCellToCluster( HG
     cluster->set_sat_tc( cluster->e() == config_.saturation() || cluster->e_em() == config_.saturation() );
     cluster->set_shapeq(1);
 
+    cluster->add_constituent( tc );
+
     protoClusters.push_back( cluster );
   }
 

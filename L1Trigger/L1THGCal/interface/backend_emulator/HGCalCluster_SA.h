@@ -1,6 +1,8 @@
 #ifndef L1Trigger_L1THGCal_HGCalCluster_SA_h
 #define L1Trigger_L1THGCal_HGCalCluster_SA_h
 
+#include "HGCalTriggerCell_SA.h"
+
 #include <vector>
 #include <memory>
 #include <iostream>
@@ -128,7 +130,7 @@ namespace l1thgcfirmware {
     void set_E_H_early_over_E_Quotient( unsigned long int E_H_early_over_E_Quotient ) { E_H_early_over_E_Quotient_ = E_H_early_over_E_Quotient; }
     void set_E_H_early_over_E_Fraction( unsigned long int E_H_early_over_E_Fraction ) { E_H_early_over_E_Fraction_ = E_H_early_over_E_Fraction; }
 
-
+    void add_constituent( HGCalTriggerCellSAPtr constituent ) { constituents_.emplace_back(constituent); }
 
     // Getters
     unsigned int clock() const { return clock_; }
@@ -185,6 +187,8 @@ namespace l1thgcfirmware {
     unsigned long int E_H_early_over_E_Quotient() const { return E_H_early_over_E_Quotient_; }
     unsigned long int E_H_early_over_E_Fraction() const { return E_H_early_over_E_Fraction_; }
 
+    HGCalTriggerCellSAPtrCollection constituents() const { return constituents_; }
+    
     // Operators
     const HGCalCluster& operator+=(const HGCalCluster& hc);
 
@@ -243,7 +247,9 @@ namespace l1thgcfirmware {
     unsigned long int E_H_early_over_E_Quotient_;
     unsigned long int E_H_early_over_E_Fraction_;
 
- 
+    // Extra variables, not available in firmware
+    // Perhaps move to separate "extra" class?
+    HGCalTriggerCellSAPtrCollection constituents_;
   };
 
   typedef std::vector<HGCalCluster> HGCalClusterSACollection;

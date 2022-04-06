@@ -32,7 +32,7 @@ public:
 private:
   void convertCMSSWInputs(const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& clustersPtrs,
                           l1thgcfirmware::HGCalTriggerCellSAPtrCollections& clusters_SA) const;
-  void convertAlgorithmOutputs( l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& unclusteredTCs, l1t::HGCalMulticlusterBxCollection& multiClusters_out ) const;
+  void convertAlgorithmOutputs( l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& unclusteredTCs, l1t::HGCalMulticlusterBxCollection& multiClusters_out, const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& inputClustersPtrs ) const;
 
   void clusterizeHisto( l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCells_in_SA, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& clusteredTCs, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& unclusteredTCs, l1thgcfirmware::CentroidHelperPtrCollection& prioritizedMaxima, l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags,
   l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums ) const;
@@ -60,6 +60,7 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
   unsigned iSector60 = 0;
 
   for (const auto& sector60 : clustersPtrs) {
+    unsigned iCluster = 0;
     for (const auto& cluster : sector60) {
       const GlobalPoint& position = cluster->position();
       double x = position.x();
@@ -114,6 +115,8 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
                                               triggerTools_.layerWithOffset(cluster->detId()),
                                               digi_energy
                                           ) );
+      clusters_SA_perSector60[tcSector60].back()->setCmsswIndex( std::pair<int, int>{iSector60, iCluster} );
+      ++iCluster;
     }
     ++iSector60;
   }
@@ -149,7 +152,7 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
 }
 
 void HGCalHistoClusteringWrapper::convertAlgorithmOutputs( l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& unclusteredTCs,
-l1t::HGCalMulticlusterBxCollection& multiClusters_out
+l1t::HGCalMulticlusterBxCollection& multiClusters_out, const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& inputClustersPtrs
  ) const {
   for ( const auto& cluster : clusterSums ) {
 
@@ -179,6 +182,22 @@ l1t::HGCalMulticlusterBxCollection& multiClusters_out
 
     l1t::HGCalMulticluster multicluster;
     multicluster.setP4(clusterP4);
+    // std::cout << "Got a cluster : " << cluster->e() << " " << cluster->constituents().size() << " " << multicluster.pt() << " " << multicluster.eta() << " " << multicluster.phi()  << " " << rOverZ << " " << phi << " " << eta << std::endl;
+    for ( const auto& tc : cluster->constituents() ) {
+      const auto& tc_cmssw = inputClustersPtrs.at(tc->cmsswIndex().first).at(tc->cmsswIndex().second);
+      // Add tc as constituent, but don't update any other properties of the multicluster i.e. leave them unchanged from those calculated by the emulator
+      multicluster.addConstituent( tc_cmssw, false, 0. );
+    }
+
+    double emIntFraction = 1.0 * cluster->e_em() / cluster->e();
+    multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::EM, emIntFraction * multicluster.energy() );
+
+    double emCoreIntFraction = 1.0 * cluster->e_em_core() / cluster->e();
+    multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::EM_CORE, emCoreIntFraction * multicluster.energy() );
+
+    double emHEarlyIntFraction = 1.0 * cluster->e_h_early() / cluster->e();
+    multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::H_EARLY, emHEarlyIntFraction * multicluster.energy() );
+
     multiClusters_out.push_back(0, multicluster);
   }
 }
@@ -199,7 +218,7 @@ void HGCalHistoClusteringWrapper::process(
   l1thgcfirmware::HGCalClusterSAPtrCollection clusterSums_out_SA;
   clusterizeHisto(triggerCells_in_SA, clusteredTCs_out_SA, unclusteredTCs_out_SA, prioritizedMaxima_out_SA, readoutFlags_out_SA, clusterSums_out_SA);
   
-  convertAlgorithmOutputs( clusterSums_out_SA, unclusteredTCs_out_SA, outputMulticlustersAndRejectedClusters.first );
+  convertAlgorithmOutputs( clusterSums_out_SA, unclusteredTCs_out_SA, outputMulticlustersAndRejectedClusters.first, inputClusters );
 }
 
 void HGCalHistoClusteringWrapper::clusterizeHisto( l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCells_in_SA, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& clusteredTCs, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& unclusteredTCs, l1thgcfirmware::CentroidHelperPtrCollection& prioritizedMaxima, l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags, l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums ) const {

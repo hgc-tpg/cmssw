@@ -114,12 +114,6 @@ public:
                                                       outputMulticlustersAndRejectedClusters_perFPGA);
       multiclusteringSortingTruncationWrapper_->process(collCluster3D_perFPGA, collCluster3D_perFPGA_sorted);
 
-      // Call all the energy interpretation modules on the cluster collection
-      for (const auto& interpreter : energy_interpreters_) {
-        interpreter->setGeometry(geometry());
-        interpreter->interpret(collCluster3D_perFPGA);//collCluster3D_perFPGA_sorted);
-      }
-
       for (const auto& collcluster : collCluster3D_perFPGA) { //collCluster3D_perFPGA_sorted) {
         collCluster3D_sorted.push_back(0, collcluster);
       }

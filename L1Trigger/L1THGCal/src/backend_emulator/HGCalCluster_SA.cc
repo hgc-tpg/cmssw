@@ -62,7 +62,10 @@ const HGCalCluster& HGCalCluster::operator+=(const HGCalCluster& c) {
       this->set_wroz2( c.wroz2() );
       this->set_n_tc_w( c.n_tc_w() );
     }
+  }
 
+  for ( const auto& constituent : c.constituents() ) {
+    this->add_constituent( constituent );
   }
 
   return *this;

@@ -26,7 +26,8 @@ namespace l1thgcfirmware {
           dX_(0),
           Y_(0),
           frameValid_(frameValid),
-          dataValid_(dataValid) {}
+          dataValid_(dataValid),
+          index_cmssw_(std::pair{-1,01}) {}
 
     ~HGCalTriggerCell(){}
 
@@ -38,6 +39,7 @@ namespace l1thgcfirmware {
     void setDX( const int dX ) { dX_ = dX; }
     void setY( const unsigned int Y ) { Y_ = Y; }
     void setDeltaR2( const unsigned int deltaR2 ) { deltaR2_ = deltaR2; }
+    void setCmsswIndex( const std::pair<int, int> index ) { index_cmssw_ = index; }
 
     // Getters
     unsigned int clock() const { return clock_; }
@@ -52,6 +54,7 @@ namespace l1thgcfirmware {
     unsigned int Y() const { return Y_; }
     bool frameValid() const { return frameValid_; }
     bool dataValid() const { return dataValid_; }
+    std::pair<int, int> cmsswIndex() const { return index_cmssw_; }
 
     // Operators
     bool operator==(const HGCalTriggerCell& rhs) const;
@@ -70,7 +73,7 @@ namespace l1thgcfirmware {
     unsigned int Y_;
     bool frameValid_;
     bool dataValid_;
-
+    std::pair<int, int> index_cmssw_;
   };
 
   typedef std::vector<HGCalTriggerCell> HGCalTriggerCellSACollection;
