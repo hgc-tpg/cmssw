@@ -37,6 +37,7 @@ void HGCalHistoClusteringImplSA::runAlgorithm(HGCalTriggerCellSAPtrCollections& 
 
   //Maxima finding
   thresholdMaximaFinder( histogram );
+  localMaximaFinder( histogram );
   calculateAveragePosition( histogram );
 
   // Clustering
@@ -292,6 +293,10 @@ void HGCalHistoClusteringImplSA::smearing2D( HGCalHistogramCellSAPtrCollection& 
 
 void HGCalHistoClusteringImplSA::thresholdMaximaFinder( HGCalHistogramCellSAPtrCollection& histogram ) const {
   const unsigned int stepLatency = config_.getStepLatency( Maxima2D );
+
+  // std::cout << "Histogram for maxima finding" << std::endl;
+  // printHistogram( histogram );
+
   for ( auto& hc : histogram ) {
     hc->addLatency( stepLatency );
     if ( hc->S() <= config_.thresholdMaxima( hc->sortKey() ) ) {
@@ -301,6 +306,55 @@ void HGCalHistoClusteringImplSA::thresholdMaximaFinder( HGCalHistogramCellSAPtrC
       hc->setN(0);
     }
   }
+  // std::cout << "Threshold Maxima" << std::endl;
+  // printHistogram( histogram );
+}
+
+// Temporary simulation of local maxima finder
+// Not an emulation of any firmware
+void HGCalHistoClusteringImplSA::localMaximaFinder( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const {
+  const std::vector<unsigned> maximaWidths{ 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+
+
+  for ( auto& hc : histogram ) {
+    if ( hc->S() > 0 ) {
+      const int colRef = hc->index();
+      const int rowRef = hc->sortKey();
+      bool isMaxima = true;
+      // std::cout << "Got a histo cell : " << hc->index() << " " << hc->sortKey() << " " << hc->S() << std::endl;
+      // std::cout << "Phi range : " << maximaWidths.at(hc->sortKey()) << std::endl;
+      const int phiRange = maximaWidths.at(hc->sortKey());
+      for ( int colOffset = -1 * phiRange; colOffset <= phiRange; ++colOffset ) {
+        const int col = colRef + colOffset;
+        if ( col < 0 || col >= (int) config_.cColumns() ) continue;
+        for ( int rowOffset = -1; rowOffset <= 1; ++ rowOffset ) {
+          const int row = rowRef + rowOffset;
+          if ( row < 0 || row >= (int) config_.cRows() ) continue;
+          const unsigned int binIndex = config_.cColumns() * row + col;
+          const auto& bin = histogram.at(binIndex);
+          // std::cout << "Comparing to : " << col << " " << row << " " << bin->S() << std::endl;
+
+          if ( colOffset == 0 && rowOffset == 0 ) continue;
+          else if ( ( col < colRef ) ||
+               ( col == colRef && rowOffset == -1 ) ||
+               ( col == colRef+1 && rowOffset == -1 ) ) {
+            if ( !(hc->S() >= bin->S() ) ) isMaxima = false;
+          }
+          else {
+            if ( !(hc->S() > bin->S() ) ) isMaxima = false;
+          }
+        }
+      }
+      if ( !isMaxima ) {
+        hc->setS(0);
+        hc->setX(0);
+        hc->setY(0);
+        hc->setN(0);
+      }
+    }
+  }
+  // std::cout << "Local Maxima" << std::endl;
+  // printHistogram( histogram );
 }
 
 void HGCalHistoClusteringImplSA::calculateAveragePosition( HGCalHistogramCellSAPtrCollection& histogram ) const {
@@ -447,11 +501,11 @@ void HGCalHistoClusteringImplSA::clusterizer( HGCalTriggerCellSAPtrCollection& t
               unsigned int dR2 = dR * dR;
               unsigned int cosTerm = ( abs(dPhi) > config_.nBinsCosLUT() ) ? 2047 : config_.cosLUT( abs(dPhi) ); // Magic numbers
               dR2 += int( r1 * r2 / pow(2,7) ) * cosTerm / pow(2,10); // Magic numbers
-
               tc->setClock( clock[iCol] + 1 );
               if ( clock[iCol] > T ) T = clock[iCol];
 
               if ( dR2 < dR2Cut ) {
+                // std::cout << "Clustered a TC to a seed : " << tc->energy() << " " << a->row() << " " << a->column() << " " << a->energy() << std::endl;
                 clusteredTriggerCells[iCol].push_back(tc);
               }
               else {
@@ -482,7 +536,6 @@ void HGCalHistoClusteringImplSA::clusterizer( HGCalTriggerCellSAPtrCollection& t
             }
           }
         }
-
         for ( unsigned int iCol = a->column() - 3; iCol < a->column() + 4; ++iCol ) { // Magic numbers
           clock[iCol] = T+1;
 
@@ -824,6 +877,16 @@ void HGCalHistoClusteringImplSA::runDistServers( const HGCalTriggerCellSAPtrColl
         }
       }
     }
+  }
+}
+
+void HGCalHistoClusteringImplSA::printHistogram( HGCalHistogramCellSAPtrCollection& histogram ) const {
+  for ( unsigned int iRow = 0; iRow < config_.cRows();  ++iRow ) {
+    for ( unsigned int iCol = 0; iCol < config_.cColumns();  ++iCol ) {
+      unsigned binIndex = config_.cColumns() * iRow + iCol;
+      std::cout << histogram.at(binIndex)->S() << " ";
+    }
+    std::cout << std::endl;
   }
 }
 

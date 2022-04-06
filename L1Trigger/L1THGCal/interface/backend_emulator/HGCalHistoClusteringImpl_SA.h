@@ -42,6 +42,7 @@ private:
 
   // Maxima finding
   void thresholdMaximaFinder( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
+  void localMaximaFinder( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
   void calculateAveragePosition( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
 
   // Clustering
