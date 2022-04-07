@@ -106,7 +106,7 @@ process.hgcalValidationTPG_step = cms.Path(process.runHGCALValidationTPG)
 #process.dqmSaver.workflow = '/validation/' + 'HGCAL' + '/TPG'
 #process.dqmsave_step = cms.Path(process.dqmSaver)
 
-# NEW added test removing Jenkins messeges in GitHub
+# NEW added testing Status checks in Jenkins
 process.onlineSaver = cms.EDAnalyzer("DQMFileSaverOnline",
     producer = cms.untracked.string('DQM'),
     path = cms.untracked.string('./'),
