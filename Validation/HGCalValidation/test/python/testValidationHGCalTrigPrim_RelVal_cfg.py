@@ -106,7 +106,7 @@ process.hgcalValidationTPG_step = cms.Path(process.runHGCALValidationTPG)
 #process.dqmSaver.workflow = '/validation/' + 'HGCAL' + '/TPG'
 #process.dqmsave_step = cms.Path(process.dqmSaver)
 
-# NEW added testing Jenkins jobs status messages in GitHub
+# [TEST] Testing "Suppress progress updates in job check" option in Jenkins jobs
 process.onlineSaver = cms.EDAnalyzer("DQMFileSaverOnline",
     producer = cms.untracked.string('DQM'),
     path = cms.untracked.string('./'),
@@ -115,7 +115,6 @@ process.onlineSaver = cms.EDAnalyzer("DQMFileSaverOnline",
 
 process.o = cms.EndPath(process.onlineSaver)
 process.schedule = cms.Schedule(process.hgcl1tpg_step, process.hgcalValidationTPG_step, process.o)
-# END NEW added 
 
 # Schedule definition
 #process.schedule = cms.Schedule(process.hgcl1tpg_step, process.hgcalValidationTPG_step, process.dqmsave_step)
