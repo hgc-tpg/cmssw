@@ -106,7 +106,7 @@ process.hgcalValidationTPG_step = cms.Path(process.runHGCALValidationTPG)
 #process.dqmSaver.workflow = '/validation/' + 'HGCAL' + '/TPG'
 #process.dqmsave_step = cms.Path(process.dqmSaver)
 
-# NEW added testing Jenkins jobs status messages in GitHub
+# [TEST] Testing "Skip GitHub Branch Source notifications" option in Jenkins jobs
 process.onlineSaver = cms.EDAnalyzer("DQMFileSaverOnline",
     producer = cms.untracked.string('DQM'),
     path = cms.untracked.string('./'),
