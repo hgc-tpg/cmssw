@@ -17,19 +17,14 @@ unsigned HGCalStage1TruncationImplSA::run(const l1thgcfirmware::HGCalTriggerCell
   const std::vector<unsigned>& maxtcsperbin = theConf.maxTcsPerBin();
   const std::vector<double>& phiedges = theConf.phiEdges();
 
-  constexpr double margin = 1.001;
-  double roz_bin_size = (rozbins > 0 ? (rozmax - rozmin) * margin / double(rozbins) : 0.);
-
   // group TCs per (r/z, phi) bins
   for (const auto& tc : tcs_in) {
     double x = tc.x();
     double y = tc.y();
     double z = tc.z();
     double roverz = std::sqrt(x * x + y * y) / std::abs(z);
-    roverz = (roverz < rozmin ? rozmin : roverz);
-    roverz = (roverz > rozmax ? rozmax : roverz);
+    unsigned roverzbin = rozBin(roverz, rozmin, rozmax, rozbins);
 
-    unsigned roverzbin = (roz_bin_size > 0. ? unsigned((roverz - rozmin) / roz_bin_size) : 0);
     double phi = rotatedphi(x, y, z, sector120);
     int phibin = phiBin(roverzbin, phi, phiedges);
     if (phibin < 0)
@@ -101,4 +96,15 @@ double HGCalStage1TruncationImplSA::rotatedphi(double x, double y, double z, int
     phi = phi + (2. * M_PI / 3.);
   }
   return phi;
+}
+
+unsigned HGCalStage1TruncationImplSA::rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const {
+  constexpr double margin = 1.001;
+  double roz_bin_size = (rozbins > 0 ? (rozmax - rozmin) * margin / double(rozbins) : 0.);
+
+  roverz = (roverz < rozmin ? rozmin : roverz);
+  roverz = (roverz > rozmax ? rozmax : roverz);
+  unsigned roverzbin = (roz_bin_size > 0. ? unsigned((roverz - rozmin) / roz_bin_size) : 0);
+
+  return roverzbin;
 }

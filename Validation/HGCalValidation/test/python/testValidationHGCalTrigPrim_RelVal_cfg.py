@@ -116,7 +116,6 @@ process.onlineSaver = cms.EDAnalyzer("DQMFileSaverOnline",
 process.o = cms.EndPath(process.onlineSaver)
 process.schedule = cms.Schedule(process.hgcl1tpg_step, process.hgcalValidationTPG_step, process.o)
 
-
 # Schedule definition
 #process.schedule = cms.Schedule(process.hgcl1tpg_step, process.hgcalValidationTPG_step, process.dqmsave_step)
 
