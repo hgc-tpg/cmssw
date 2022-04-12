@@ -107,7 +107,6 @@ process.hgcalValidationTPG_step = cms.Path(process.runHGCALValidationTPG)
 #process.dqmsave_step = cms.Path(process.dqmSaver)
 
 # [TEST] Testing the option "Disable GitHub Notifications"
-# and « Skip GitHub Branch Source notifications » options in Jenkins jobs
 process.onlineSaver = cms.EDAnalyzer("DQMFileSaverOnline",
     producer = cms.untracked.string('DQM'),
     path = cms.untracked.string('./'),
