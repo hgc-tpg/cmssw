@@ -106,7 +106,7 @@ process.hgcalValidationTPG_step = cms.Path(process.runHGCALValidationTPG)
 #process.dqmSaver.workflow = '/validation/' + 'HGCAL' + '/TPG'
 #process.dqmsave_step = cms.Path(process.dqmSaver)
 
-# [TEST] Testing the option "Disable GitHub Notifications"
+# [TEST] Delete the option "Branches to build"
 process.onlineSaver = cms.EDAnalyzer("DQMFileSaverOnline",
     producer = cms.untracked.string('DQM'),
     path = cms.untracked.string('./'),
