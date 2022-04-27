@@ -13,7 +13,7 @@ HGCalVFECompressionImpl::HGCalVFECompressionImpl(const edm::ParameterSet& conf)
   saturationCode_ = (1 << (exponentBits_ + mantissaBits_)) - 1;
   saturationValue_ = (exponentBits_ == 0)
                          ? saturationCode_
-                         : ((1LL << (mantissaBits_ + truncationBits_ + 1)) - 1) << ((1 << exponentBits_) - 2);
+                         : ((1ULL << (mantissaBits_ + truncationBits_ + 1)) - 1) << ((1 << exponentBits_) - 2);
 }
 
 void HGCalVFECompressionImpl::compressSingle(const uint64_t value,
@@ -40,7 +40,7 @@ void HGCalVFECompressionImpl::compressSingle(const uint64_t value,
 
   // build exponent and mantissa
   const uint32_t exponent = bitlen - mantissaBits_;
-  const uint64_t mantissa = (shifted_value >> (exponent - 1)) & ~(1LL << mantissaBits_);
+  const uint64_t mantissa = (shifted_value >> (exponent - 1)) & ~(1ULL << mantissaBits_);
 
   // assemble floating-point
   const uint32_t floatval = (exponent << mantissaBits_) | mantissa;
@@ -48,21 +48,21 @@ void HGCalVFECompressionImpl::compressSingle(const uint64_t value,
   // we will never want to round up maximum code here
   if (!rounding_ || floatval == saturationCode_) {
     compressedCode = floatval;
-    compressedValue = ((1LL << mantissaBits_) | mantissa) << (exponent - 1);
+    compressedValue = ((1ULL << mantissaBits_) | mantissa) << (exponent - 1);
   } else {
-    const bool roundup = ((shifted_value >> (exponent - 2)) & 1LL) == 1LL;
+    const bool roundup = ((shifted_value >> (exponent - 2)) & 1ULL) == 1ULL;
     if (!roundup) {
       compressedCode = floatval;
-      compressedValue = ((1LL << mantissaBits_) | mantissa) << (exponent - 1);
+      compressedValue = ((1ULL << mantissaBits_) | mantissa) << (exponent - 1);
     } else {
       compressedCode = floatval + 1;
       uint64_t rmantissa = mantissa + 1;
       uint32_t rexponent = exponent;
       if (rmantissa >= (1ULL << mantissaBits_)) {
         rexponent++;
-        rmantissa &= ~(1LL << mantissaBits_);
+        rmantissa &= ~(1ULL << mantissaBits_);
       }
-      compressedValue = ((1LL << mantissaBits_) | rmantissa) << (rexponent - 1);
+      compressedValue = ((1ULL << mantissaBits_) | rmantissa) << (rexponent - 1);
     }
   }
   compressedValue <<= truncationBits_;
