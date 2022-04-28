@@ -26,8 +26,9 @@ void HGCalConcentratorCoarsenerImpl::assignCoarseTriggerCellEnergy(l1t::HGCalTri
   uint64_t compressed_value(0);
   vfeCompression_.compressSingle(ctc.sumHwPt, code, compressed_value);
 
-  if (compressed_value > 0xFFFFFFFF)
+  if (compressed_value > std::numeric_limits<int>::max())
     edm::LogWarning("CompressedValueDowncasting") << "Compressed value cannot fit into 32-bit word. Downcasting.";
+
   tc.setHwPt(static_cast<int>(compressed_value));
   calibration_.calibrateInGeV(tc);
 }

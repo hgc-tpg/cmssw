@@ -83,12 +83,16 @@ void HGCalVFEProcessorSums::run(const HGCalDigiCollection& digiColl,
   for (const auto& [tc_id, tc_value] : tc_payload) {
     if (tc_value > 0) {
       const auto& [tc_compressed_code, tc_compressed_value] = tc_compressed_payload[tc_id];
-      if (tc_compressed_value > 0xFFFFFFFF)
+
+      if (tc_compressed_value > std::numeric_limits<int>::max())
         edm::LogWarning("CompressedValueDowncasting") << "Compressed value cannot fit into 32-bit word. Downcasting.";
+
       l1t::HGCalTriggerCell triggerCell(
           reco::LeafCandidate::LorentzVector(), static_cast<int>(tc_compressed_value), 0, 0, 0, tc_id);
-      if (tc_compressed_code > 0xFFFFFFFF)
+
+      if (tc_compressed_code > std::numeric_limits<uint32_t>::max())
         edm::LogWarning("CompressedValueDowncasting") << "Compressed code cannot fit into 32-bit word. Downcasting.";
+
       triggerCell.setCompressedCharge(static_cast<uint32_t>(tc_compressed_code));
       triggerCell.setUncompressedCharge(tc_value);
       GlobalPoint point = geometry()->getTriggerCellPosition(tc_id);
