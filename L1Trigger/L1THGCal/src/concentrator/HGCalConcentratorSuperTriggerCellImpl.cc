@@ -33,6 +33,8 @@ uint32_t HGCalConcentratorSuperTriggerCellImpl::getCompressedSTCEnergy(const Sup
   uint32_t code(0);
   uint64_t compressed_value(0);
   vfeCompression_.compressSingle(stc.getSumHwPt(), code, compressed_value);
+  if (compressed_value > 0xFFFFFFFF)
+    edm::LogWarning("CompressedValueDowncasting") << "Compressed value cannot fit into 32-bit word. Downcasting.";
   return static_cast<uint32_t>(compressed_value);
 }
 
