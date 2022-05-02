@@ -61,8 +61,7 @@ linearization_params_hesc = cms.PSet(
         tdcsaturation = feCfg_sc.tdcSaturation_fC,
         linnBits = cms.uint32(17),
         oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
-        oldDigi = cms.bool(True),
-        noise = cms.PSet(),
+        oldDigi = cms.bool(oldDigi),
         )
 
 summation_params = cms.PSet(
@@ -132,7 +131,7 @@ calibration_params_hesc = cms.PSet(
         dEdXweights = layerWeights,
         thicknessCorrection = cms.vdouble(thicknessCorrectionSc.value()),
         chargeCollectionEfficiency = cms.PSet(values=cms.vdouble(1.)),
-        oldDigi = cms.bool(True),
+        oldDigi = cms.bool(oldDigi),
         noise = cms.PSet(),
         )
 
@@ -171,9 +170,6 @@ phase2_hgcal.toModify(linearization_params_hesi,
     ileakParam = cms.PSet(refToPSet_ = cms.string("HGCAL_ileakParam_toUse")),
     cceParams = cms.PSet(refToPSet_ = cms.string("HGCAL_cceParams_toUse")),
 )
-phase2_hgcal.toModify(linearization_params_hesc,
-    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_heback")),
-)
 
 phase2_hgcal.toModify(summation_params,
     noiseSilicon = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
@@ -192,8 +188,13 @@ phase2_hgcal.toModify(calibration_params_hesi,
     cceParams = cms.PSet(refToPSet_ = cms.string("HGCAL_cceParams_toUse")),
     chargeCollectionEfficiency = cms.PSet(refToPSet_ = cms.string("HGCAL_chargeCollectionEfficiencies")),
 )
-phase2_hgcal.toModify(calibration_params_nose,
+
+phase2_hgcal.toModify(calibration_params_hesc,
     noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_heback")),
+    )
+
+phase2_hgcal.toModify(calibration_params_nose,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
     chargeCollectionEfficiency = cms.PSet(refToPSet_ = cms.string("HGCAL_chargeCollectionEfficiencies")),
 )
 

@@ -6,6 +6,7 @@
 #include "DataFormats/L1THGCal/interface/HGCalTriggerCell.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerTools.h"
 #include "SimCalorimetry/HGCalSimAlgos/interface/HGCalSiNoiseMap.h"
+#include "SimCalorimetry/HGCalSimAlgos/interface/HGCalSciNoiseMap.h"
 
 class HGCalTriggerCellCalibration {
 public:
@@ -27,6 +28,7 @@ private:
   HGCalTriggerTools triggerTools_;
   bool old_digi_ = false;
   mutable HGCalSiNoiseMap<HGCSiliconDetId> noise_map_;
+  mutable HGCalSciNoiseMap noise_map_sci_;
 };
 
 #endif

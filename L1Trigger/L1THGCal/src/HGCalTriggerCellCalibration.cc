@@ -31,10 +31,17 @@ HGCalTriggerCellCalibration::HGCalTriggerCellCalibration(const edm::ParameterSet
   }
 
   if (!old_digi_) {
-    noise_map_.setDoseMap(conf.getParameter<edm::ParameterSet>("noise").getParameter<std::string>("doseMap"),
-        conf.getParameter<edm::ParameterSet>("noise").getParameter<uint32_t>("scaleByDoseAlgo"));
-    noise_map_.setFluenceScaleFactor(conf.getParameter<edm::ParameterSet>("noise").getParameter<double>("scaleByDoseFactor"));
-    if(detector_!=DetId::HGCalHSc) {
+    if(detector_==DetId::HGCalHSc) {
+      noise_map_sci_.setDoseMap(conf.getParameter<edm::ParameterSet>("noise").getParameter<std::string>("doseMap"),
+          conf.getParameter<edm::ParameterSet>("noise").getParameter<uint32_t>("scaleByDoseAlgo"));
+      noise_map_sci_.setReferenceDarkCurrent(conf.getParameter<edm::ParameterSet>("noise").getParameter<double>("referenceIdark"));
+      noise_map_sci_.setFluenceScaleFactor(conf.getParameter<edm::ParameterSet>("noise").getParameter<double>("scaleByDoseFactor"));
+      noise_map_sci_.setSipmMap(conf.getParameter<edm::ParameterSet>("noise").getParameter<std::string>("sipmMap"));
+    }
+    else {
+      noise_map_.setDoseMap(conf.getParameter<edm::ParameterSet>("noise").getParameter<std::string>("doseMap"),
+          conf.getParameter<edm::ParameterSet>("noise").getParameter<uint32_t>("scaleByDoseAlgo"));
+      noise_map_.setFluenceScaleFactor(conf.getParameter<edm::ParameterSet>("noise").getParameter<double>("scaleByDoseFactor"));
       noise_map_.setIleakParam(
           conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
       noise_map_.setCceParam(
@@ -57,6 +64,9 @@ void HGCalTriggerCellCalibration::setGeometry(const HGCalTriggerGeometryBase* co
       case DetId::HGCalHSi:
         noise_map_.setGeometry(
             triggerTools_.getTriggerGeometry()->hsiGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
+        break;
+      case DetId::HGCalHSc:
+        noise_map_sci_.setGeometry(triggerTools_.getTriggerGeometry()->hscGeometry());
         break;
       default:
         throw cms::Exception("SetupError") << "Non supported detector type " << detector_ << " for HGCalSiNoiseMap setup";
@@ -91,9 +101,17 @@ void HGCalTriggerCellCalibration::calibrateInMipT(l1t::HGCalTriggerCell& trgCell
     double cce = 0.;
     auto cells = triggerTools_.getTriggerGeometry()->getCellsFromTriggerCell(trgdetid);
     for (const auto& cellid : cells) {
-      HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_.getSiCellOpCharacteristics(cellid);
-      // mipfC += double(siop.mipfC);
-      cce += siop.core.cce;
+      if(detector_==DetId::HGCalHSc) {
+        HGCScintillatorDetId sciId(cellid);
+        double radius = noise_map_sci_.computeRadius(sciId);
+        HGCalSciNoiseMap::SiPMonTileCharacteristics sipmOP(noise_map_sci_.scaleByDose(sciId, radius));
+        cce += sipmOP.lySF;
+      }
+      else { // silicon
+        HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_.getSiCellOpCharacteristics(cellid);
+        // mipfC += double(siop.mipfC);
+        cce += siop.core.cce;
+      }
     }
     // mipfC /= cells.size();
     cce /= cells.size();

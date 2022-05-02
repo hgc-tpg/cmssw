@@ -22,18 +22,16 @@ HGCalVFELinearizationImpl::HGCalVFELinearizationImpl(const edm::ParameterSet& co
   tdcLSB_ = std::ldexp(tdcsaturation_, -tdcnBits_);
   linMax_ = (0x1 << linnBits_) - 1;
 
-  if (!old_digi_) {
+  if (detector_!=DetId::HGCalHSc && !old_digi_) {
     noise_map_.setDoseMap(conf.getParameter<edm::ParameterSet>("noise").getParameter<std::string>("doseMap"),
         conf.getParameter<edm::ParameterSet>("noise").getParameter<uint32_t>("scaleByDoseAlgo"));
     noise_map_.setFluenceScaleFactor(conf.getParameter<edm::ParameterSet>("noise").getParameter<double>("scaleByDoseFactor"));
-    if(detector_!=DetId::HGCalHSc) {
-      noise_map_.setIleakParam(
-          conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
-      noise_map_.setCceParam(
-          conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
-          conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
-          conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
-    }
+    noise_map_.setIleakParam(
+        conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
+    noise_map_.setCceParam(
+        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
+        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
+        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
   }
 }
 
@@ -49,6 +47,8 @@ void HGCalVFELinearizationImpl::setGeometry(const HGCalTriggerGeometryBase* cons
       case DetId::HGCalHSi:
         noise_map_.setGeometry(
             triggerTools_.getTriggerGeometry()->hsiGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
+        break;
+      case DetId::HGCalHSc:
         break;
       default:
         throw cms::Exception("SetupError") << "Non supported detector type " << detector_ << " for HGCalSiNoiseMap setup";
@@ -68,13 +68,13 @@ void HGCalVFELinearizationImpl::linearize(const std::vector<HGCalDataFrame>& dat
     bool isBusy(isTDC && rawData == 0);
 
     double adcLSB = adcLSB_;
-    double noise = 0.;
-    if (!old_digi_) {
+    // double noise = 0.
+    if (detector_!=DetId::HGCalHSc && !old_digi_) {
       HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop =
           noise_map_.getSiCellOpCharacteristics(frame.id());
       HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);
       adcLSB = noise_map_.getLSBPerGain()[gain];
-      noise = siop.core.noise;
+      // noise = siop.core.noise;
     }
 
     double amplitude = 0.;
@@ -94,9 +94,9 @@ void HGCalVFELinearizationImpl::linearize(const std::vector<HGCalDataFrame>& dat
       }
       amplitude = std::max(0., data) * adcLSB;
     }
-    if (amplitude < 3. * noise) {
-      continue;
-    }
+    // if (amplitude < 3. * noise) {
+      // continue;
+    // }
     uint32_t amplitude_int = uint32_t(std::floor(amplitude / linLSB_ + 0.5));
     if (amplitude_int == 0)
       continue;

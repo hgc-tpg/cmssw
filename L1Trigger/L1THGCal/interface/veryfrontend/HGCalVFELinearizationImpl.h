@@ -5,6 +5,7 @@
 #include "DataFormats/HGCDigi/interface/HGCDigiCollections.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerTools.h"
 #include "SimCalorimetry/HGCalSimAlgos/interface/HGCalSiNoiseMap.h"
+#include "SimCalorimetry/HGCalSimAlgos/interface/HGCalSciNoiseMap.h"
 
 #include <vector>
 #include <utility>
