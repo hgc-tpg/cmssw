@@ -77,10 +77,10 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', ''
 #  process = customise_aging_3000(process)
 
 # Automatic addition of the customisation function from SLHCUpgradeSimulations.Configuration.aging
-from SLHCUpgradeSimulations.Configuration.aging import agedHGCal
-process = agedHGCal(process)
-process.HGCAL_noise_fC.doseMap=cms.string("SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt")
-process.HGCAL_noise_heback.doseMap=cms.string("SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt")
+#  from SLHCUpgradeSimulations.Configuration.aging import agedHGCal
+#  process = agedHGCal(process)
+#  process.HGCAL_noise_fC.doseMap=cms.string("SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt")
+#  process.HGCAL_noise_heback.doseMap=cms.string("SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt")
 
 # load HGCAL TPG simulation
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')

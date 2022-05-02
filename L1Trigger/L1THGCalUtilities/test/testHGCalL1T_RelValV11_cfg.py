@@ -24,7 +24,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(50)
+    input = cms.untracked.int32(10)
 )
 
 # Input source
@@ -69,6 +69,8 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', ''
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 
 process.hgcl1tpg_step = cms.Path(process.hgcalTriggerPrimitives)
+from L1Trigger.L1THGCal.customVFE import custom_old_digi
+process = custom_old_digi(process)
 
 
 # load ntuplizer
