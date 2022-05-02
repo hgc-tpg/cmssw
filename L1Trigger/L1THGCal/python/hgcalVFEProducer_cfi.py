@@ -32,13 +32,14 @@ linearization_params_ee = cms.PSet(
         adcnBits = feCfg_si.adcNbits,
         tdcsaturation = feCfg_si.tdcSaturation_fC,
         linnBits = cms.uint32(17),
-         oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
-         newDigi = cms.bool(newDigi),
-        doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
-        scaleByDoseAlgo   = cms.uint32(0),
-        scaleByDoseFactor = cms.double(integLumi/3000.),
-        ileakParam        = HGCAL_ileakParam_toUse,
-        cceParams         = HGCAL_cceParams_toUse,
+        oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
+        newDigi = cms.bool(newDigi),
+        #  doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
+        #  scaleByDoseAlgo   = cms.uint32(0),
+        #  scaleByDoseFactor = cms.double(integLumi/3000.),
+        noise = cms.PSet(),
+        ileakParam = cms.PSet(),
+        cceParams = cms.PSet(),
         )
 
 # Linearization parameters for HE silicon
@@ -52,11 +53,12 @@ linearization_params_hesi = cms.PSet(
         linnBits = cms.uint32(17),
          oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
          newDigi = cms.bool(newDigi),
-        doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
-        scaleByDoseAlgo   = cms.uint32(0),
-        scaleByDoseFactor = cms.double(integLumi/3000.),
-        ileakParam        = HGCAL_ileakParam_toUse,
-        cceParams         = HGCAL_cceParams_toUse,
+        #  doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
+        #  scaleByDoseAlgo   = cms.uint32(0),
+        #  scaleByDoseFactor = cms.double(integLumi/3000.),
+        noise = cms.PSet(),
+        ileakParam = cms.PSet(),
+        cceParams = cms.PSet(),
         )
 
 # Linearization parameters for HE scintillator
@@ -70,6 +72,7 @@ linearization_params_hesc = cms.PSet(
         linnBits = cms.uint32(17),
         oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
         newDigi = cms.bool(False),
+        noise = cms.PSet(),
         )
 
 summation_params = cms.PSet(
@@ -118,11 +121,12 @@ calibration_params_ee = cms.PSet(
         chargeCollectionEfficiency = cms.PSet(),
 
         newDigi = cms.bool(newDigi),
-        doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
-        scaleByDoseAlgo   = cms.uint32(0),
-        scaleByDoseFactor = cms.double(integLumi/3000.),
-        ileakParam        = HGCAL_ileakParam_toUse,
-        cceParams         = HGCAL_cceParams_toUse,
+        #  doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
+        #  scaleByDoseAlgo   = cms.uint32(0),
+        #  scaleByDoseFactor = cms.double(integLumi/3000.),
+        noise = cms.PSet(),
+        ileakParam = cms.PSet(),
+        cceParams = cms.PSet(),
         )
 
 calibration_params_hesi = cms.PSet(
@@ -133,11 +137,12 @@ calibration_params_hesi = cms.PSet(
         chargeCollectionEfficiency = cms.PSet(),
 
         newDigi = cms.bool(newDigi),
-        doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
-        scaleByDoseAlgo   = cms.uint32(0),
-        scaleByDoseFactor = cms.double(integLumi/3000.),
-        ileakParam        = HGCAL_ileakParam_toUse,
-        cceParams         = HGCAL_cceParams_toUse,
+        #  doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
+        #  scaleByDoseAlgo   = cms.uint32(0),
+        #  scaleByDoseFactor = cms.double(integLumi/3000.),
+        noise = cms.PSet(),
+        ileakParam = cms.PSet(),
+        cceParams = cms.PSet(),
         )
 
 calibration_params_hesc = cms.PSet(
@@ -147,6 +152,7 @@ calibration_params_hesc = cms.PSet(
         thicknessCorrection = cms.vdouble(thicknessCorrectionSc.value()),
         chargeCollectionEfficiency = cms.PSet(values=cms.vdouble(1.)),
         newDigi = cms.bool(False),
+        noise = cms.PSet(),
         )
 
 calibration_params_nose = cms.PSet(
@@ -174,18 +180,39 @@ vfe_proc = cms.PSet( ProcessorName = cms.string('HGCalVFEProcessorSums'),
 
 # isolate these refs in case they aren't available in some other WF
 from Configuration.Eras.Modifier_phase2_hgcal_cff import phase2_hgcal
+phase2_hgcal.toModify(linearization_params_ee,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
+    ileakParam = cms.PSet(refToPSet_ = cms.string("HGCAL_ileakParam_toUse")),
+    cceParams = cms.PSet(refToPSet_ = cms.string("HGCAL_cceParams_toUse")),
+)
+phase2_hgcal.toModify(linearization_params_hesi,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
+    ileakParam = cms.PSet(refToPSet_ = cms.string("HGCAL_ileakParam_toUse")),
+    cceParams = cms.PSet(refToPSet_ = cms.string("HGCAL_cceParams_toUse")),
+)
+phase2_hgcal.toModify(linearization_params_hesc,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_heback")),
+)
+
 phase2_hgcal.toModify(summation_params,
     noiseSilicon = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
     noiseScintillator = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_heback")),
 )
 
 phase2_hgcal.toModify(calibration_params_ee,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
+    ileakParam = cms.PSet(refToPSet_ = cms.string("HGCAL_ileakParam_toUse")),
+    cceParams = cms.PSet(refToPSet_ = cms.string("HGCAL_cceParams_toUse")),
     chargeCollectionEfficiency = cms.PSet(refToPSet_ = cms.string("HGCAL_chargeCollectionEfficiencies")),
 )
 phase2_hgcal.toModify(calibration_params_hesi,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
+    ileakParam = cms.PSet(refToPSet_ = cms.string("HGCAL_ileakParam_toUse")),
+    cceParams = cms.PSet(refToPSet_ = cms.string("HGCAL_cceParams_toUse")),
     chargeCollectionEfficiency = cms.PSet(refToPSet_ = cms.string("HGCAL_chargeCollectionEfficiencies")),
 )
 phase2_hgcal.toModify(calibration_params_nose,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_heback")),
     chargeCollectionEfficiency = cms.PSet(refToPSet_ = cms.string("HGCAL_chargeCollectionEfficiencies")),
 )
 

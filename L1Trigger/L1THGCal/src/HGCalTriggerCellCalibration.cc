@@ -30,8 +30,9 @@ HGCalTriggerCellCalibration::HGCalTriggerCellCalibration(const edm::ParameterSet
   }
 
   if (new_digi_) {
-    noise_map_.setDoseMap(conf.getParameter<std::string>("doseMap"), conf.getParameter<uint32_t>("scaleByDoseAlgo"));
-    noise_map_.setFluenceScaleFactor(conf.getParameter<double>("scaleByDoseFactor"));
+    noise_map_.setDoseMap(conf.getParameter<edm::ParameterSet>("noise").getParameter<std::string>("doseMap"),
+        conf.getParameter<edm::ParameterSet>("noise").getParameter<uint32_t>("scaleByDoseAlgo"));
+    noise_map_.setFluenceScaleFactor(conf.getParameter<edm::ParameterSet>("noise").getParameter<double>("scaleByDoseFactor"));
     noise_map_.setIleakParam(
         conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
     noise_map_.setCceParam(

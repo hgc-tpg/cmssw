@@ -24,12 +24,12 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
-    #  input = cms.untracked.int32(50)
+    #  input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(10)
 )
 
 import glob
-input_files = glob.glob('../../../../../data/ttbar_D86_12_1_0_pre5_PU200_20211101/Events_*.root')
+input_files = glob.glob('/home/llr/cms/sauvan/DATA_UPG/HGCAL/2110-2112_occupancies/ttbar_D86_12_1_0_pre5_PU200_20211101/*.root')
 inputs = ['file:'+f for f in input_files]
 
 # Input source
@@ -65,8 +65,8 @@ process.configurationMetadata = cms.untracked.PSet(
 # Output definition
 process.TFileService = cms.Service(
     "TFileService",
-    fileName = cms.string("../../../../../data/ttbar_D86_12_1_0_pre5_PU200_20211101_ntuple_211104.root")
-    #  fileName = cms.string("ntuple.root")
+    #  fileName = cms.string("../../../../../data/ttbar_D86_12_1_0_pre5_PU200_20211101_ntuple_211104.root")
+    fileName = cms.string("ntuple.root")
     )
 
 # Other statements
@@ -85,10 +85,10 @@ process.HGCAL_noise_heback.doseMap=cms.string("SimCalorimetry/HGCalSimProducers/
 # load HGCAL TPG simulation
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 # Use latest V3 trigger geometry implementation
-from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_decentralized_V11
-process = custom_geometry_decentralized_V11(process, implementation=2)
+#  from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_decentralized_V11
+#  process = custom_geometry_decentralized_V11(process, implementation=2)
 
-process.hgcalVFEProducer.ProcessorParameters.connectAllModules = True
+#  process.hgcalVFEProducer.ProcessorParameters.connectAllModules = True
 
 process.hgcalConcentratorProducer.ProcessorParameters.threshold_silicon = 0.5
 process.hgcalConcentratorProducer.ProcessorParameters.threshold_scintillator = 0.5
@@ -101,11 +101,11 @@ process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_hesi.newDigi = True
 #
 #  process.hgcalVFEProducer.ProcessorParameters.summationCfg.noiseThreshold = 0.
 #
-scaleByDoseFactor = 1. # 3000 fb-1
-process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_ee.scaleByDoseFactor = scaleByDoseFactor
-process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_hesi.scaleByDoseFactor = scaleByDoseFactor
-process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_ee.scaleByDoseFactor = scaleByDoseFactor
-process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_hesi.scaleByDoseFactor = scaleByDoseFactor
+#  scaleByDoseFactor = 1. # 3000 fb-1
+#  process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_ee.scaleByDoseFactor = scaleByDoseFactor
+#  process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_hesi.scaleByDoseFactor = scaleByDoseFactor
+#  process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_ee.scaleByDoseFactor = scaleByDoseFactor
+#  process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_hesi.scaleByDoseFactor = scaleByDoseFactor
    
 process.hgcl1tpg_step = cms.Path(process.hgcalTriggerPrimitives)
    
