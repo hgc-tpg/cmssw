@@ -33,7 +33,7 @@ private:
   std::vector<double> oot_coefficients_;
   //
   HGCalTriggerTools triggerTools_;
-  bool new_digi_ = false;
+  bool old_digi_ = false;
   mutable HGCalSiNoiseMap<HGCSiliconDetId> noise_map_;
 };
 

@@ -94,10 +94,10 @@ process.hgcalConcentratorProducer.ProcessorParameters.threshold_silicon = 0.5
 process.hgcalConcentratorProducer.ProcessorParameters.threshold_scintillator = 0.5
 
 # Setup new digi for startup scenario
-process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_ee.newDigi = True
-process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_hesi.newDigi = True
-process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_ee.newDigi = True
-process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_hesi.newDigi = True
+process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_ee.oldDigi = False
+process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_hesi.oldDigi = False
+process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_ee.oldDigi = False
+process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_hesi.oldDigi = False
 #
 #  process.hgcalVFEProducer.ProcessorParameters.summationCfg.noiseThreshold = 0.
 #

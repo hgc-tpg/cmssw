@@ -9,13 +9,15 @@
 
 class HGCalTriggerCellCalibration {
 public:
-  HGCalTriggerCellCalibration(const edm::ParameterSet& conf);
-  void setGeometry(const HGCalTriggerGeometryBase* const geom, DetId::Detector det);
+  HGCalTriggerCellCalibration(const edm::ParameterSet& conf, DetId::Detector det);
+  void setGeometry(const HGCalTriggerGeometryBase* const geom);
   void calibrateInMipT(l1t::HGCalTriggerCell&) const;
   void calibrateMipTinGeV(l1t::HGCalTriggerCell&) const;
   void calibrateInGeV(l1t::HGCalTriggerCell&) const;
 
 private:
+  DetId::Detector detector_;
+
   double lsb_;
   std::vector<double> fCperMIP_;
   std::vector<double> chargeCollectionEfficiency_;
@@ -23,7 +25,7 @@ private:
   std::vector<double> dEdX_weights_;
 
   HGCalTriggerTools triggerTools_;
-  bool new_digi_ = false;
+  bool old_digi_ = false;
   mutable HGCalSiNoiseMap<HGCSiliconDetId> noise_map_;
 };
 

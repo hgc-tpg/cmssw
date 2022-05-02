@@ -9,7 +9,7 @@ HGCalVFEProcessorSums::HGCalVFEProcessorSums(const edm::ParameterSet& conf)
   vfeLinearizationHEsiImpl_ =
       std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesi"), DetId::HGCalHSi);
   vfeLinearizationHEscImpl_ =
-      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesc"), DetId::HGCalEE);
+      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesc"), DetId::HGCalHSc);
 
   vfeSummationImpl_ = std::make_unique<HGCalVFESummationImpl>(conf.getParameter<edm::ParameterSet>("summationCfg"));
 
@@ -19,13 +19,13 @@ HGCalVFEProcessorSums::HGCalVFEProcessorSums(const edm::ParameterSet& conf)
       std::make_unique<HGCalVFECompressionImpl>(conf.getParameter<edm::ParameterSet>("compressionCfg_hdm"));
 
   calibrationEE_ =
-      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_ee"));
+      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_ee"), DetId::HGCalEE);
   calibrationHEsi_ =
-      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_hesi"));
+      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_hesi"), DetId::HGCalHSi);
   calibrationHEsc_ =
-      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_hesc"));
+      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_hesc"), DetId::HGCalHSc);
   calibrationNose_ =
-      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_nose"));
+      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_nose"), DetId::HGCalEE);
 }
 
 void HGCalVFEProcessorSums::run(const HGCalDigiCollection& digiColl,
@@ -34,10 +34,10 @@ void HGCalVFEProcessorSums::run(const HGCalDigiCollection& digiColl,
   vfeLinearizationEEImpl_->setGeometry(geometry());
   vfeLinearizationHEsiImpl_->setGeometry(geometry());
   vfeLinearizationHEscImpl_->setGeometry(geometry());
-  calibrationEE_->setGeometry(geometry(), DetId::HGCalEE);
-  calibrationHEsi_->setGeometry(geometry(), DetId::HGCalHSi);
-  calibrationHEsc_->setGeometry(geometry(), DetId::HGCalEE);
-  calibrationNose_->setGeometry(geometry(), DetId::HGCalEE);
+  calibrationEE_->setGeometry(geometry());
+  calibrationHEsi_->setGeometry(geometry());
+  calibrationHEsc_->setGeometry(geometry());
+  calibrationNose_->setGeometry(geometry());
   triggerTools_.setGeometry(geometry());
 
   std::vector<HGCalDataFrame> dataframes;

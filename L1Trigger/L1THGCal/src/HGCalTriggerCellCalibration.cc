@@ -2,14 +2,15 @@
 
 #include <cmath>
 
-HGCalTriggerCellCalibration::HGCalTriggerCellCalibration(const edm::ParameterSet& conf)
-    : lsb_(conf.getParameter<double>("lsb")),
+HGCalTriggerCellCalibration::HGCalTriggerCellCalibration(const edm::ParameterSet& conf, DetId::Detector det)
+    : detector_(det),
+      lsb_(conf.getParameter<double>("lsb")),
       fCperMIP_(conf.getParameter<std::vector<double>>("fCperMIP")),
       chargeCollectionEfficiency_(conf.getParameter<edm::ParameterSet>("chargeCollectionEfficiency")
                                       .getParameter<std::vector<double>>("values")),
       thicknessCorrection_(conf.getParameter<std::vector<double>>("thicknessCorrection")),
       dEdX_weights_(conf.getParameter<std::vector<double>>("dEdXweights")),
-      new_digi_(conf.getParameter<bool>("newDigi")) {
+      old_digi_(conf.getParameter<bool>("oldDigi")) {
   for (const auto& fCperMIP : fCperMIP_) {
     if (fCperMIP <= 0) {
       edm::LogWarning("DivisionByZero") << "WARNING: zero or negative MIP->fC correction factor. It won't be "
@@ -29,24 +30,26 @@ HGCalTriggerCellCalibration::HGCalTriggerCellCalibration(const edm::ParameterSet
     }
   }
 
-  if (new_digi_) {
+  if (!old_digi_) {
     noise_map_.setDoseMap(conf.getParameter<edm::ParameterSet>("noise").getParameter<std::string>("doseMap"),
         conf.getParameter<edm::ParameterSet>("noise").getParameter<uint32_t>("scaleByDoseAlgo"));
     noise_map_.setFluenceScaleFactor(conf.getParameter<edm::ParameterSet>("noise").getParameter<double>("scaleByDoseFactor"));
-    noise_map_.setIleakParam(
-        conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
-    noise_map_.setCceParam(
-        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
-        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
-        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
+    if(detector_!=DetId::HGCalHSc) {
+      noise_map_.setIleakParam(
+          conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
+      noise_map_.setCceParam(
+          conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
+          conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
+          conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
+    }
   }
 }
 
-void HGCalTriggerCellCalibration::setGeometry(const HGCalTriggerGeometryBase* const geom, DetId::Detector det) {
+void HGCalTriggerCellCalibration::setGeometry(const HGCalTriggerGeometryBase* const geom) {
   triggerTools_.setGeometry(geom);
-  if (new_digi_) {
+  if (!old_digi_) {
     //assign the geometry and tell the tool that the gain is automatically set to have the MIP close to 10ADC counts
-    switch (det) {
+    switch (detector_) {
       case DetId::HGCalEE:
         noise_map_.setGeometry(
             triggerTools_.getTriggerGeometry()->eeGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
@@ -56,7 +59,7 @@ void HGCalTriggerCellCalibration::setGeometry(const HGCalTriggerGeometryBase* co
             triggerTools_.getTriggerGeometry()->hsiGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
         break;
       default:
-        throw cms::Exception("SetupError") << "Non supported detector type " << det << " for HGCalSiNoiseMap setup";
+        throw cms::Exception("SetupError") << "Non supported detector type " << detector_ << " for HGCalSiNoiseMap setup";
     }
   }
 }
@@ -83,7 +86,7 @@ void HGCalTriggerCellCalibration::calibrateInMipT(l1t::HGCalTriggerCell& trgCell
   double amplitude = hwPt * lsb_;
   double trgCellMipP = amplitude;
 
-  if (new_digi_) {
+  if (!old_digi_) {
     // double mipfC = 0.;
     double cce = 0.;
     auto cells = triggerTools_.getTriggerGeometry()->getCellsFromTriggerCell(trgdetid);

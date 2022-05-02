@@ -5,10 +5,10 @@ HGCalConcentratorSuperTriggerCellImpl::HGCalConcentratorSuperTriggerCellImpl(con
       coarsenTriggerCells_(conf.getParameter<std::vector<unsigned>>("coarsenTriggerCells")),
       coarseTCmapping_(conf.getParameter<std::vector<unsigned>>("ctcSize")),
       superTCmapping_(conf.getParameter<std::vector<unsigned>>("stcSize")),
-      calibrationEE_(conf.getParameterSet("superTCCalibration_ee")),
-      calibrationHEsi_(conf.getParameterSet("superTCCalibration_hesi")),
-      calibrationHEsc_(conf.getParameterSet("superTCCalibration_hesc")),
-      calibrationNose_(conf.getParameterSet("superTCCalibration_nose")),
+      calibrationEE_(conf.getParameterSet("superTCCalibration_ee"), DetId::HGCalEE),
+      calibrationHEsi_(conf.getParameterSet("superTCCalibration_hesi"), DetId::HGCalHSi),
+      calibrationHEsc_(conf.getParameterSet("superTCCalibration_hesc"), DetId::HGCalEE),
+      calibrationNose_(conf.getParameterSet("superTCCalibration_nose"), DetId::HGCalEE),
       vfeCompression_(conf.getParameterSet("superTCCompression")) {
   std::string energyType(conf.getParameter<string>("type_energy_division"));
 

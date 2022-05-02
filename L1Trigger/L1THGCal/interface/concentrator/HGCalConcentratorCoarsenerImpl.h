@@ -16,7 +16,7 @@ public:
   void setGeometry(const HGCalTriggerGeometryBase* const geom) {
     triggerTools_.setGeometry(geom);
     coarseTCmapping_.setGeometry(geom);
-    calibration_.setGeometry(geom, DetId::HGCalEE);
+    calibration_.setGeometry(geom);
   }
 
 private:

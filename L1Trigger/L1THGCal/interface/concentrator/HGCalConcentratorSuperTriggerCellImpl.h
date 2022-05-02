@@ -20,10 +20,10 @@ public:
     triggerTools_.setGeometry(geom);
     coarseTCmapping_.setGeometry(geom);
     superTCmapping_.setGeometry(geom);
-    calibrationEE_.setGeometry(geom, DetId::HGCalEE);
-    calibrationHEsi_.setGeometry(geom, DetId::HGCalHSi);
-    calibrationHEsc_.setGeometry(geom, DetId::HGCalHSc);
-    calibrationNose_.setGeometry(geom, DetId::HGCalEE);
+    calibrationEE_.setGeometry(geom);
+    calibrationHEsi_.setGeometry(geom);
+    calibrationHEsc_.setGeometry(geom);
+    calibrationNose_.setGeometry(geom);
   }
 
 private:

@@ -13,7 +13,7 @@ HGCalVFELinearizationImpl::HGCalVFELinearizationImpl(const edm::ParameterSet& co
       tdcsaturation_(conf.getParameter<double>("tdcsaturation")),
       linnBits_(conf.getParameter<uint32_t>("linnBits")),
       oot_coefficients_(conf.getParameter<std::vector<double>>("oot_coefficients")),
-      new_digi_(conf.getParameter<bool>("newDigi")) {
+      old_digi_(conf.getParameter<bool>("oldDigi")) {
   constexpr int kOot_order = 2;
   if (oot_coefficients_.size() != kOot_order) {
     throw cms::Exception("BadConfiguration") << "OOT subtraction needs " << kOot_order << " coefficients";
@@ -22,7 +22,7 @@ HGCalVFELinearizationImpl::HGCalVFELinearizationImpl(const edm::ParameterSet& co
   tdcLSB_ = std::ldexp(tdcsaturation_, -tdcnBits_);
   linMax_ = (0x1 << linnBits_) - 1;
 
-  if (new_digi_) {
+  if (!old_digi_) {
     noise_map_.setDoseMap(conf.getParameter<edm::ParameterSet>("noise").getParameter<std::string>("doseMap"),
         conf.getParameter<edm::ParameterSet>("noise").getParameter<uint32_t>("scaleByDoseAlgo"));
     noise_map_.setFluenceScaleFactor(conf.getParameter<edm::ParameterSet>("noise").getParameter<double>("scaleByDoseFactor"));
@@ -39,7 +39,7 @@ HGCalVFELinearizationImpl::HGCalVFELinearizationImpl(const edm::ParameterSet& co
 
 void HGCalVFELinearizationImpl::setGeometry(const HGCalTriggerGeometryBase* const geom) {
   triggerTools_.setGeometry(geom);
-  if (new_digi_) {
+  if (!old_digi_) {
     //assign the geometry and tell the tool that the gain is automatically set to have the MIP close to 10ADC counts
     switch (detector_) {
       case DetId::HGCalEE:
@@ -69,7 +69,7 @@ void HGCalVFELinearizationImpl::linearize(const std::vector<HGCalDataFrame>& dat
 
     double adcLSB = adcLSB_;
     double noise = 0.;
-    if (new_digi_) {
+    if (!old_digi_) {
       HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop =
           noise_map_.getSiCellOpCharacteristics(frame.id());
       HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);

@@ -8,7 +8,7 @@ import RecoLocalCalo.HGCalRecProducers.HGCalUncalibRecHit_cfi as recoparam
 import RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi as recocalibparam 
 from . import hgcalLayersCalibrationCoefficients_cfi as layercalibparam
 
-newDigi = False
+oldDigi = False
 
 feCfg_si = digiparam.hgceeDigitizer.digiCfg.feCfg
 feCfg_sc = digiparam.hgchebackDigitizer.digiCfg.feCfg
@@ -18,10 +18,6 @@ triggerCellLsbBeforeCompression_si = float(feCfg_si.adcSaturation_fC.value())/(2
 #  triggerCellLsbBeforeCompression_si = 1./80.
 
 triggerCellLsbBeforeCompression_sc = float(feCfg_sc.adcSaturation_fC.value())/(2**float(feCfg_sc.adcNbits.value()))
-
-# Radiation map info
-integLumi=3000.
-from SimCalorimetry.HGCalSimProducers.hgcalDigitizer_cfi import HGCAL_ileakParam_toUse,HGCAL_cceParams_toUse
 
 # Linearization parameters for EE
 linearization_params_ee = cms.PSet(
@@ -33,10 +29,7 @@ linearization_params_ee = cms.PSet(
         tdcsaturation = feCfg_si.tdcSaturation_fC,
         linnBits = cms.uint32(17),
         oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
-        newDigi = cms.bool(newDigi),
-        #  doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
-        #  scaleByDoseAlgo   = cms.uint32(0),
-        #  scaleByDoseFactor = cms.double(integLumi/3000.),
+        oldDigi = cms.bool(oldDigi),
         noise = cms.PSet(),
         ileakParam = cms.PSet(),
         cceParams = cms.PSet(),
@@ -51,11 +44,8 @@ linearization_params_hesi = cms.PSet(
         adcnBits = feCfg_si.adcNbits,
         tdcsaturation = feCfg_si.tdcSaturation_fC,
         linnBits = cms.uint32(17),
-         oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
-         newDigi = cms.bool(newDigi),
-        #  doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
-        #  scaleByDoseAlgo   = cms.uint32(0),
-        #  scaleByDoseFactor = cms.double(integLumi/3000.),
+        oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
+        oldDigi = cms.bool(oldDigi),
         noise = cms.PSet(),
         ileakParam = cms.PSet(),
         cceParams = cms.PSet(),
@@ -71,7 +61,7 @@ linearization_params_hesc = cms.PSet(
         tdcsaturation = feCfg_sc.tdcSaturation_fC,
         linnBits = cms.uint32(17),
         oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
-        newDigi = cms.bool(False),
+        oldDigi = cms.bool(True),
         noise = cms.PSet(),
         )
 
@@ -83,7 +73,6 @@ summation_params = cms.PSet(
         # cell thresholds before TC sums
         # Cut at 3sigma of the noise
         noiseThreshold = cms.double(3), # in units of sigmas of the noise
-        #  noiseThreshold = cms.double(0), # in units of sigmas of the noise
         )
 
 # Compression parameters for low density modules
@@ -119,11 +108,7 @@ calibration_params_ee = cms.PSet(
         dEdXweights = layerWeights,
         thicknessCorrection = cms.vdouble(thicknessCorrectionSi[0:NTHICKNESS]),
         chargeCollectionEfficiency = cms.PSet(),
-
-        newDigi = cms.bool(newDigi),
-        #  doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
-        #  scaleByDoseAlgo   = cms.uint32(0),
-        #  scaleByDoseFactor = cms.double(integLumi/3000.),
+        oldDigi = cms.bool(oldDigi),
         noise = cms.PSet(),
         ileakParam = cms.PSet(),
         cceParams = cms.PSet(),
@@ -135,11 +120,7 @@ calibration_params_hesi = cms.PSet(
         dEdXweights = layerWeights,
         thicknessCorrection = cms.vdouble(thicknessCorrectionSi[NTHICKNESS:2*NTHICKNESS]),
         chargeCollectionEfficiency = cms.PSet(),
-
-        newDigi = cms.bool(newDigi),
-        #  doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
-        #  scaleByDoseAlgo   = cms.uint32(0),
-        #  scaleByDoseFactor = cms.double(integLumi/3000.),
+        oldDigi = cms.bool(oldDigi),
         noise = cms.PSet(),
         ileakParam = cms.PSet(),
         cceParams = cms.PSet(),
@@ -151,7 +132,7 @@ calibration_params_hesc = cms.PSet(
         dEdXweights = layerWeights,
         thicknessCorrection = cms.vdouble(thicknessCorrectionSc.value()),
         chargeCollectionEfficiency = cms.PSet(values=cms.vdouble(1.)),
-        newDigi = cms.bool(False),
+        oldDigi = cms.bool(True),
         noise = cms.PSet(),
         )
 
@@ -161,7 +142,7 @@ calibration_params_nose = cms.PSet(
         dEdXweights = layerWeightsNose,
         thicknessCorrection = thicknessCorrectionNose,
         chargeCollectionEfficiency = cms.PSet(),
-        newDigi = cms.bool(False),
+        oldDigi = cms.bool(True),
         )
 
 vfe_proc = cms.PSet( ProcessorName = cms.string('HGCalVFEProcessorSums'),
