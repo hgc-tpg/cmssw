@@ -11,12 +11,14 @@
 
 class HGCalVFELinearizationImpl {
 public:
-  HGCalVFELinearizationImpl(const edm::ParameterSet& conf);
-  void setGeometry(const HGCalTriggerGeometryBase* const geom, DetId::Detector det);
+  HGCalVFELinearizationImpl(const edm::ParameterSet& conf, DetId::Detector det);
+  void setGeometry(const HGCalTriggerGeometryBase* const geom);
 
   void linearize(const std::vector<HGCalDataFrame>&, std::vector<std::pair<DetId, uint32_t>>&);
 
 private:
+  DetId::Detector detector_;
+  //
   double adcLSB_;
   double linLSB_;
   double adcsaturation_;

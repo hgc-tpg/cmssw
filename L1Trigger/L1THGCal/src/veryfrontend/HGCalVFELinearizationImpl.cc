@@ -3,8 +3,9 @@
 
 #include <cmath>
 
-HGCalVFELinearizationImpl::HGCalVFELinearizationImpl(const edm::ParameterSet& conf)
-    : linLSB_(conf.getParameter<double>("linLSB")),
+HGCalVFELinearizationImpl::HGCalVFELinearizationImpl(const edm::ParameterSet& conf, DetId::Detector det)
+    : detector_(det),
+      linLSB_(conf.getParameter<double>("linLSB")),
       adcsaturation_(conf.getParameter<double>("adcsaturation")),
       tdcnBits_(conf.getParameter<uint32_t>("tdcnBits")),
       tdcOnset_(conf.getParameter<double>("tdcOnset")),
@@ -25,20 +26,22 @@ HGCalVFELinearizationImpl::HGCalVFELinearizationImpl(const edm::ParameterSet& co
     noise_map_.setDoseMap(conf.getParameter<edm::ParameterSet>("noise").getParameter<std::string>("doseMap"),
         conf.getParameter<edm::ParameterSet>("noise").getParameter<uint32_t>("scaleByDoseAlgo"));
     noise_map_.setFluenceScaleFactor(conf.getParameter<edm::ParameterSet>("noise").getParameter<double>("scaleByDoseFactor"));
-    noise_map_.setIleakParam(
-        conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
-    noise_map_.setCceParam(
-        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
-        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
-        conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
+    if(detector_!=DetId::HGCalHSc) {
+      noise_map_.setIleakParam(
+          conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
+      noise_map_.setCceParam(
+          conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
+          conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
+          conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
+    }
   }
 }
 
-void HGCalVFELinearizationImpl::setGeometry(const HGCalTriggerGeometryBase* const geom, DetId::Detector det) {
+void HGCalVFELinearizationImpl::setGeometry(const HGCalTriggerGeometryBase* const geom) {
   triggerTools_.setGeometry(geom);
   if (new_digi_) {
     //assign the geometry and tell the tool that the gain is automatically set to have the MIP close to 10ADC counts
-    switch (det) {
+    switch (detector_) {
       case DetId::HGCalEE:
         noise_map_.setGeometry(
             triggerTools_.getTriggerGeometry()->eeGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
@@ -48,7 +51,7 @@ void HGCalVFELinearizationImpl::setGeometry(const HGCalTriggerGeometryBase* cons
             triggerTools_.getTriggerGeometry()->hsiGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
         break;
       default:
-        throw cms::Exception("SetupError") << "Non supported detector type " << det << " for HGCalSiNoiseMap setup";
+        throw cms::Exception("SetupError") << "Non supported detector type " << detector_ << " for HGCalSiNoiseMap setup";
     }
   }
 }

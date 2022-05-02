@@ -5,11 +5,11 @@ DEFINE_EDM_PLUGIN(HGCalVFEProcessorBaseFactory, HGCalVFEProcessorSums, "HGCalVFE
 HGCalVFEProcessorSums::HGCalVFEProcessorSums(const edm::ParameterSet& conf)
     : HGCalVFEProcessorBase(conf), connectAllModules_(conf.getParameter<bool>("connectAllModules")) {
   vfeLinearizationEEImpl_ =
-      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_ee"));
+      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_ee"), DetId::HGCalEE);
   vfeLinearizationHEsiImpl_ =
-      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesi"));
+      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesi"), DetId::HGCalHSi);
   vfeLinearizationHEscImpl_ =
-      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesc"));
+      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesc"), DetId::HGCalEE);
 
   vfeSummationImpl_ = std::make_unique<HGCalVFESummationImpl>(conf.getParameter<edm::ParameterSet>("summationCfg"));
 
@@ -31,9 +31,9 @@ HGCalVFEProcessorSums::HGCalVFEProcessorSums(const edm::ParameterSet& conf)
 void HGCalVFEProcessorSums::run(const HGCalDigiCollection& digiColl,
                                 l1t::HGCalTriggerCellBxCollection& triggerCellColl) {
   vfeSummationImpl_->setGeometry(geometry());
-  vfeLinearizationEEImpl_->setGeometry(geometry(), DetId::HGCalEE);
-  vfeLinearizationHEsiImpl_->setGeometry(geometry(), DetId::HGCalHSi);
-  vfeLinearizationHEscImpl_->setGeometry(geometry(), DetId::HGCalEE);
+  vfeLinearizationEEImpl_->setGeometry(geometry());
+  vfeLinearizationHEsiImpl_->setGeometry(geometry());
+  vfeLinearizationHEscImpl_->setGeometry(geometry());
   calibrationEE_->setGeometry(geometry(), DetId::HGCalEE);
   calibrationHEsi_->setGeometry(geometry(), DetId::HGCalHSi);
   calibrationHEsc_->setGeometry(geometry(), DetId::HGCalEE);
