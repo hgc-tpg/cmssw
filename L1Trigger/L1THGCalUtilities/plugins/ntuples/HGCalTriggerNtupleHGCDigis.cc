@@ -10,6 +10,8 @@
 #include "SimDataFormats/CaloHit/interface/PCaloHitContainer.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerTools.h"
 
+#include "SimCalorimetry/HGCalSimAlgos/interface/HGCalSiNoiseMap.h"
+
 class HGCalTriggerNtupleHGCDigis : public HGCalTriggerNtupleBase {
 public:
   HGCalTriggerNtupleHGCDigis(const edm::ParameterSet& conf);
@@ -23,6 +25,10 @@ private:
                std::unordered_map<uint32_t, double>& simhits_fh,
                std::unordered_map<uint32_t, double>& simhits_bh);
   void clear() final;
+  float charge(const HGCalDataFrame& frame, const DetId& cellId) const;
+  float mip(const HGCalDataFrame& frame, const DetId& cellId) const;
+  float mipFromADC(const HGCalDataFrame& frame, const DetId& cellId) const;
+  float lsb(const HGCalDataFrame& frame, const DetId& cellId) const;
 
   edm::EDGetToken ee_token_, fh_token_, bh_token_;
   bool is_Simhit_comp_;
@@ -31,10 +37,18 @@ private:
   std::vector<unsigned int> digiBXselect_;
   static constexpr unsigned kDigiSize_ = 5;
 
+  uint32_t tdcnBits_;
+  double tdcOnset_;
+  double tdcsaturation_;
+  double tdcLSB_;
+
   HGCalTriggerTools triggerTools_;
+  mutable HGCalSiNoiseMap<HGCSiliconDetId> noise_map_ee_;
+  mutable HGCalSiNoiseMap<HGCSiliconDetId> noise_map_fh_;
 
   int hgcdigi_n_;
   std::vector<int> hgcdigi_id_;
+  std::vector<int> hgcdigi_det_;
   std::vector<int> hgcdigi_subdet_;
   std::vector<int> hgcdigi_side_;
   std::vector<int> hgcdigi_layer_;
@@ -44,6 +58,11 @@ private:
   std::vector<float> hgcdigi_z_;
   std::vector<std::vector<uint32_t>> hgcdigi_data_;
   std::vector<std::vector<int>> hgcdigi_isadc_;
+  std::vector<int> hgcdigi_gain_;
+  std::vector<float> hgcdigi_lsb_;
+  std::vector<float> hgcdigi_charge_;
+  std::vector<float> hgcdigi_mip_;
+  std::vector<float> hgcdigi_mip2_;
   std::vector<float> hgcdigi_simenergy_;
   std::vector<int> hgcdigi_waferu_;
   std::vector<int> hgcdigi_waferv_;
@@ -69,6 +88,10 @@ DEFINE_EDM_PLUGIN(HGCalTriggerNtupleFactory, HGCalTriggerNtupleHGCDigis, "HGCalT
 
 HGCalTriggerNtupleHGCDigis::HGCalTriggerNtupleHGCDigis(const edm::ParameterSet& conf) : HGCalTriggerNtupleBase(conf) {
   accessEventSetup_ = false;
+
+  tdcnBits_ = conf.getParameter<uint32_t>("tdcnBits"), tdcOnset_ = conf.getParameter<double>("tdcOnset"),
+  tdcsaturation_ = conf.getParameter<double>("tdcsaturation"), tdcLSB_ = std::ldexp(tdcsaturation_, -tdcnBits_);
+
   is_Simhit_comp_ = conf.getParameter<bool>("isSimhitComp");
   digiBXselect_ = conf.getParameter<std::vector<unsigned int>>("digiBXselect");
 
@@ -84,6 +107,24 @@ HGCalTriggerNtupleHGCDigis::HGCalTriggerNtupleHGCDigis(const edm::ParameterSet& 
   if (std::unique(digiBXselect_.begin(), digiBXselect_.end()) != digiBXselect_.end()) {
     throw cms::Exception("BadInitialization") << "digiBXselect vector contains duplicate BX values";
   }
+
+  noise_map_ee_.setDoseMap(conf.getParameter<std::string>("doseMap"), conf.getParameter<uint32_t>("scaleByDoseAlgo"));
+  noise_map_ee_.setFluenceScaleFactor(conf.getParameter<double>("scaleByDoseFactor"));
+  noise_map_ee_.setIleakParam(
+      conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
+  noise_map_ee_.setCceParam(
+      conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
+      conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
+      conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
+  ///
+  noise_map_fh_.setDoseMap(conf.getParameter<std::string>("doseMap"), conf.getParameter<uint32_t>("scaleByDoseAlgo"));
+  noise_map_fh_.setFluenceScaleFactor(conf.getParameter<double>("scaleByDoseFactor"));
+  noise_map_fh_.setIleakParam(
+      conf.getParameter<edm::ParameterSet>("ileakParam").getParameter<std::vector<double>>("ileakParam"));
+  noise_map_fh_.setCceParam(
+      conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamFine"),
+      conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThin"),
+      conf.getParameter<edm::ParameterSet>("cceParams").getParameter<std::vector<double>>("cceParamThick"));
 }
 
 void HGCalTriggerNtupleHGCDigis::initialize(TTree& tree,
@@ -105,6 +146,7 @@ void HGCalTriggerNtupleHGCDigis::initialize(TTree& tree,
 
   tree.Branch("hgcdigi_n", &hgcdigi_n_, "hgcdigi_n/I");
   tree.Branch("hgcdigi_id", &hgcdigi_id_);
+  tree.Branch("hgcdigi_det", &hgcdigi_det_);
   tree.Branch("hgcdigi_subdet", &hgcdigi_subdet_);
   tree.Branch("hgcdigi_zside", &hgcdigi_side_);
   tree.Branch("hgcdigi_layer", &hgcdigi_layer_);
@@ -126,8 +168,15 @@ void HGCalTriggerNtupleHGCDigis::initialize(TTree& tree,
   tree.Branch("hgcdigi_waferv", &hgcdigi_waferv_);
   tree.Branch("hgcdigi_cellu", &hgcdigi_cellu_);
   tree.Branch("hgcdigi_cellv", &hgcdigi_cellv_);
-  if (is_Simhit_comp_)
+  tree.Branch("hgcdigi_gain", &hgcdigi_gain_);
+  tree.Branch("hgcdigi_lsb", &hgcdigi_lsb_);
+  tree.Branch("hgcdigi_charge", &hgcdigi_charge_);
+  tree.Branch("hgcdigi_mip", &hgcdigi_mip_);
+  tree.Branch("hgcdigi_mip2", &hgcdigi_mip2_);
+  if (is_Simhit_comp_) {
     tree.Branch("hgcdigi_simenergy", &hgcdigi_simenergy_);
+    //tree.Branch("hgcdigi_simcharge", &hgcdigi_simcharge_);
+  }
 
   tree.Branch("bhdigi_n", &bhdigi_n_, "bhdigi_n/I");
   tree.Branch("bhdigi_id", &bhdigi_id_);
@@ -160,6 +209,10 @@ void HGCalTriggerNtupleHGCDigis::fill(const edm::Event& e, const HGCalTriggerNtu
   const HGCalDigiCollection& bh_digis = *bh_digis_h;
 
   triggerTools_.setGeometry(es.geometry.product());
+  noise_map_ee_.setGeometry(
+      triggerTools_.getTriggerGeometry()->eeGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
+  noise_map_fh_.setGeometry(
+      triggerTools_.getTriggerGeometry()->hsiGeometry(), HGCalSiNoiseMap<HGCSiliconDetId>::AUTO, 10);
 
   // sim hit association
   std::unordered_map<uint32_t, double> simhits_ee;
@@ -171,6 +224,7 @@ void HGCalTriggerNtupleHGCDigis::fill(const edm::Event& e, const HGCalTriggerNtu
   clear();
   hgcdigi_n_ = ee_digis.size() + fh_digis.size();
   hgcdigi_id_.reserve(hgcdigi_n_);
+  hgcdigi_det_.reserve(hgcdigi_n_);
   hgcdigi_subdet_.reserve(hgcdigi_n_);
   hgcdigi_side_.reserve(hgcdigi_n_);
   hgcdigi_layer_.reserve(hgcdigi_n_);
@@ -186,8 +240,15 @@ void HGCalTriggerNtupleHGCDigis::fill(const edm::Event& e, const HGCalTriggerNtu
   hgcdigi_waferv_.reserve(hgcdigi_n_);
   hgcdigi_cellu_.reserve(hgcdigi_n_);
   hgcdigi_cellv_.reserve(hgcdigi_n_);
-  if (is_Simhit_comp_)
+  hgcdigi_gain_.reserve(hgcdigi_n_);
+  hgcdigi_lsb_.reserve(hgcdigi_n_);
+  hgcdigi_charge_.reserve(hgcdigi_n_);
+  hgcdigi_mip_.reserve(hgcdigi_n_);
+  hgcdigi_mip2_.reserve(hgcdigi_n_);
+  if (is_Simhit_comp_) {
     hgcdigi_simenergy_.reserve(hgcdigi_n_);
+    // hgcdigi_simcharge_.reserve(hgcdigi_n_);
+  }
 
   bhdigi_n_ = bh_digis.size();
   bhdigi_id_.reserve(bhdigi_n_);
@@ -220,6 +281,11 @@ void HGCalTriggerNtupleHGCDigis::fill(const edm::Event& e, const HGCalTriggerNtu
       hgcdigi_data_[i].emplace_back(digi[digiBXselect_[i]].data());
       hgcdigi_isadc_[i].emplace_back(!digi[digiBXselect_[i]].mode());
     }
+    hgcdigi_gain_.emplace_back(digi[2].gain());
+    hgcdigi_lsb_.emplace_back(lsb(digi, id));
+    hgcdigi_charge_.emplace_back(charge(digi, id));
+    hgcdigi_mip_.emplace_back(mip(digi, id));
+    hgcdigi_mip2_.emplace_back(mipFromADC(digi, id));
     const HGCSiliconDetId idsi(digi.id());
     hgcdigi_waferu_.emplace_back(idsi.waferU());
     hgcdigi_waferv_.emplace_back(idsi.waferV());
@@ -249,6 +315,11 @@ void HGCalTriggerNtupleHGCDigis::fill(const edm::Event& e, const HGCalTriggerNtu
       hgcdigi_data_[i].emplace_back(digi[digiBXselect_[i]].data());
       hgcdigi_isadc_[i].emplace_back(!digi[digiBXselect_[i]].mode());
     }
+    hgcdigi_gain_.emplace_back(digi[2].gain());
+    hgcdigi_lsb_.emplace_back(lsb(digi, id));
+    hgcdigi_charge_.emplace_back(charge(digi, id));
+    hgcdigi_mip_.emplace_back(mip(digi, id));
+    hgcdigi_mip2_.emplace_back(mipFromADC(digi, id));
     const HGCSiliconDetId idsi(digi.id());
     hgcdigi_waferu_.emplace_back(idsi.waferU());
     hgcdigi_waferv_.emplace_back(idsi.waferV());
@@ -334,6 +405,7 @@ void HGCalTriggerNtupleHGCDigis::simhits(const edm::Event& e,
 void HGCalTriggerNtupleHGCDigis::clear() {
   hgcdigi_n_ = 0;
   hgcdigi_id_.clear();
+  hgcdigi_det_.clear();
   hgcdigi_subdet_.clear();
   hgcdigi_side_.clear();
   hgcdigi_layer_.clear();
@@ -349,6 +421,11 @@ void HGCalTriggerNtupleHGCDigis::clear() {
     hgcdigi_data_[i].clear();
     hgcdigi_isadc_[i].clear();
   }
+  hgcdigi_gain_.clear();
+  hgcdigi_lsb_.clear();
+  hgcdigi_charge_.clear();
+  hgcdigi_mip_.clear();
+  hgcdigi_mip2_.clear();
   if (is_Simhit_comp_)
     hgcdigi_simenergy_.clear();
 
@@ -368,4 +445,145 @@ void HGCalTriggerNtupleHGCDigis::clear() {
   }
   if (is_Simhit_comp_)
     bhdigi_simenergy_.clear();
+}
+
+float HGCalTriggerNtupleHGCDigis::lsb(const HGCalDataFrame& frame, const DetId& cellId) const {
+  constexpr int kIntimeSample = 2;
+
+  double adcLSB = 0.;
+  if (cellId.det() == DetId::HGCalEE) {
+    HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_ee_.getSiCellOpCharacteristics(cellId);
+    HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);
+    adcLSB = noise_map_ee_.getLSBPerGain()[gain];
+  } else if (cellId.det() == DetId::HGCalHSi) {
+    HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_fh_.getSiCellOpCharacteristics(cellId);
+    HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);
+    adcLSB = noise_map_fh_.getLSBPerGain()[gain];
+  }
+
+  // auto gain = static_cast<HGCalSiNoiseMap::GainRange_t>(frame[kIntimeSample].gain());
+  // double adcLSB = 1./80.;
+  // if(gain==HGCalSiNoiseMap::q160fC) adcLSB=1./160.;
+  // else if(gain==HGCalSiNoiseMap::q320fC) adcLSB=1./320.;
+
+  // double adcLSB = 80.;
+  // if(gain==HGCalSiNoiseMap::q160fC) adcLSB=160.;
+  // else if(gain==HGCalSiNoiseMap::q320fC) adcLSB=320.;
+
+  // double adcLSB = 1./320.;
+  // if(gain==HGCalSiNoiseMap::q160fC) adcLSB=1./160.;
+  // else if(gain==HGCalSiNoiseMap::q320fC) adcLSB=1./80.;
+
+  return adcLSB;
+}
+
+float HGCalTriggerNtupleHGCDigis::charge(const HGCalDataFrame& frame, const DetId& cellId) const {
+  constexpr int kIntimeSample = 2;
+  bool isTDC(frame[kIntimeSample].mode());
+  double rawData(double(frame[kIntimeSample].data()));
+  bool isBusy(isTDC && rawData == 0);
+
+  double adcLSB = 0.;
+  double cce = 1.;
+  if (cellId.det() == DetId::HGCalEE) {
+    HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_ee_.getSiCellOpCharacteristics(cellId);
+    HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);
+    adcLSB = noise_map_ee_.getLSBPerGain()[gain];
+    cce = siop.core.cce;
+  } else if (cellId.det() == DetId::HGCalHSi) {
+    HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_fh_.getSiCellOpCharacteristics(cellId);
+    HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);
+    adcLSB = noise_map_fh_.getLSBPerGain()[gain];
+    cce = siop.core.cce;
+  }
+
+  if (isBusy) {
+    return 0.;
+  }
+  double amplitude = 0.;
+  if (isTDC) {
+    amplitude = (std::floor(tdcOnset_ / adcLSB) + 1.0) * adcLSB + (rawData + 0.5) * tdcLSB_;
+  } else {  //ADC mode
+    amplitude = std::max(0., rawData + 0.5) * adcLSB;
+  }
+  amplitude /= cce;
+  // if(amplitude>60 && !isTDC) {
+  // std::cerr<<"isTDC="<<isTDC<<" rawData="<<rawData<<" gain="<<gain<<" adcLSB="<<adcLSB<<"\n";
+  // }
+  return amplitude;
+}
+
+float HGCalTriggerNtupleHGCDigis::mip(const HGCalDataFrame& frame, const DetId& cellId) const {
+  constexpr int kIntimeSample = 2;
+  bool isTDC(frame[kIntimeSample].mode());
+  double rawData(double(frame[kIntimeSample].data()));
+  bool isBusy(isTDC && rawData == 0);
+
+  double adcLSB = 0.;
+  double cce = 1.;
+  double mipfC = 1.;
+  if (cellId.det() == DetId::HGCalEE) {
+    HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_ee_.getSiCellOpCharacteristics(cellId);
+    HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);
+    adcLSB = noise_map_ee_.getLSBPerGain()[gain];
+    cce = siop.core.cce;
+    mipfC = siop.mipfC;
+  } else if (cellId.det() == DetId::HGCalHSi) {
+    HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_fh_.getSiCellOpCharacteristics(cellId);
+    HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);
+    adcLSB = noise_map_fh_.getLSBPerGain()[gain];
+    cce = siop.core.cce;
+    mipfC = siop.mipfC;
+  }
+
+  if (isBusy) {
+    return 0.;
+  }
+  double amplitude = 0.;
+  if (isTDC) {
+    amplitude = (std::floor(tdcOnset_ / adcLSB) + 1.0) * adcLSB + (rawData + 0.5) * tdcLSB_;
+  } else {  //ADC mode
+    amplitude = std::max(0., rawData + 0.5) * adcLSB;
+  }
+  amplitude /= cce;
+  amplitude /= mipfC;
+  return amplitude;
+}
+
+float HGCalTriggerNtupleHGCDigis::mipFromADC(const HGCalDataFrame& frame, const DetId& cellId) const {
+  constexpr int kIntimeSample = 2;
+  bool isTDC(frame[kIntimeSample].mode());
+  double rawData(double(frame[kIntimeSample].data()));
+  bool isBusy(isTDC && rawData == 0);
+
+  double adcLSB = 0.;
+  double cce = 1.;
+  unsigned mipADC = 1;
+  if (cellId.det() == DetId::HGCalEE) {
+    HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_ee_.getSiCellOpCharacteristics(cellId);
+    HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);
+    adcLSB = noise_map_ee_.getLSBPerGain()[gain];
+    cce = siop.core.cce;
+    mipADC = siop.mipADC;
+  } else if (cellId.det() == DetId::HGCalHSi) {
+    HGCalSiNoiseMap<HGCSiliconDetId>::SiCellOpCharacteristics siop = noise_map_fh_.getSiCellOpCharacteristics(cellId);
+    HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t gain((HGCalSiNoiseMap<HGCSiliconDetId>::GainRange_t)siop.core.gain);
+    adcLSB = noise_map_fh_.getLSBPerGain()[gain];
+    cce = siop.core.cce;
+    mipADC = siop.mipADC;
+  }
+
+  if (isBusy) {
+    return 0.;
+  }
+  double amplitude = 0.;
+  if (isTDC) {
+    amplitude = (std::floor(tdcOnset_ / adcLSB) + 1.0) * adcLSB + (rawData + 0.5) * tdcLSB_;
+  } else {  //ADC mode
+    amplitude = std::max(0., rawData + 0.5) * adcLSB;
+  }
+  amplitude /= cce;
+  amplitude /= adcLSB;
+  amplitude /= mipADC;
+  return amplitude;
 }

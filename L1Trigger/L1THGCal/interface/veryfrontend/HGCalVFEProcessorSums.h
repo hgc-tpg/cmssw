@@ -16,8 +16,10 @@ public:
   void run(const HGCalDigiCollection& digiColl, l1t::HGCalTriggerCellBxCollection& triggerCellColl) override;
 
 private:
-  std::unique_ptr<HGCalVFELinearizationImpl> vfeLinearizationSiImpl_;
-  std::unique_ptr<HGCalVFELinearizationImpl> vfeLinearizationScImpl_;
+  bool connectAllModules_ = false;
+  std::unique_ptr<HGCalVFELinearizationImpl> vfeLinearizationEEImpl_;
+  std::unique_ptr<HGCalVFELinearizationImpl> vfeLinearizationHEsiImpl_;
+  std::unique_ptr<HGCalVFELinearizationImpl> vfeLinearizationHEscImpl_;
   std::unique_ptr<HGCalVFESummationImpl> vfeSummationImpl_;
   std::unique_ptr<HGCalVFECompressionImpl> vfeCompressionLDMImpl_;
   std::unique_ptr<HGCalVFECompressionImpl> vfeCompressionHDMImpl_;

@@ -2,11 +2,14 @@
 
 DEFINE_EDM_PLUGIN(HGCalVFEProcessorBaseFactory, HGCalVFEProcessorSums, "HGCalVFEProcessorSums");
 
-HGCalVFEProcessorSums::HGCalVFEProcessorSums(const edm::ParameterSet& conf) : HGCalVFEProcessorBase(conf) {
-  vfeLinearizationSiImpl_ =
-      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_si"));
-  vfeLinearizationScImpl_ =
-      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_sc"));
+HGCalVFEProcessorSums::HGCalVFEProcessorSums(const edm::ParameterSet& conf)
+    : HGCalVFEProcessorBase(conf), connectAllModules_(conf.getParameter<bool>("connectAllModules")) {
+  vfeLinearizationEEImpl_ =
+      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_ee"), DetId::HGCalEE);
+  vfeLinearizationHEsiImpl_ =
+      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesi"), DetId::HGCalHSi);
+  vfeLinearizationHEscImpl_ =
+      std::make_unique<HGCalVFELinearizationImpl>(conf.getParameter<edm::ParameterSet>("linearizationCfg_hesc"), DetId::HGCalHSc);
 
   vfeSummationImpl_ = std::make_unique<HGCalVFESummationImpl>(conf.getParameter<edm::ParameterSet>("summationCfg"));
 
@@ -16,18 +19,21 @@ HGCalVFEProcessorSums::HGCalVFEProcessorSums(const edm::ParameterSet& conf) : HG
       std::make_unique<HGCalVFECompressionImpl>(conf.getParameter<edm::ParameterSet>("compressionCfg_hdm"));
 
   calibrationEE_ =
-      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_ee"));
+      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_ee"), DetId::HGCalEE);
   calibrationHEsi_ =
-      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_hesi"));
+      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_hesi"), DetId::HGCalHSi);
   calibrationHEsc_ =
-      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_hesc"));
+      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_hesc"), DetId::HGCalHSc);
   calibrationNose_ =
-      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_nose"));
+      std::make_unique<HGCalTriggerCellCalibration>(conf.getParameter<edm::ParameterSet>("calibrationCfg_nose"), DetId::HGCalEE);
 }
 
 void HGCalVFEProcessorSums::run(const HGCalDigiCollection& digiColl,
                                 l1t::HGCalTriggerCellBxCollection& triggerCellColl) {
   vfeSummationImpl_->setGeometry(geometry());
+  vfeLinearizationEEImpl_->setGeometry(geometry());
+  vfeLinearizationHEsiImpl_->setGeometry(geometry());
+  vfeLinearizationHEscImpl_->setGeometry(geometry());
   calibrationEE_->setGeometry(geometry());
   calibrationHEsi_->setGeometry(geometry());
   calibrationHEsc_->setGeometry(geometry());
@@ -47,7 +53,7 @@ void HGCalVFEProcessorSums::run(const HGCalDigiCollection& digiColl,
 
     // no disconnected layer for HFNose
     if (DetId(digiData.id()).subdetId() != ForwardSubdetector::HFNose) {
-      if (geometry()->disconnectedModule(module))
+      if (!connectAllModules_ && geometry()->disconnectedModule(module))
         continue;
     }
 
@@ -66,9 +72,13 @@ void HGCalVFEProcessorSums::run(const HGCalDigiCollection& digiColl,
   int thickness = triggerTools_.thicknessIndex(dataframes[0].id());
   // Linearization of ADC and TOT values to the same LSB
   if (isSilicon) {
-    vfeLinearizationSiImpl_->linearize(dataframes, linearized_dataframes);
+    if (isEM) {
+      vfeLinearizationEEImpl_->linearize(dataframes, linearized_dataframes);
+    } else {
+      vfeLinearizationHEsiImpl_->linearize(dataframes, linearized_dataframes);
+    }
   } else {
-    vfeLinearizationScImpl_->linearize(dataframes, linearized_dataframes);
+    vfeLinearizationHEscImpl_->linearize(dataframes, linearized_dataframes);
   }
   // Sum of sensor cells into trigger cells
   vfeSummationImpl_->triggerCellSums(linearized_dataframes, tc_payload);

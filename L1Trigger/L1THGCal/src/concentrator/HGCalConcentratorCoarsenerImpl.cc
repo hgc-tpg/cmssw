@@ -3,7 +3,8 @@
 HGCalConcentratorCoarsenerImpl::HGCalConcentratorCoarsenerImpl(const edm::ParameterSet& conf)
     : fixedDataSizePerHGCROC_(conf.getParameter<bool>("fixedDataSizePerHGCROC")),
       coarseTCmapping_(conf.getParameter<std::vector<unsigned>>("ctcSize")),
-      calibration_(conf.getParameterSet("superTCCalibration")),
+// FIXME: should have different calibrators for the different subdetectors
+      calibration_(conf.getParameterSet("superTCCalibration"), DetId::HGCalEE), 
       vfeCompression_(conf.getParameterSet("coarseTCCompression")) {}
 
 void HGCalConcentratorCoarsenerImpl::updateCoarseTriggerCellMaps(const l1t::HGCalTriggerCell& tc, uint32_t ctcid) {

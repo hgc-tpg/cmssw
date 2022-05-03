@@ -1,11 +1,21 @@
 from L1Trigger.L1THGCal.hgcalVFEProducer_cfi import vfe_proc
 
+def custom_old_digi(process):
+    process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_ee.oldDigi = True
+    process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_hesi.oldDigi = True
+    process.hgcalVFEProducer.ProcessorParameters.linearizationCfg_hesc.oldDigi = True
+    process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_ee.oldDigi = True
+    process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_hesi.oldDigi = True
+    process.hgcalVFEProducer.ProcessorParameters.calibrationCfg_hesc.oldDigi = True
+    return process
+
 def custom_hgcroc_oot(process,
-                      oot_coefficients=vfe_proc.linearizationCfg_si.oot_coefficients
+                      oot_coefficients=vfe_proc.linearizationCfg_ee.oot_coefficients
                       ):
     parameters = vfe_proc.clone(
-            linearizationCfg_si = vfe_proc.linearizationCfg_si.clone(oot_coefficients=oot_coefficients),
-            linearizationCfg_sc = vfe_proc.linearizationCfg_sc.clone(oot_coefficients=oot_coefficients),
+            linearizationCfg_ee = vfe_proc.linearizationCfg_ee.clone(oot_coefficients=oot_coefficients),
+            linearizationCfg_hesi = vfe_proc.linearizationCfg_hesi.clone(oot_coefficients=oot_coefficients),
+            linearizationCfg_hesc = vfe_proc.linearizationCfg_hesc.clone(oot_coefficients=oot_coefficients),
             )
     process.hgcalVFEProducer.ProcessorParameters = parameters
     return process

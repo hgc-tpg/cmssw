@@ -464,11 +464,11 @@ bool HGCalTriggerGeomTesterV9Imp2::checkMappingConsistency() {
     // HSc
     for (const auto& id : triggerGeometry_->hscGeometry()->getValidDetIds()) {
       // fill trigger cells
-      unsigned layer = HGCScintillatorDetId(id).layer();
-      if (HGCScintillatorDetId(id).type() != triggerGeometry_->hscTopology().dddConstants().getTypeTrap(layer)) {
-        std::cout << "Sci cell type = " << HGCScintillatorDetId(id).type()
-                  << " != " << triggerGeometry_->hscTopology().dddConstants().getTypeTrap(layer) << "\n";
-      }
+      // unsigned layer = HGCScintillatorDetId(id).layer();
+      // if (HGCScintillatorDetId(id).type() != triggerGeometry_->hscTopology().dddConstants().getTypeTrap(layer)) {
+      // std::cout << "Sci cell type = " << HGCScintillatorDetId(id).type()
+      // << " != " << triggerGeometry_->hscTopology().dddConstants().getTypeTrap(layer) << "\n";
+      // }
       uint32_t trigger_cell = triggerGeometry_->getTriggerCellFromCell(id);
       auto itr_insert = triggercells_to_cells.emplace(trigger_cell, std::unordered_set<uint32_t>());
       itr_insert.first->second.emplace(id);

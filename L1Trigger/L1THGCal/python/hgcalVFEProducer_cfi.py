@@ -8,16 +8,19 @@ import RecoLocalCalo.HGCalRecProducers.HGCalUncalibRecHit_cfi as recoparam
 import RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi as recocalibparam 
 from . import hgcalLayersCalibrationCoefficients_cfi as layercalibparam
 
+oldDigi = False
 
 feCfg_si = digiparam.hgceeDigitizer.digiCfg.feCfg
 feCfg_sc = digiparam.hgchebackDigitizer.digiCfg.feCfg
 
 # trigger cell LSB before compression is the LSB of the ADC
 triggerCellLsbBeforeCompression_si = float(feCfg_si.adcSaturation_fC.value())/(2**float(feCfg_si.adcNbits.value()))
+#  triggerCellLsbBeforeCompression_si = 1./80.
+
 triggerCellLsbBeforeCompression_sc = float(feCfg_sc.adcSaturation_fC.value())/(2**float(feCfg_sc.adcNbits.value()))
 
-# Linearization parameters for silicon
-linearization_params_si = cms.PSet(
+# Linearization parameters for EE
+linearization_params_ee = cms.PSet(
         linLSB = cms.double(triggerCellLsbBeforeCompression_si),
         adcsaturation = feCfg_si.adcSaturation_fC,
         tdcnBits = feCfg_si.tdcNbits,
@@ -25,11 +28,31 @@ linearization_params_si = cms.PSet(
         adcnBits = feCfg_si.adcNbits,
         tdcsaturation = feCfg_si.tdcSaturation_fC,
         linnBits = cms.uint32(17),
-         oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
+        oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
+        oldDigi = cms.bool(oldDigi),
+        noise = cms.PSet(),
+        ileakParam = cms.PSet(),
+        cceParams = cms.PSet(),
         )
 
-# Linearization parameters for scintillator
-linearization_params_sc = cms.PSet(
+# Linearization parameters for HE silicon
+linearization_params_hesi = cms.PSet(
+        linLSB = cms.double(triggerCellLsbBeforeCompression_si),
+        adcsaturation = feCfg_si.adcSaturation_fC,
+        tdcnBits = feCfg_si.tdcNbits,
+        tdcOnset = feCfg_si.tdcOnset_fC,
+        adcnBits = feCfg_si.adcNbits,
+        tdcsaturation = feCfg_si.tdcSaturation_fC,
+        linnBits = cms.uint32(17),
+        oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
+        oldDigi = cms.bool(oldDigi),
+        noise = cms.PSet(),
+        ileakParam = cms.PSet(),
+        cceParams = cms.PSet(),
+        )
+
+# Linearization parameters for HE scintillator
+linearization_params_hesc = cms.PSet(
         linLSB = cms.double(triggerCellLsbBeforeCompression_sc),
         adcsaturation = feCfg_sc.adcSaturation_fC,
         tdcnBits = feCfg_sc.tdcNbits,
@@ -37,7 +60,8 @@ linearization_params_sc = cms.PSet(
         adcnBits = feCfg_sc.adcNbits,
         tdcsaturation = feCfg_sc.tdcSaturation_fC,
         linnBits = cms.uint32(17),
-         oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
+        oot_coefficients = cms.vdouble(0., 0.), # OOT PU subtraction coeffs for samples (bx-2, bx-1). (0,0) = no OOT PU subtraction
+        oldDigi = cms.bool(oldDigi),
         )
 
 summation_params = cms.PSet(
@@ -75,6 +99,7 @@ thicknessCorrectionSi = recocalibparam.HGCalRecHit.thicknessCorrection
 thicknessCorrectionSc = recocalibparam.HGCalRecHit.sciThicknessCorrection
 thicknessCorrectionNose = recocalibparam.HGCalRecHit.thicknessNoseCorrection
 
+
 NTHICKNESS = 3
 calibration_params_ee = cms.PSet(
         lsb = cms.double(triggerCellLsbBeforeCompression_si),
@@ -82,6 +107,10 @@ calibration_params_ee = cms.PSet(
         dEdXweights = layerWeights,
         thicknessCorrection = cms.vdouble(thicknessCorrectionSi[0:NTHICKNESS]),
         chargeCollectionEfficiency = cms.PSet(),
+        oldDigi = cms.bool(oldDigi),
+        noise = cms.PSet(),
+        ileakParam = cms.PSet(),
+        cceParams = cms.PSet(),
         )
 
 calibration_params_hesi = cms.PSet(
@@ -90,6 +119,10 @@ calibration_params_hesi = cms.PSet(
         dEdXweights = layerWeights,
         thicknessCorrection = cms.vdouble(thicknessCorrectionSi[NTHICKNESS:2*NTHICKNESS]),
         chargeCollectionEfficiency = cms.PSet(),
+        oldDigi = cms.bool(oldDigi),
+        noise = cms.PSet(),
+        ileakParam = cms.PSet(),
+        cceParams = cms.PSet(),
         )
 
 calibration_params_hesc = cms.PSet(
@@ -98,6 +131,8 @@ calibration_params_hesc = cms.PSet(
         dEdXweights = layerWeights,
         thicknessCorrection = cms.vdouble(thicknessCorrectionSc.value()),
         chargeCollectionEfficiency = cms.PSet(values=cms.vdouble(1.)),
+        oldDigi = cms.bool(oldDigi),
+        noise = cms.PSet(),
         )
 
 calibration_params_nose = cms.PSet(
@@ -106,11 +141,14 @@ calibration_params_nose = cms.PSet(
         dEdXweights = layerWeightsNose,
         thicknessCorrection = thicknessCorrectionNose,
         chargeCollectionEfficiency = cms.PSet(),
+        oldDigi = cms.bool(True),
         )
 
 vfe_proc = cms.PSet( ProcessorName = cms.string('HGCalVFEProcessorSums'),
-                     linearizationCfg_si = linearization_params_si,
-                     linearizationCfg_sc = linearization_params_sc,
+                     connectAllModules = cms.bool(False),
+                     linearizationCfg_ee = linearization_params_ee,
+                     linearizationCfg_hesi = linearization_params_hesi,
+                     linearizationCfg_hesc = linearization_params_hesc,
                      summationCfg = summation_params,
                      compressionCfg_ldm = compression_params_ldm,
                      compressionCfg_hdm = compression_params_hdm,
@@ -122,18 +160,41 @@ vfe_proc = cms.PSet( ProcessorName = cms.string('HGCalVFEProcessorSums'),
 
 # isolate these refs in case they aren't available in some other WF
 from Configuration.Eras.Modifier_phase2_hgcal_cff import phase2_hgcal
+phase2_hgcal.toModify(linearization_params_ee,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
+    ileakParam = cms.PSet(refToPSet_ = cms.string("HGCAL_ileakParam_toUse")),
+    cceParams = cms.PSet(refToPSet_ = cms.string("HGCAL_cceParams_toUse")),
+)
+phase2_hgcal.toModify(linearization_params_hesi,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
+    ileakParam = cms.PSet(refToPSet_ = cms.string("HGCAL_ileakParam_toUse")),
+    cceParams = cms.PSet(refToPSet_ = cms.string("HGCAL_cceParams_toUse")),
+)
+
 phase2_hgcal.toModify(summation_params,
     noiseSilicon = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
     noiseScintillator = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_heback")),
 )
 
 phase2_hgcal.toModify(calibration_params_ee,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
+    ileakParam = cms.PSet(refToPSet_ = cms.string("HGCAL_ileakParam_toUse")),
+    cceParams = cms.PSet(refToPSet_ = cms.string("HGCAL_cceParams_toUse")),
     chargeCollectionEfficiency = cms.PSet(refToPSet_ = cms.string("HGCAL_chargeCollectionEfficiencies")),
 )
 phase2_hgcal.toModify(calibration_params_hesi,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
+    ileakParam = cms.PSet(refToPSet_ = cms.string("HGCAL_ileakParam_toUse")),
+    cceParams = cms.PSet(refToPSet_ = cms.string("HGCAL_cceParams_toUse")),
     chargeCollectionEfficiency = cms.PSet(refToPSet_ = cms.string("HGCAL_chargeCollectionEfficiencies")),
 )
+
+phase2_hgcal.toModify(calibration_params_hesc,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_heback")),
+    )
+
 phase2_hgcal.toModify(calibration_params_nose,
+    noise = cms.PSet(refToPSet_ = cms.string("HGCAL_noise_fC")),
     chargeCollectionEfficiency = cms.PSet(refToPSet_ = cms.string("HGCAL_chargeCollectionEfficiencies")),
 )
 

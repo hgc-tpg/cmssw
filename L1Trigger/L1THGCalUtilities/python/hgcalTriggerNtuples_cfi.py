@@ -42,6 +42,13 @@ ntuple_genjet = cms.PSet(
     GenJets = cms.InputTag('ak4GenJetsNoNu')
 )
 
+import SimCalorimetry.HGCalSimProducers.hgcalDigitizer_cfi as digiparam
+feCfg_si = digiparam.hgceeDigitizer.digiCfg.feCfg
+
+# Radiation map info
+integLumi=3000.
+from SimCalorimetry.HGCalSimProducers.hgcalDigitizer_cfi import HGCAL_ileakParam_toUse,HGCAL_cceParams_toUse
+
 ntuple_digis = cms.PSet(
     NtupleName = cms.string('HGCalTriggerNtupleHGCDigis'),
     HGCDigisEE = cms.InputTag('simHGCalUnsuppressedDigis:EE'),
@@ -50,8 +57,16 @@ ntuple_digis = cms.PSet(
     eeSimHits = cms.InputTag('g4SimHits:HGCHitsEE'),
     fhSimHits = cms.InputTag('g4SimHits:HGCHitsHEfront'),
     bhSimHits = cms.InputTag('g4SimHits:HGCHitsHEback'),
-    isSimhitComp = cms.bool(False),
-    digiBXselect = cms.vuint32(2)
+    isSimhitComp = cms.bool(True),
+    digiBXselect = cms.vuint32(2),
+    tdcnBits = feCfg_si.tdcNbits,
+    tdcOnset = feCfg_si.tdcOnset_fC,
+    tdcsaturation = feCfg_si.tdcSaturation_fC,
+    doseMap           = cms.string('SimCalorimetry/HGCalSimProducers/data/doseParams_3000fb_fluka-6.2.0.1.txt'),
+    scaleByDoseAlgo   = cms.uint32(0),
+    scaleByDoseFactor = cms.double(integLumi/3000.),
+    ileakParam        = HGCAL_ileakParam_toUse,
+    cceParams         = HGCAL_cceParams_toUse,
 )
 
 ntuple_triggercells = cms.PSet(
@@ -61,7 +76,7 @@ ntuple_triggercells = cms.PSet(
     eeSimHits = cms.InputTag('g4SimHits:HGCHitsEE'),
     fhSimHits = cms.InputTag('g4SimHits:HGCHitsHEfront'),
     bhSimHits = cms.InputTag('g4SimHits:HGCHitsHEback'), 
-    FillSimEnergy = cms.bool(False),
+    FillSimEnergy = cms.bool(True),
     FillTruthMap = cms.bool(False),
     fcPerMip = fcPerMip,
     keV2fC = keV2fC,
