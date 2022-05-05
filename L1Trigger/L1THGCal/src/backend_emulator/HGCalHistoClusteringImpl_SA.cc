@@ -313,8 +313,8 @@ void HGCalHistoClusteringImplSA::thresholdMaximaFinder( HGCalHistogramCellSAPtrC
 // Temporary simulation of local maxima finder
 // Not an emulation of any firmware
 void HGCalHistoClusteringImplSA::localMaximaFinder( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const {
-  const std::vector<unsigned> maximaWidths{ 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-
+  // const std::vector<unsigned> maximaWidths{ 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }; // Padded this with 4*1 at the end.  Firmware this was based on has 40 entries, but there are 44 bins.
+  const std::vector<unsigned> maximaWidths(config_.cRows(), 1);
 
   for ( auto& hc : histogram ) {
     if ( hc->S() > 0 ) {
@@ -425,11 +425,11 @@ void HGCalHistoClusteringImplSA::clusterizer( HGCalTriggerCellSAPtrCollection& t
       // For i=0, i-1=-1, which would give the last element of lastLatched in python, but is out of bounds in C++
       // Similar for i=17
       // Need to find out intended behaviour
-      bool deltaMinus = (i>0) ? ( lastLatched[i]->column() - lastLatched[i-1]->column() ) > 6 : false ; // Magic numbers
-      bool deltaPlus = (i<17) ? ( lastLatched[i+1]->column() - lastLatched[i]->column() ) > 6 : false ; // Magic numbers
+      bool deltaMinus = (i>0) ? ( lastLatched[i]->column() - lastLatched[i-1]->column() ) > 6 : true ; // Magic numbers
+      bool deltaPlus = (i<17) ? ( lastLatched[i+1]->column() - lastLatched[i]->column() ) > 6 : true ; // Magic numbers
 
-      bool compareEMinus = (i>0) ? ( lastLatched[i]->energy() > lastLatched[i-1]->energy() ) : false; // Magic numbers
-      bool compareEPlus = (i<17) ? ( lastLatched[i]->energy() >= lastLatched[i+1]->energy() ) : false; // Magic numbers
+      bool compareEMinus = (i>0) ? ( lastLatched[i]->energy() > lastLatched[i-1]->energy() ) : true; // Magic numbers
+      bool compareEPlus = (i<17) ? ( lastLatched[i]->energy() >= lastLatched[i+1]->energy() ) : true; // Magic numbers
 
       if ( lastLatched[i]->dataValid() ) {
         // Similar out of bounds issue here
