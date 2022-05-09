@@ -73,6 +73,8 @@ private:
                        unsigned int nInterleave,
                       bool setOutputGrid ) const;
 
+  void printHistogram( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
+
   l1thgcfirmware::ClusterAlgoConfig& config_;
 };
 

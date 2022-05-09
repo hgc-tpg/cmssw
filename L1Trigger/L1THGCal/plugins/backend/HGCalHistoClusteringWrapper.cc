@@ -199,6 +199,35 @@ l1t::HGCalMulticlusterBxCollection& multiClusters_out, const std::vector<std::ve
     multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::H_EARLY, emHEarlyIntFraction * multicluster.energy() );
 
     multiClusters_out.push_back(0, multicluster);
+
+    // Set cluster shower shape properties
+    multicluster.showerLength( cluster->ShowerLen() );
+    multicluster.coreShowerLength( cluster->CoreShowerLen() );
+    multicluster.firstLayer( cluster->FirstLayer() );
+    multicluster.Sigma_E_Quotient( cluster->Sigma_E_Quotient() );
+    multicluster.Sigma_E_Fraction( cluster->Sigma_E_Fraction() );
+    multicluster.Mean_z_Quotient( cluster->Mean_z_Quotient() );
+    multicluster.Mean_z_Fraction( cluster->Mean_z_Fraction() );
+    multicluster.Mean_phi_Quotient( cluster->Mean_phi_Quotient() );
+    multicluster.Mean_phi_Fraction( cluster->Mean_phi_Fraction() );
+    multicluster.Mean_eta_Quotient( cluster->Mean_eta_Quotient() );
+    multicluster.Mean_eta_Fraction( cluster->Mean_eta_Fraction() );
+    multicluster.Mean_roz_Quotient( cluster->Mean_roz_Quotient() );
+    multicluster.Mean_roz_Fraction( cluster->Mean_roz_Fraction() );
+    multicluster.Sigma_z_Quotient( cluster->Sigma_z_Quotient() );
+    multicluster.Sigma_z_Fraction( cluster->Sigma_z_Fraction() );
+    multicluster.Sigma_phi_Quotient( cluster->Sigma_phi_Quotient() );
+    multicluster.Sigma_phi_Fraction( cluster->Sigma_phi_Fraction() );
+    multicluster.Sigma_eta_Quotient( cluster->Sigma_eta_Quotient() );
+    multicluster.Sigma_eta_Fraction( cluster->Sigma_eta_Fraction() );
+    multicluster.Sigma_roz_Quotient( cluster->Sigma_roz_Quotient() );
+    multicluster.Sigma_roz_Fraction( cluster->Sigma_roz_Fraction() );
+    multicluster.E_EM_over_E_Quotient( cluster->E_EM_over_E_Quotient() );
+    multicluster.E_EM_over_E_Fraction( cluster->E_EM_over_E_Fraction() );
+    multicluster.E_EM_core_over_E_EM_Quotient( cluster->E_EM_core_over_E_EM_Quotient() );
+    multicluster.E_EM_core_over_E_EM_Fraction( cluster->E_EM_core_over_E_EM_Fraction() );
+    multicluster.E_H_early_over_E_Quotient( cluster->E_H_early_over_E_Quotient() );
+    multicluster.E_H_early_over_E_Fraction( cluster->E_H_early_over_E_Fraction() );
   }
 }
 
