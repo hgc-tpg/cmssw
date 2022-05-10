@@ -34,7 +34,7 @@ private:
                           l1thgcfirmware::HGCalTriggerCellSAPtrCollections& clusters_SA) const;
   void convertAlgorithmOutputs( l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& unclusteredTCs, l1t::HGCalMulticlusterBxCollection& multiClusters_out, const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& inputClustersPtrs ) const;
 
-  void clusterizeHisto( l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCells_in_SA, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& clusteredTCs, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& unclusteredTCs, l1thgcfirmware::CentroidHelperPtrCollection& prioritizedMaxima, l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags,
+  void clusterizeHisto( l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCells_in_SA, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& clusteredTCs, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& unclusteredTCs,
   l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums ) const;
 
   void setGeometry(const HGCalTriggerGeometryBase* const geom) { triggerTools_.setGeometry(geom); }
@@ -242,17 +242,15 @@ void HGCalHistoClusteringWrapper::process(
 
   l1thgcfirmware::HGCalTriggerCellSAPtrCollection clusteredTCs_out_SA;
   l1thgcfirmware::HGCalTriggerCellSAPtrCollection unclusteredTCs_out_SA;
-  l1thgcfirmware::CentroidHelperPtrCollection prioritizedMaxima_out_SA;
-  l1thgcfirmware::CentroidHelperPtrCollection readoutFlags_out_SA;
   l1thgcfirmware::HGCalClusterSAPtrCollection clusterSums_out_SA;
-  clusterizeHisto(triggerCells_in_SA, clusteredTCs_out_SA, unclusteredTCs_out_SA, prioritizedMaxima_out_SA, readoutFlags_out_SA, clusterSums_out_SA);
+  clusterizeHisto(triggerCells_in_SA, clusteredTCs_out_SA, unclusteredTCs_out_SA, clusterSums_out_SA);
   
   convertAlgorithmOutputs( clusterSums_out_SA, unclusteredTCs_out_SA, outputMulticlustersAndRejectedClusters.first, inputClusters );
 }
 
-void HGCalHistoClusteringWrapper::clusterizeHisto( l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCells_in_SA, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& clusteredTCs, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& unclusteredTCs, l1thgcfirmware::CentroidHelperPtrCollection& prioritizedMaxima, l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags, l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums ) const {
+void HGCalHistoClusteringWrapper::clusterizeHisto( l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCells_in_SA, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& clusteredTCs, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& unclusteredTCs, l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums ) const {
 
-  theAlgo_.runAlgorithm( triggerCells_in_SA, clusteredTCs, unclusteredTCs, prioritizedMaxima, readoutFlags, clusterSums );
+  theAlgo_.runAlgorithm( triggerCells_in_SA, clusteredTCs, unclusteredTCs, clusterSums );
 }
 
 void HGCalHistoClusteringWrapper::configure(

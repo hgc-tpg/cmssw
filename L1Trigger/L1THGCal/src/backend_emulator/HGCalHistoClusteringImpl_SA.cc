@@ -4,7 +4,7 @@ using namespace std;
 using namespace l1thgcfirmware;
 HGCalHistoClusteringImplSA::HGCalHistoClusteringImplSA( ClusterAlgoConfig& config ) : config_(config), tcDistribution_(config), seeding_(config), clustering_(config), clusterProperties_(config) {}
 
-void HGCalHistoClusteringImplSA::runAlgorithm(HGCalTriggerCellSAPtrCollections& inputs, HGCalTriggerCellSAPtrCollection& clusteredTCs, HGCalTriggerCellSAPtrCollection& unclusteredTCs, CentroidHelperPtrCollection& prioritizedMaxima, CentroidHelperPtrCollection& readoutFlags, HGCalClusterSAPtrCollection& clusterSums ) const {
+void HGCalHistoClusteringImplSA::runAlgorithm(const HGCalTriggerCellSAPtrCollections& inputs, HGCalTriggerCellSAPtrCollection& clusteredTCs, HGCalTriggerCellSAPtrCollection& unclusteredTCs, HGCalClusterSAPtrCollection& clusterSums ) const {
   // config_.printConfiguration();
 
   // TC distribution
@@ -16,6 +16,7 @@ void HGCalHistoClusteringImplSA::runAlgorithm(HGCalTriggerCellSAPtrCollections& 
   seeding_.runSeeding(distributedTCs, histogram);
 
   // Clustering
+  CentroidHelperPtrCollection readoutFlags;
   clustering_.runClustering( distributedTCs, histogram, clusteredTCs, readoutFlags );
 
   // Cluster properties
