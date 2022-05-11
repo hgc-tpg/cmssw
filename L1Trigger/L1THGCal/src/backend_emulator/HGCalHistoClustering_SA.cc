@@ -8,29 +8,31 @@ using namespace l1thgcfirmware;
 
 HGCalHistoClustering::HGCalHistoClustering(ClusterAlgoConfig& config) : config_(config) {}
 
-void HGCalHistoClustering::runClustering(const HGCalTriggerCellSAPtrCollection& triggerCellsIn, const HGCalHistogramCellSAPtrCollection& histogramIn, HGCalTriggerCellSAPtrCollection& clusteredTriggerCellsOut, CentroidHelperPtrCollection& readoutFlagsOut  ) const {
+void HGCalHistoClustering::runClustering(const HGCalTriggerCellSAPtrCollection& triggerCellsIn, const HGCalHistogramCellSAPtrCollection& histogramIn, HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCellsOut, CentroidHelperPtrCollection& readoutFlagsOut, HGCalClusterSAPtrCollection& protoClusters  ) const {
 
-  HGCalTriggerCellSAPtrCollection unclusteredTriggerCells;
+  HGCalTriggerCellSAShrPtrCollection unclusteredTriggerCells;
   CentroidHelperPtrCollection prioritizedMaxima;
   clusterizer(triggerCellsIn, histogramIn, clusteredTriggerCellsOut, unclusteredTriggerCells, prioritizedMaxima, readoutFlagsOut );
+  triggerCellToCluster( clusteredTriggerCellsOut, protoClusters );
 
 }
 
 
-void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& triggerCellsIn, const HGCalHistogramCellSAPtrCollection& histogram, HGCalTriggerCellSAPtrCollection& clusteredTriggerCellsOut, HGCalTriggerCellSAPtrCollection& unclusteredTriggerCellsOut, CentroidHelperPtrCollection& prioritizedMaxima, CentroidHelperPtrCollection& readoutFlagsOut ) const {
+void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& triggerCellsIn, const HGCalHistogramCellSAPtrCollection& histogram, HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCellsOut, HGCalTriggerCellSAShrPtrCollection& unclusteredTriggerCellsOut, CentroidHelperPtrCollection& prioritizedMaxima, CentroidHelperPtrCollection& readoutFlagsOut ) const {
   
   unsigned int seedCounter = 0;
-  vector< CentroidHelperPtrCollection > fifos( 18, CentroidHelperPtrCollection() ); // Magic numbers
+  CentroidHelperPtrCollections fifos( 18 ); // Magic numbers
   vector<unsigned int> clock( config_.cColumns(), config_.clusterizerMagicTime() );
-  CentroidHelperPtrCollection latched( 18+1, make_shared<CentroidHelper>() ); // Magic numbers
+  CentroidHelperShrPtrCollection latched( 18+1, make_shared<CentroidHelper>() ); // Magic numbers
 
-  HGCalTriggerCellSAPtrCollections clusteredTriggerCells( config_.cColumns(), HGCalTriggerCellSAPtrCollection() );
-  HGCalTriggerCellSAPtrCollections unclusteredTriggerCells( config_.cColumns(), HGCalTriggerCellSAPtrCollection() );
-  CentroidHelperPtrCollections readoutFlags( config_.cColumns(), CentroidHelperPtrCollection() );
+  HGCalTriggerCellSAShrPtrCollections clusteredTriggerCells( config_.cColumns(), HGCalTriggerCellSAShrPtrCollection() );
+  HGCalTriggerCellSAShrPtrCollections unclusteredTriggerCells( config_.cColumns(), HGCalTriggerCellSAShrPtrCollection() );
+  CentroidHelperPtrCollections readoutFlags( config_.cColumns() );
 
-  HGCalTriggerCellSAPtrCollectionss triggerCellBuffers( config_.cColumns(), HGCalTriggerCellSAPtrCollections( config_.cRows(), HGCalTriggerCellSAPtrCollection() ) );
+  HGCalTriggerCellSAShrPtrCollectionss triggerCellBuffers( config_.cColumns(), HGCalTriggerCellSAShrPtrCollections( config_.cRows(), HGCalTriggerCellSAShrPtrCollection() ) );
   for (const auto& tc : triggerCellsIn ) {
-    triggerCellBuffers.at( tc->index() ).at( tc->sortKey() ).push_back( tc );
+    // Temp copy of tc whilst moving from shared to unique ptr
+    triggerCellBuffers.at( tc->index() ).at( tc->sortKey() ).push_back( make_shared<HGCalTriggerCell>(*tc) );
   }
 
   for ( unsigned int iRow = 0; iRow < config_.cRows(); ++iRow ) {
@@ -39,7 +41,7 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
         unsigned int col = 18 + (4*k) + j; // Magic numbers
         const auto& cell = histogram.at( config_.cColumns() * iRow + col );
         if ( cell->S() > 0 ) {
-          auto ch = make_shared<CentroidHelper>( cell->clock() + 1 + j,
+          auto ch = make_unique<CentroidHelper>( cell->clock() + 1 + j,
                                                 4*k + j, // Magic numbers
                                                 cell->index(),
                                                 cell->sortKey(),
@@ -48,7 +50,7 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
                                                 cell->Y(),
                                                 true
                                                 );
-          fifos[k].push_back( ch );
+          fifos[k].push_back( move(ch) );
           ++seedCounter;
         }
       }
@@ -59,14 +61,14 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
     for ( unsigned int i = 0; i < 18; ++i ) { // Magic numbers
       if ( !latched[i]->dataValid() ) {
         if ( fifos[i].size() > 0 ) {
-          latched[i] = fifos[i][0];
+          latched[i] = move(fifos[i][0]);
           fifos[i].erase(fifos.at(i).begin());
         }
       }
     }
 
-    CentroidHelperPtrCollection accepted( 20, make_shared<CentroidHelper>() ); // Magic numbers
-    CentroidHelperPtrCollection lastLatched( latched );
+    CentroidHelperShrPtrCollection accepted( 20, make_shared<CentroidHelper>() ); // Magic numbers
+    CentroidHelperShrPtrCollection lastLatched( latched );
 
     for ( unsigned int i = 0; i < 18; ++i ) { // Magic numbers
       // Different implementation to python emulator
@@ -110,15 +112,15 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
       }
     }
 
-    CentroidHelperPtrCollection output( config_.cColumns(), make_shared<CentroidHelper>() );
+    CentroidHelperPtrCollection output( config_.cColumns() );
     for ( const auto& a : accepted ) {
       if ( a->dataValid() ) {
         for ( unsigned int iCol = a->column() - 3; iCol < a->column() + 4; ++iCol ) { // Magic numbers
           clock[iCol] = clock[a->column()];
-          output[iCol] = make_shared<CentroidHelper>(*a);
+          output[iCol] = make_unique<CentroidHelper>(*a);
           output[iCol]->setIndex( iCol );
           output[iCol]->setClock( clock[iCol] );
-          prioritizedMaxima.push_back( output[iCol] );
+          prioritizedMaxima.push_back( move(output[iCol]) );
         }
       }
     }
@@ -163,7 +165,7 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
           }
 
           for ( const auto& tc : clusteredTriggerCells[iCol] ) {
-            auto tcMatch = std::find_if(triggerCellBuffers[iCol][tc->sortKey()].begin(), triggerCellBuffers[iCol][tc->sortKey()].end(), [&](const HGCalTriggerCellSAPtr tcToMatch) {
+            auto tcMatch = std::find_if(triggerCellBuffers[iCol][tc->sortKey()].begin(), triggerCellBuffers[iCol][tc->sortKey()].end(), [&](const HGCalTriggerCellSAShrPtr tcToMatch) {
               bool isMatch = tc->index() == tcToMatch->index() &&
                              tc->rOverZ() == tcToMatch->rOverZ() &&
                              tc->layer() == tcToMatch->layer() &&
@@ -187,12 +189,12 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
         for ( unsigned int iCol = a->column() - 3; iCol < a->column() + 4; ++iCol ) { // Magic numbers
           clock[iCol] = T+1;
 
-          CentroidHelperPtr readoutFlag = make_shared<CentroidHelper>(T-2, iCol, true);
+          CentroidHelperPtr readoutFlag = make_unique<CentroidHelper>(T-2, iCol, true);
           if ( readoutFlag->clock() == 448 ) { // Magic numbers
             readoutFlag->setClock( readoutFlag->clock() + 1 );
           }
 
-          readoutFlags[iCol].push_back( readoutFlag );
+          readoutFlags[iCol].push_back( move(readoutFlag) );
         }
       }
     }
@@ -212,9 +214,13 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
         }
       }
 
-      for ( const auto& readoutFlag : readoutFlags[iCol] ) {
-        if ( readoutFlag->clock() == config_.clusterizerMagicTime() + i ) {
-          readoutFlagsOut.push_back( readoutFlag );
+      for ( auto& readoutFlag : readoutFlags[iCol] ) {
+        if ( readoutFlag ) {
+          if ( readoutFlag->clock() == config_.clusterizerMagicTime() + i ) {
+            // TODO : Check if we can move the readoutFlag and leave a nullptr
+            // Or if the readoutFlag could be used again later on
+            readoutFlagsOut.push_back( move( readoutFlag ) );
+          }
         }
       }
     }
@@ -229,5 +235,76 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
   // std::cout << "Number of readoutFlags : " << readoutFlagsOut.size() << std::endl;
   // for ( const auto& f : readoutFlagsOut ) {
   //   std::cout << f->clock() << " " << f->index() << " " << f->column() << " " << f->row() << " " << f->energy() << " " << f->X() << " " << f->Y() << " " << f->dataValid() << std::endl;
+  // }
+}
+
+void HGCalHistoClustering::triggerCellToCluster( const HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCells, HGCalClusterSAPtrCollection& clustersOut ) const {
+
+  const unsigned int stepLatency = config_.getStepLatency( TriggerCellToCluster );
+
+  clustersOut.clear();
+  for ( const auto& tc : clusteredTriggerCells ) {
+
+    auto cluster = make_unique<HGCalCluster>( tc->clock() + stepLatency,
+                                              tc->index(),
+                                              true, true
+                                            );
+
+    // Cluster from single TC
+    // Does this ever happen?
+    if ( tc->deltaR2() >= 25000 ) { // Magic numbers
+      clustersOut.push_back( move( cluster ) );
+      continue;
+    }
+
+    unsigned long int s_TC_W = ( int( tc->energy() / 4 ) == 0 ) ? 1 : tc->energy() / 4;
+    unsigned long int s_TC_Z = config_.depth( tc->layer() );
+
+    unsigned int triggerLayer = config_.triggerLayer( tc->layer() );
+    unsigned int s_E_EM = ( (  ( (unsigned long int) tc->energy() * config_.layerWeight_E_EM( triggerLayer ) ) + config_.correction() ) >> 18 );
+    if ( s_E_EM > config_.saturation() ) s_E_EM = config_.saturation();
+
+
+
+    unsigned int s_E_EM_core = ( ( (unsigned long int) tc->energy() * config_.layerWeight_E_EM_core( triggerLayer ) + config_.correction() ) >> 18 );
+    if ( s_E_EM_core > config_.saturation() ) s_E_EM_core = config_.saturation();
+
+    // Alternative constructor perhaps?
+    cluster->set_n_tc( 1 ); // Magic numbers
+    cluster->set_n_tc_w( 1 ); // Magic numbers
+    
+    cluster->set_e( ( config_.layerWeight_E( triggerLayer ) == 1 ) ? tc->energy() : 0  );
+    cluster->set_e_h_early( ( config_.layerWeight_E_H_early( triggerLayer ) == 1 ) ? tc->energy() : 0  );
+
+    cluster->set_e_em( s_E_EM );
+    cluster->set_e_em_core( s_E_EM_core );
+
+    cluster->set_w( s_TC_W );
+    cluster->set_w2( s_TC_W * s_TC_W );
+
+    cluster->set_wz( s_TC_W * s_TC_Z );
+    cluster->set_weta( 0 );
+    cluster->set_wphi( s_TC_W * tc->phi() );
+    cluster->set_wroz( s_TC_W * tc->rOverZ() );
+
+    cluster->set_wz2( s_TC_W * s_TC_Z * s_TC_Z );
+    cluster->set_weta2( 0 );
+    cluster->set_wphi2( s_TC_W * tc->phi() * tc->phi() );
+    cluster->set_wroz2( s_TC_W * tc->rOverZ() * tc->rOverZ() );
+
+    cluster->set_layerbits( cluster->layerbits() | ( ( (unsigned long int) 1) << ( 36 - triggerLayer ) ) ); // Magic numbers
+    cluster->set_sat_tc( cluster->e() == config_.saturation() || cluster->e_em() == config_.saturation() );
+    cluster->set_shapeq(1);
+
+    // Temp copy of TC whilst reducing use of shared ptr
+    cluster->add_constituent( make_shared<HGCalTriggerCell>(*tc) );
+    clustersOut.push_back( move( cluster ) );
+  }
+
+  // std::cout << "Output from triggerCellToCluster" << std::endl;
+  // std::cout << "Protoclusters : " << protoClusters.size() << std::endl;
+  // for ( const auto& pclus : protoClusters ) {
+
+  //     std::cout << pclus->clock() << " " << pclus->index() << " " << pclus->n_tc() << " " << pclus->e() << " " << pclus->e_em() << " " << pclus->e_em_core() << " " << pclus->e_h_early() << " " << pclus->w() << " " << pclus->n_tc_w() << " " << pclus->weta2() << " " << pclus->wphi2() << std::endl;
   // }
 }

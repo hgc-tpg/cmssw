@@ -19,7 +19,7 @@ DistServer::DistServer( unsigned int nInputs, unsigned int nOutputs, unsigned in
         }
     }
 
-HGCalTriggerCellSAPtrCollection DistServer::clock(HGCalTriggerCellSAPtrCollection& data) {
+HGCalTriggerCellSAShrPtrCollection DistServer::clock(HGCalTriggerCellSAShrPtrCollection& data) {
     for ( unsigned int iInput=0; iInput<nInputs(); ++iInput ) {
         if ( data[iInput]->dataValid() ) {
             inputs()[iInput].push_back( data[iInput] );
@@ -28,7 +28,7 @@ HGCalTriggerCellSAPtrCollection DistServer::clock(HGCalTriggerCellSAPtrCollectio
     
     vector< vector< bool > > lMap(nInputs(), vector<bool>(nOutputs()) );
 
-    HGCalTriggerCellSAPtrCollection lInputs(nInputs(),std::make_shared<HGCalTriggerCell>());
+    HGCalTriggerCellSAShrPtrCollection lInputs(nInputs(),std::make_shared<HGCalTriggerCell>());
 
     std::vector< std::vector< unsigned int> >& addr = this->addr();
 
@@ -45,7 +45,7 @@ HGCalTriggerCellSAPtrCollection DistServer::clock(HGCalTriggerCellSAPtrCollectio
         rotate(toRotate.begin(),  toRotate.begin()+1, toRotate.end() );
     }
 
-    HGCalTriggerCellSAPtrCollection lOutputs(nOutputs(),std::make_shared<HGCalTriggerCell>());
+    HGCalTriggerCellSAShrPtrCollection lOutputs(nOutputs(),std::make_shared<HGCalTriggerCell>());
 
     unsigned int nOutputs = 0;
     for ( unsigned int iOutput = 0; iOutput<lOutputs.size(); ++iOutput ) {

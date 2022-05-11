@@ -7,42 +7,45 @@ HGCalTCDistribution::HGCalTCDistribution(ClusterAlgoConfig& config) : config_(co
 
 void HGCalTCDistribution::runTriggerCellDistribution(const HGCalTriggerCellSAPtrCollections& triggerCellsIn, HGCalTriggerCellSAPtrCollection& triggerCellsOut ) const {
  
-    triggerCellInput( triggerCellsIn, triggerCellsOut );
-    triggerCellDistribution0( triggerCellsOut );
-    HGCalTriggerCellSAPtrCollections tcDistGrid1;
-    triggerCellDistribution1( triggerCellsOut, tcDistGrid1 );
-    HGCalTriggerCellSAPtrCollections tcDistGrid2;
-    triggerCellDistribution2( tcDistGrid1, triggerCellsOut, tcDistGrid2 );
-    HGCalTriggerCellSAPtrCollections tcDistGrid3;
-    triggerCellDistribution3( tcDistGrid2, triggerCellsOut, tcDistGrid3 );
-    triggerCellDistribution4( triggerCellsOut );
+    HGCalTriggerCellSAShrPtrCollection triggerCellsOutTemp;
+    triggerCellInput( triggerCellsIn, triggerCellsOutTemp );
+    triggerCellDistribution0( triggerCellsOutTemp );
+    HGCalTriggerCellSAShrPtrCollections tcDistGrid1;
+    triggerCellDistribution1( triggerCellsOutTemp, tcDistGrid1 );
+    HGCalTriggerCellSAShrPtrCollections tcDistGrid2;
+    triggerCellDistribution2( tcDistGrid1, triggerCellsOutTemp, tcDistGrid2 );
+    HGCalTriggerCellSAShrPtrCollections tcDistGrid3;
+    triggerCellDistribution3( tcDistGrid2, triggerCellsOutTemp, tcDistGrid3 );
+    triggerCellDistribution4( triggerCellsOutTemp );
     triggerCellDistribution5( tcDistGrid3, triggerCellsOut );
 
 }
 
-void HGCalTCDistribution::triggerCellInput( const HGCalTriggerCellSAPtrCollections& inputTCs, HGCalTriggerCellSAPtrCollection& outputTCs ) const {
+void HGCalTCDistribution::triggerCellInput( const HGCalTriggerCellSAPtrCollections& inputTCs, HGCalTriggerCellSAShrPtrCollection& outputTCs ) const {
 
   outputTCs.clear();
   for (unsigned int iFrame = 0; iFrame < inputTCs.size(); ++iFrame ) {
     for (unsigned int iInput = 0; iInput < inputTCs[iFrame].size(); ++iInput ) {
       auto& tc = inputTCs[iFrame][iInput];
+
       tc->setIndex(iInput);
       tc->setClock(iFrame+1);
+
       if ( tc->dataValid() ) {
-        outputTCs.push_back(tc);
+        outputTCs.push_back(make_shared<HGCalTriggerCell>(*tc));
       }
     }
   }
 }
 
-void HGCalTCDistribution::triggerCellDistribution0( const HGCalTriggerCellSAPtrCollection& triggerCellsIn ) const {
+void HGCalTCDistribution::triggerCellDistribution0( const HGCalTriggerCellSAShrPtrCollection& triggerCellsIn ) const {
   for ( auto& tc : triggerCellsIn ) {
     unsigned int newIndex = tc->index() + int( tc->index() / 24 ); // Magic numbers
     tc->setIndex( newIndex );
   }
 }
 
-void HGCalTCDistribution::triggerCellDistribution1( const HGCalTriggerCellSAPtrCollection& triggerCellsIn, HGCalTriggerCellSAPtrCollections& outTriggerCellDistributionGrid ) const {
+void HGCalTCDistribution::triggerCellDistribution1( const HGCalTriggerCellSAShrPtrCollection& triggerCellsIn, HGCalTriggerCellSAShrPtrCollections& outTriggerCellDistributionGrid ) const {
 
   initializeTriggerCellDistGrid( outTriggerCellDistributionGrid, config_.cClocks(), config_.cInputs2() );
 
@@ -62,7 +65,7 @@ void HGCalTCDistribution::triggerCellDistribution1( const HGCalTriggerCellSAPtrC
   }
 }
 
-void HGCalTCDistribution::triggerCellDistribution2( const HGCalTriggerCellSAPtrCollections& inTriggerCellDistributionGrid, HGCalTriggerCellSAPtrCollection& triggerCellsOut, HGCalTriggerCellSAPtrCollections& outTriggerCellDistributionGrid ) const {
+void HGCalTCDistribution::triggerCellDistribution2( const HGCalTriggerCellSAShrPtrCollections& inTriggerCellDistributionGrid, HGCalTriggerCellSAShrPtrCollection& triggerCellsOut, HGCalTriggerCellSAShrPtrCollections& outTriggerCellDistributionGrid ) const {
 
   const unsigned int latency = config_.getLatencyUpToAndIncluding( Dist2 );
 
@@ -77,7 +80,7 @@ void HGCalTCDistribution::triggerCellDistribution2( const HGCalTriggerCellSAPtrC
 
 }
 
-void HGCalTCDistribution::triggerCellDistribution3( const HGCalTriggerCellSAPtrCollections& inTriggerCellDistributionGrid, HGCalTriggerCellSAPtrCollection& triggerCellsOut, HGCalTriggerCellSAPtrCollections& outTriggerCellDistributionGrid ) const {
+void HGCalTCDistribution::triggerCellDistribution3( const HGCalTriggerCellSAShrPtrCollections& inTriggerCellDistributionGrid, HGCalTriggerCellSAShrPtrCollection& triggerCellsOut, HGCalTriggerCellSAShrPtrCollections& outTriggerCellDistributionGrid ) const {
   triggerCellsOut.clear();
   initializeTriggerCellDistGrid( outTriggerCellDistributionGrid, config_.cClocks(), config_.cInt() );
   for ( unsigned int iClock = 0; iClock < config_.cClocks(); ++iClock ) {
@@ -96,7 +99,7 @@ void HGCalTCDistribution::triggerCellDistribution3( const HGCalTriggerCellSAPtrC
   }
 }
 
-void HGCalTCDistribution::triggerCellDistribution4( const HGCalTriggerCellSAPtrCollection& triggerCellsIn ) const {
+void HGCalTCDistribution::triggerCellDistribution4( const HGCalTriggerCellSAShrPtrCollection& triggerCellsIn ) const {
   const unsigned int stepLatency = config_.getStepLatency( Dist4 );
   for ( auto& lCell : triggerCellsIn ) {
     lCell->addLatency( stepLatency );
@@ -110,23 +113,29 @@ void HGCalTCDistribution::triggerCellDistribution4( const HGCalTriggerCellSAPtrC
   }
 }
 
-void HGCalTCDistribution::triggerCellDistribution5( const HGCalTriggerCellSAPtrCollections& inTriggerCellDistributionGrid, HGCalTriggerCellSAPtrCollection& triggerCellsOut ) const {
+void HGCalTCDistribution::triggerCellDistribution5( const HGCalTriggerCellSAShrPtrCollections& inTriggerCellDistributionGrid, HGCalTriggerCellSAPtrCollection& triggerCellsOut ) const {
   const unsigned int latency = config_.getLatencyUpToAndIncluding( Dist5 );
 
   // Dummy distribution grid?  After writing the runDistServers function to avoid duplicating identical code from triggerCellDistribution2, I realised the second possible use case of runDistServers isn't completely identical i.e. the triggerCellDistributionGrid isn't used/set
-  HGCalTriggerCellSAPtrCollections outTriggerCellDistributionGrid;
-  triggerCellsOut.clear();
+  HGCalTriggerCellSAShrPtrCollections outTriggerCellDistributionGrid;
+  HGCalTriggerCellSAShrPtrCollection triggerCellsOutTemp;
   runDistServers(inTriggerCellDistributionGrid,
                   outTriggerCellDistributionGrid,
-                  triggerCellsOut,
+                  triggerCellsOutTemp,
                   latency,
                   18, 5, 6, 4, false); // Magic numbers
 
+  // Temp fix whilst moving from shared to unique ptr
+  triggerCellsOut.clear();
+  for ( const auto& tc : triggerCellsOutTemp ) {
+    triggerCellsOut.push_back( make_unique<HGCalTriggerCell>(*tc));
+  }
+
 }
 
-void HGCalTCDistribution::initializeTriggerCellDistGrid( HGCalTriggerCellSAPtrCollections& grid, unsigned int nX, unsigned int nY ) const {
+void HGCalTCDistribution::initializeTriggerCellDistGrid( HGCalTriggerCellSAShrPtrCollections& grid, unsigned int nX, unsigned int nY ) const {
   for (unsigned int iX = 0; iX < nX; ++iX ) {
-    HGCalTriggerCellSAPtrCollection temp;
+    HGCalTriggerCellSAShrPtrCollection temp;
     for (unsigned int iY = 0; iY < nY; ++iY ) {
       temp.emplace_back(make_shared<HGCalTriggerCell>());
     }
@@ -134,9 +143,9 @@ void HGCalTCDistribution::initializeTriggerCellDistGrid( HGCalTriggerCellSAPtrCo
   }
 }
 
-void HGCalTCDistribution::runDistServers( const HGCalTriggerCellSAPtrCollections& gridIn,
-                      HGCalTriggerCellSAPtrCollections& gridOut,
-                      HGCalTriggerCellSAPtrCollection& tcsOut,
+void HGCalTCDistribution::runDistServers( const HGCalTriggerCellSAShrPtrCollections& gridIn,
+                      HGCalTriggerCellSAShrPtrCollections& gridOut,
+                      HGCalTriggerCellSAShrPtrCollection& tcsOut,
                       unsigned int latency,
                       unsigned int nDistServers,
                       unsigned int nInputs,
@@ -149,8 +158,8 @@ void HGCalTCDistribution::runDistServers( const HGCalTriggerCellSAPtrCollections
     for ( unsigned int iDistServer = 0; iDistServer < nDistServers; ++iDistServer ) {
       auto first = gridIn[iClock].cbegin() + nInputs*iDistServer;
       auto last = gridIn[iClock].cbegin() + nInputs*(iDistServer+1);
-      HGCalTriggerCellSAPtrCollection inCells(first, last);
-      HGCalTriggerCellSAPtrCollection lCells = distServers[iDistServer].clock(inCells);
+      HGCalTriggerCellSAShrPtrCollection inCells(first, last);
+      HGCalTriggerCellSAShrPtrCollection lCells = distServers[iDistServer].clock(inCells);
 
       for ( unsigned int iOutput = 0; iOutput<lCells.size(); ++iOutput ) {
         auto& tc = lCells[iOutput];

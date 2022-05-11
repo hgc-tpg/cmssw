@@ -30,7 +30,7 @@ void HGCalHistoSeeding::triggerCellToHistogramCell( const HGCalTriggerCellSAPtrC
 
   histogramOut.clear();
   for ( auto& tc : triggerCellsIn ) {
-    auto hc = make_shared<HGCalHistogramCell>( tc->clock() + latency,
+    auto hc = make_unique<HGCalHistogramCell>( tc->clock() + latency,
                                                tc->index(),
                                                tc->energy(),
                                                tc->phi(),
@@ -40,7 +40,7 @@ void HGCalHistoSeeding::triggerCellToHistogramCell( const HGCalTriggerCellSAPtrC
                                               );
     tc->setClock( hc->clock() );
     tc->setSortKey( hc->sortKey() );
-    histogramOut.push_back( hc );
+    histogramOut.push_back( std::move(hc) );
   }
 
 }
@@ -52,9 +52,7 @@ void HGCalHistoSeeding::makeHistogram( const HGCalHistogramCellSAPtrCollection& 
   histogramOut.clear();
   for ( unsigned int iRow = 0; iRow < config_.cRows(); ++iRow ) {
     for ( unsigned int iColumn = 0; iColumn < config_.cColumns(); ++iColumn ) {
-
-      auto hc = make_shared<HGCalHistogramCell>( latency, iColumn, iRow );
-      histogramOut.push_back( hc );
+      histogramOut.push_back( make_unique<HGCalHistogramCell>( latency, iColumn, iRow ) );
     }
   }
 
@@ -83,26 +81,26 @@ void HGCalHistoSeeding::smearHistogram1D( HGCalHistogramCellSAPtrCollection& his
     int width = config_.kernelWidth( row );
     unsigned int offset = 1;
     while ( width > 0 ) {
-      shared_ptr<HGCalHistogramCell> l1 = make_shared<HGCalHistogramCell>(HGCalHistogramCell());
-      shared_ptr<HGCalHistogramCell> l2 = make_shared<HGCalHistogramCell>(HGCalHistogramCell());
-      shared_ptr<HGCalHistogramCell> r1 = make_shared<HGCalHistogramCell>(HGCalHistogramCell());
-      shared_ptr<HGCalHistogramCell> r2 = make_shared<HGCalHistogramCell>(HGCalHistogramCell());
+      unique_ptr<HGCalHistogramCell> l1 = make_unique<HGCalHistogramCell>(HGCalHistogramCell());
+      unique_ptr<HGCalHistogramCell> l2 = make_unique<HGCalHistogramCell>(HGCalHistogramCell());
+      unique_ptr<HGCalHistogramCell> r1 = make_unique<HGCalHistogramCell>(HGCalHistogramCell());
+      unique_ptr<HGCalHistogramCell> r2 = make_unique<HGCalHistogramCell>(HGCalHistogramCell());
 
 
       if ( width >= 2 ) {
         if ( int(col - offset - 1)  >= 0 ) {
-          l2 = make_shared<HGCalHistogramCell>(lHistogram[binIndex - offset - 1]/4); // Magic numbers (?)
+          l2 = make_unique<HGCalHistogramCell>(lHistogram[binIndex - offset - 1]/4); // Magic numbers (?)
         }
         if ( int(col + offset + 1) <= int(config_.cColumns()-1) ) {
-          r2 = make_shared<HGCalHistogramCell>(lHistogram[binIndex + offset + 1]/4); // Magic numbers (?)
+          r2 = make_unique<HGCalHistogramCell>(lHistogram[binIndex + offset + 1]/4); // Magic numbers (?)
         }
       }
       
       if ( int(col - offset)  >= 0 ) {
-        l1 = make_shared<HGCalHistogramCell>(lHistogram[binIndex - offset]/2); // Magic numbers (?)
+        l1 = make_unique<HGCalHistogramCell>(lHistogram[binIndex - offset]/2); // Magic numbers (?)
       }
       if ( int(col + offset)  <= int(config_.cColumns()-1) ) {
-        r1 = make_shared<HGCalHistogramCell>(lHistogram[binIndex + offset]/2); // Magic numbers (?)
+        r1 = make_unique<HGCalHistogramCell>(lHistogram[binIndex + offset]/2); // Magic numbers (?)
       }
       *hc += ( ( *l2 + *l1 ) / scale + ( *r2 + *r1 ) / scale );
       scale *= 4; // Magic numbers

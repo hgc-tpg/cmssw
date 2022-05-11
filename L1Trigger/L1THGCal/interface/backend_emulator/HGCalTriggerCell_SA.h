@@ -77,10 +77,17 @@ namespace l1thgcfirmware {
   };
 
   typedef std::vector<HGCalTriggerCell> HGCalTriggerCellSACollection;
-  typedef std::shared_ptr<HGCalTriggerCell> HGCalTriggerCellSAPtr;
+
+  typedef std::unique_ptr<HGCalTriggerCell> HGCalTriggerCellSAPtr;
   typedef std::vector<HGCalTriggerCellSAPtr> HGCalTriggerCellSAPtrCollection;
-  typedef std::vector< std::vector<std::shared_ptr<HGCalTriggerCell> > > HGCalTriggerCellSAPtrCollections;
-  typedef std::vector< std::vector< std::vector<std::shared_ptr<HGCalTriggerCell> > > > HGCalTriggerCellSAPtrCollectionss;
+  typedef std::vector< std::vector<std::unique_ptr<HGCalTriggerCell> > > HGCalTriggerCellSAPtrCollections;
+  typedef std::vector< std::vector< std::vector<std::unique_ptr<HGCalTriggerCell> > > > HGCalTriggerCellSAPtrCollectionss;
+
+
+  typedef std::shared_ptr<HGCalTriggerCell> HGCalTriggerCellSAShrPtr;
+  typedef std::vector<HGCalTriggerCellSAShrPtr> HGCalTriggerCellSAShrPtrCollection;
+  typedef std::vector< std::vector<std::shared_ptr<HGCalTriggerCell> > > HGCalTriggerCellSAShrPtrCollections;
+  typedef std::vector< std::vector< std::vector<std::shared_ptr<HGCalTriggerCell> > > > HGCalTriggerCellSAShrPtrCollectionss;
 }  // namespace l1thgcfirmware
 
 #endif

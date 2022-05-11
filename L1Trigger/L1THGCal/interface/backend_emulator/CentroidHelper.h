@@ -62,9 +62,12 @@ namespace l1thgcfirmware {
         bool dataValid_;
     };
 
-    typedef std::shared_ptr<CentroidHelper> CentroidHelperPtr;
+    typedef std::unique_ptr<CentroidHelper> CentroidHelperPtr;
     typedef std::vector<CentroidHelperPtr> CentroidHelperPtrCollection;
-    typedef std::vector< std::vector<CentroidHelperPtr> > CentroidHelperPtrCollections;
+    typedef std::vector< CentroidHelperPtrCollection > CentroidHelperPtrCollections;
+
+    typedef std::shared_ptr<CentroidHelper> CentroidHelperShrPtr;
+    typedef std::vector<CentroidHelperShrPtr> CentroidHelperShrPtrCollection;
 }
 
 #endif

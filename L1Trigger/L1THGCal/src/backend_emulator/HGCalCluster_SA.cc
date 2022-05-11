@@ -6,7 +6,7 @@
 using namespace l1thgcfirmware;
 
 
-const HGCalCluster& HGCalCluster::operator+=(const HGCalCluster& c) {
+const HGCalCluster& HGCalCluster::operator+=(HGCalCluster& c) {
   // Not handling field widths
   HGCalCluster original( *this );
   this->set_n_tc( this->n_tc() + c.n_tc() );

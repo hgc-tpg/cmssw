@@ -12,20 +12,20 @@ namespace l1thgcfirmware {
         DistServer( unsigned int nInputs, unsigned int nOutputs, unsigned int nInterleaving );
         ~DistServer() {}
 
-        HGCalTriggerCellSAPtrCollection clock(HGCalTriggerCellSAPtrCollection& inputs);
+        HGCalTriggerCellSAShrPtrCollection clock(HGCalTriggerCellSAShrPtrCollection& inputs);
 
         unsigned int nInputs() const { return nInputs_; }
         unsigned int nOutputs() const { return nOutputs_; }
         unsigned int nInterleaving() const { return nInterleaving_; }
         std::vector< std::vector< unsigned int> >& addr() { return addr_; }
-        l1thgcfirmware::HGCalTriggerCellSAPtrCollections& inputs() { return inputs_; }
+        l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections& inputs() { return inputs_; }
 
     private:
         unsigned int nInputs_;
         unsigned int nOutputs_;
         unsigned int nInterleaving_;
 
-        l1thgcfirmware::HGCalTriggerCellSAPtrCollections inputs_;
+        l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections inputs_;
         std::vector< std::vector< unsigned int> > addr_;        
     };
 }

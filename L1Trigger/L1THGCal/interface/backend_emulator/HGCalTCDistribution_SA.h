@@ -18,22 +18,22 @@ public:
 
 private:
   // TC input step
-  void triggerCellInput( const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& inputTCs, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& outputTCs ) const;
+  void triggerCellInput( const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& inputTCs, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& outputTCs ) const;
 
   // TC distribution steps
-  void triggerCellDistribution0( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn ) const;
-  void triggerCellDistribution1( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, l1thgcfirmware::HGCalTriggerCellSAPtrCollections& outTriggerCellDistributionGrid ) const;
-  void triggerCellDistribution2( const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& inTriggerCellDistributionGrid, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsOut, l1thgcfirmware::HGCalTriggerCellSAPtrCollections& outTriggerCellDistributionGrid ) const;
-  void triggerCellDistribution3( const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& inTriggerCellDistributionGrid, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsOut, l1thgcfirmware::HGCalTriggerCellSAPtrCollections& outTriggerCellDistributionGrid ) const;
-  void triggerCellDistribution4( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn ) const;
-  void triggerCellDistribution5( const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& inTriggerCellDistributionGrid, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsOut ) const;
+  void triggerCellDistribution0( const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& triggerCellsIn ) const;
+  void triggerCellDistribution1( const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& triggerCellsIn, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections& outTriggerCellDistributionGrid ) const;
+  void triggerCellDistribution2( const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections& inTriggerCellDistributionGrid, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& triggerCellsOut, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections& outTriggerCellDistributionGrid ) const;
+  void triggerCellDistribution3( const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections& inTriggerCellDistributionGrid, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& triggerCellsOut, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections& outTriggerCellDistributionGrid ) const;
+  void triggerCellDistribution4( const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& triggerCellsIn ) const;
+  void triggerCellDistribution5( const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections& inTriggerCellDistributionGrid, l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsOut ) const;
 
   // Useful functions
-  void initializeTriggerCellDistGrid( l1thgcfirmware::HGCalTriggerCellSAPtrCollections& grid, unsigned int nX, unsigned int nY ) const;
+  void initializeTriggerCellDistGrid( l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections& grid, unsigned int nX, unsigned int nY ) const;
 
-  void runDistServers( const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& gridIn,
-                       l1thgcfirmware::HGCalTriggerCellSAPtrCollections& gridOut,
-                       l1thgcfirmware::HGCalTriggerCellSAPtrCollection& tcsOut,
+  void runDistServers( const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections& gridIn,
+                       l1thgcfirmware::HGCalTriggerCellSAShrPtrCollections& gridOut,
+                       l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& tcsOut,
                        unsigned int latency,
                        unsigned int nDistServers,
                        unsigned int nInputs,

@@ -20,7 +20,7 @@ public:
   HGCalHistoClusteringImplSA(l1thgcfirmware::ClusterAlgoConfig& config);
   ~HGCalHistoClusteringImplSA() {}
 
-  void runAlgorithm(const HGCalTriggerCellSAPtrCollections& inputs, HGCalTriggerCellSAPtrCollection& clusteredTCs, HGCalTriggerCellSAPtrCollection& unclusteredTCs,
+  void runAlgorithm(const HGCalTriggerCellSAPtrCollections& inputs, HGCalTriggerCellSAShrPtrCollection& clusteredTCs,
   HGCalClusterSAPtrCollection& clusterSums ) const;
 
 private:

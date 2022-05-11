@@ -13,12 +13,11 @@ public:
   HGCalHistoClusterProperties(l1thgcfirmware::ClusterAlgoConfig& config);
   ~HGCalHistoClusterProperties() {}
 
-  void runClusterProperties(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, const l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags, HGCalClusterSAPtrCollection& clustersOut ) const;
+  void runClusterProperties(const l1thgcfirmware::HGCalClusterSAPtrCollection& protoClustersIn, const l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags, HGCalClusterSAPtrCollection& clustersOut ) const;
 
 private:
 
   // Cluster property steps
-  void triggerCellToCluster( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& clusteredTriggerCells, l1thgcfirmware::HGCalClusterSAPtrCollection& clustersOut ) const;
   void clusterSum( const l1thgcfirmware::HGCalClusterSAPtrCollection& protoClusters, const l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags, l1thgcfirmware::HGCalClusterSAPtrCollection& clusterAccumulation, l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums ) const;
   void clusterProperties(l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums) const;
 

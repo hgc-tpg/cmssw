@@ -84,7 +84,7 @@ class HGCalHistogramCell {
   };
 
   typedef std::vector<HGCalHistogramCell> HGCalHistogramCellSACollection;
-  typedef std::vector<std::shared_ptr<HGCalHistogramCell>> HGCalHistogramCellSAPtrCollection;
+  typedef std::vector<std::unique_ptr<HGCalHistogramCell>> HGCalHistogramCellSAPtrCollection;
 }  // namespace l1thgcfirmware
 
 #endif

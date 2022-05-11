@@ -8,98 +8,27 @@ using namespace l1thgcfirmware;
 
 HGCalHistoClusterProperties::HGCalHistoClusterProperties(ClusterAlgoConfig& config) : config_(config) {}
 
-void HGCalHistoClusterProperties::runClusterProperties(const HGCalTriggerCellSAPtrCollection& triggerCellsIn, const CentroidHelperPtrCollection& readoutFlags, HGCalClusterSAPtrCollection& clustersOut ) const {
+void HGCalHistoClusterProperties::runClusterProperties(const l1thgcfirmware::HGCalClusterSAPtrCollection& protoClustersIn, const CentroidHelperPtrCollection& readoutFlags, HGCalClusterSAPtrCollection& clustersOut ) const {
   // Cluster properties
-  HGCalClusterSAPtrCollection protoClusters;
-  triggerCellToCluster( triggerCellsIn, protoClusters );
   HGCalClusterSAPtrCollection clusterAccumulation;
-  clusterSum( protoClusters, readoutFlags, clusterAccumulation, clustersOut );
+  clusterSum( protoClustersIn, readoutFlags, clusterAccumulation, clustersOut );
   clusterProperties(clustersOut);
-}
-
-void HGCalHistoClusterProperties::triggerCellToCluster( const HGCalTriggerCellSAPtrCollection& clusteredTriggerCells, HGCalClusterSAPtrCollection& clustersOut ) const {
-
-  const unsigned int stepLatency = config_.getStepLatency( TriggerCellToCluster );
-
-  clustersOut.clear();
-  for ( const auto& tc : clusteredTriggerCells ) {
-
-    auto cluster = make_shared<HGCalCluster>( tc->clock() + stepLatency,
-                                              tc->index(),
-                                              true, true
-                                            );
-
-    // Cluster from single TC
-    // Does this ever happen?
-    if ( tc->deltaR2() >= 25000 ) { // Magic numbers
-      clustersOut.push_back( cluster );
-      continue;
-    }
-
-    unsigned long int s_TC_W = ( int( tc->energy() / 4 ) == 0 ) ? 1 : tc->energy() / 4;
-    unsigned long int s_TC_Z = config_.depth( tc->layer() );
-
-    unsigned int triggerLayer = config_.triggerLayer( tc->layer() );
-    unsigned int s_E_EM = ( (  ( (unsigned long int) tc->energy() * config_.layerWeight_E_EM( triggerLayer ) ) + config_.correction() ) >> 18 );
-    if ( s_E_EM > config_.saturation() ) s_E_EM = config_.saturation();
-
-
-
-    unsigned int s_E_EM_core = ( ( (unsigned long int) tc->energy() * config_.layerWeight_E_EM_core( triggerLayer ) + config_.correction() ) >> 18 );
-    if ( s_E_EM_core > config_.saturation() ) s_E_EM_core = config_.saturation();
-
-    // Alternative constructor perhaps?
-    cluster->set_n_tc( 1 ); // Magic numbers
-    cluster->set_n_tc_w( 1 ); // Magic numbers
-    
-    cluster->set_e( ( config_.layerWeight_E( triggerLayer ) == 1 ) ? tc->energy() : 0  );
-    cluster->set_e_h_early( ( config_.layerWeight_E_H_early( triggerLayer ) == 1 ) ? tc->energy() : 0  );
-
-    cluster->set_e_em( s_E_EM );
-    cluster->set_e_em_core( s_E_EM_core );
-
-    cluster->set_w( s_TC_W );
-    cluster->set_w2( s_TC_W * s_TC_W );
-
-    cluster->set_wz( s_TC_W * s_TC_Z );
-    cluster->set_weta( 0 );
-    cluster->set_wphi( s_TC_W * tc->phi() );
-    cluster->set_wroz( s_TC_W * tc->rOverZ() );
-
-    cluster->set_wz2( s_TC_W * s_TC_Z * s_TC_Z );
-    cluster->set_weta2( 0 );
-    cluster->set_wphi2( s_TC_W * tc->phi() * tc->phi() );
-    cluster->set_wroz2( s_TC_W * tc->rOverZ() * tc->rOverZ() );
-
-    cluster->set_layerbits( cluster->layerbits() | ( ( (unsigned long int) 1) << ( 36 - triggerLayer ) ) ); // Magic numbers
-    cluster->set_sat_tc( cluster->e() == config_.saturation() || cluster->e_em() == config_.saturation() );
-    cluster->set_shapeq(1);
-
-    cluster->add_constituent( tc );
-
-    clustersOut.push_back( cluster );
-  }
-
-  // std::cout << "Output from triggerCellToCluster" << std::endl;
-  // std::cout << "Protoclusters : " << protoClusters.size() << std::endl;
-  // for ( const auto& pclus : protoClusters ) {
-
-  //     std::cout << pclus->clock() << " " << pclus->index() << " " << pclus->n_tc() << " " << pclus->e() << " " << pclus->e_em() << " " << pclus->e_em_core() << " " << pclus->e_h_early() << " " << pclus->w() << " " << pclus->n_tc_w() << " " << pclus->weta2() << " " << pclus->wphi2() << std::endl;
-  // }
 }
 
 void HGCalHistoClusterProperties::clusterSum( const HGCalClusterSAPtrCollection& protoClusters, const CentroidHelperPtrCollection& readoutFlags, HGCalClusterSAPtrCollection& clusterAccumulation, HGCalClusterSAPtrCollection& clusterSums ) const {
 
-  HGCalClusterSAPtrCollections protoClustersPerColumn( config_.cColumns(), HGCalClusterSAPtrCollection() );
+  HGCalClusterSAPtrCollections protoClustersPerColumn( config_.cColumns() );
   vector<unsigned int> clock( config_.cColumns(), 0 );
   for ( const auto& protoCluster : protoClusters ) {
-    protoClustersPerColumn.at( protoCluster->index() ).push_back( protoCluster );
+    auto index = protoCluster->index();
+    // Do we need to make a copy of protoCluster here?
+    protoClustersPerColumn.at( index ).push_back( make_unique<HGCalCluster>( *protoCluster ) );
   }
 
   map<unsigned int, HGCalClusterSAPtr> sums;
 
   for ( const auto& flag : readoutFlags ) {
-    auto accumulator = make_shared<HGCalCluster>( 0,
+    auto accumulator = make_unique<HGCalCluster>( 0,
                                                   0,
                                                   true, true
                                                 );
@@ -115,21 +44,23 @@ void HGCalHistoClusterProperties::clusterSum( const HGCalClusterSAPtrCollection&
     accumulator->setClock( flag->clock() );
     accumulator->setIndex( flag->index() );
     accumulator->setDataValid( true );
-    clusterAccumulation.push_back( accumulator );
 
     if ( sums.find( flag->clock() ) == sums.end() ) {
-      auto sum = make_shared<HGCalCluster>( flag->clock() + 7, // Magic numbers
+      auto sum = make_unique<HGCalCluster>( flag->clock() + 7, // Magic numbers
                                             0,
                                             true, true
                                           );
-      sums[flag->clock()] = sum;
+      sums[flag->clock()] = move(sum);
     }
 
     *(sums.at( flag->clock() )) += *accumulator;
+
+    clusterAccumulation.push_back( move(accumulator) );
+
   }
 
-  for (const auto& sum: sums) {
-    clusterSums.push_back( sum.second );
+  for (auto& sum: sums) {
+    clusterSums.push_back( move( sum.second ) );
   }
 
   // std::cout << "Output from ClusterSum" << std::endl;
