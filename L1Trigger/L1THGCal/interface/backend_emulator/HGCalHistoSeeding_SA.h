@@ -16,13 +16,13 @@ public:
 
 private:
   // Histogram steps
-  l1thgcfirmware::HGCalHistogramCellSAPtrCollection triggerCellToHistogramCell( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn ) const;
-  l1thgcfirmware::HGCalHistogramCellSAPtrCollection makeHistogram( l1thgcfirmware::HGCalHistogramCellSAPtrCollection histogramCells ) const;
+  void triggerCellToHistogramCell( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramOut ) const;
+  void makeHistogram( const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramCells, l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramOut  ) const;
 
   // Smearing steps
-  void smearing1D( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
-  void areaNormalization( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
-  void smearing2D( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
+  void smearHistogram1D( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
+  void normalizeArea( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
+  void smearHistogram2D( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
 
   // Maxima finding
   void thresholdMaximaFinder( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
@@ -30,7 +30,7 @@ private:
   void calculateAveragePosition( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
 
   // For debugging
-  void printHistogram( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
+  void printHistogram( const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
 
   l1thgcfirmware::ClusterAlgoConfig& config_;
 };

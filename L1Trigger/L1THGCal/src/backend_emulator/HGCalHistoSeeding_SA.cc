@@ -9,13 +9,14 @@ HGCalHistoSeeding::HGCalHistoSeeding(ClusterAlgoConfig& config) : config_(config
 
 void HGCalHistoSeeding::runSeeding(const HGCalTriggerCellSAPtrCollection& triggerCellsIn, HGCalHistogramCellSAPtrCollection& histogramOut ) const {
 
-  HGCalHistogramCellSAPtrCollection histoCells = triggerCellToHistogramCell( triggerCellsIn );
-  histogramOut = makeHistogram( histoCells );
+  HGCalHistogramCellSAPtrCollection histoCells;
+  triggerCellToHistogramCell( triggerCellsIn, histoCells );
+  makeHistogram( histoCells, histogramOut );
 
   // Smearing
-  smearing1D( histogramOut );
-  areaNormalization( histogramOut );
-  smearing2D( histogramOut );
+  smearHistogram1D( histogramOut );
+  normalizeArea( histogramOut );
+  smearHistogram2D( histogramOut );
 
   //Maxima finding
   thresholdMaximaFinder( histogramOut );
@@ -23,11 +24,11 @@ void HGCalHistoSeeding::runSeeding(const HGCalTriggerCellSAPtrCollection& trigge
   calculateAveragePosition( histogramOut );
 }
 
-HGCalHistogramCellSAPtrCollection HGCalHistoSeeding::triggerCellToHistogramCell( const HGCalTriggerCellSAPtrCollection& triggerCellsIn ) const {
+void HGCalHistoSeeding::triggerCellToHistogramCell( const HGCalTriggerCellSAPtrCollection& triggerCellsIn, HGCalHistogramCellSAPtrCollection& histogramOut ) const {
 
   const unsigned int latency = config_.getStepLatency( TcToHc );
 
-  HGCalHistogramCellSAPtrCollection histoCells;
+  histogramOut.clear();
   for ( auto& tc : triggerCellsIn ) {
     auto hc = make_shared<HGCalHistogramCell>( tc->clock() + latency,
                                                tc->index(),
@@ -39,34 +40,31 @@ HGCalHistogramCellSAPtrCollection HGCalHistoSeeding::triggerCellToHistogramCell(
                                               );
     tc->setClock( hc->clock() );
     tc->setSortKey( hc->sortKey() );
-    histoCells.push_back( hc );
+    histogramOut.push_back( hc );
   }
 
-  return histoCells;
 }
 
-HGCalHistogramCellSAPtrCollection HGCalHistoSeeding::makeHistogram( HGCalHistogramCellSAPtrCollection histogramCells ) const {
+void HGCalHistoSeeding::makeHistogram( const HGCalHistogramCellSAPtrCollection& histogramCells, HGCalHistogramCellSAPtrCollection& histogramOut ) const {
 
-  HGCalHistogramCellSAPtrCollection histogram;
   const unsigned int latency = config_.getLatencyUpToAndIncluding( Hist );
+
+  histogramOut.clear();
   for ( unsigned int iRow = 0; iRow < config_.cRows(); ++iRow ) {
     for ( unsigned int iColumn = 0; iColumn < config_.cColumns(); ++iColumn ) {
 
       auto hc = make_shared<HGCalHistogramCell>( latency, iColumn, iRow );
-      histogram.push_back( hc );
+      histogramOut.push_back( hc );
     }
   }
 
   for ( const auto& hc : histogramCells ) {
     const unsigned int binIndex = config_.cColumns() * hc->sortKey() + hc->index() ;
-    *histogram.at( binIndex ) += *hc;
+    *histogramOut.at( binIndex ) += *hc;
   }
-
-  return histogram;
-
 }
 
-void HGCalHistoSeeding::smearing1D( HGCalHistogramCellSAPtrCollection& histogram ) const {
+void HGCalHistoSeeding::smearHistogram1D( HGCalHistogramCellSAPtrCollection& histogram ) const {
 
   HGCalHistogramCellSACollection lHistogram;
   for ( unsigned int iBin = 0; iBin < histogram.size(); ++iBin ) {
@@ -114,7 +112,7 @@ void HGCalHistoSeeding::smearing1D( HGCalHistogramCellSAPtrCollection& histogram
   }
 }
 
-void HGCalHistoSeeding::areaNormalization( HGCalHistogramCellSAPtrCollection& histogram ) const {
+void HGCalHistoSeeding::normalizeArea( HGCalHistogramCellSAPtrCollection& histogram ) const {
   const unsigned int stepLatency = config_.getStepLatency( NormArea );
   for ( unsigned int iBin = 0; iBin < histogram.size(); ++iBin ) {
     HGCalHistogramCell& hc = *histogram.at(iBin);
@@ -123,7 +121,7 @@ void HGCalHistoSeeding::areaNormalization( HGCalHistogramCellSAPtrCollection& hi
   }
 }
 
-void HGCalHistoSeeding::smearing2D( HGCalHistogramCellSAPtrCollection& histogram ) const {
+void HGCalHistoSeeding::smearHistogram2D( HGCalHistogramCellSAPtrCollection& histogram ) const {
   HGCalHistogramCellSACollection lHistogram;
   for ( unsigned int iBin = 0; iBin < histogram.size(); ++iBin ) {
     lHistogram.emplace_back( *histogram.at(iBin) );
@@ -223,7 +221,7 @@ void HGCalHistoSeeding::calculateAveragePosition( HGCalHistogramCellSAPtrCollect
   }
 }
 
-void HGCalHistoSeeding::printHistogram( HGCalHistogramCellSAPtrCollection& histogram ) const {
+void HGCalHistoSeeding::printHistogram( const HGCalHistogramCellSAPtrCollection& histogram ) const {
   for ( unsigned int iRow = 0; iRow < config_.cRows();  ++iRow ) {
     for ( unsigned int iCol = 0; iCol < config_.cColumns();  ++iCol ) {
       unsigned binIndex = config_.cColumns() * iRow + iCol;

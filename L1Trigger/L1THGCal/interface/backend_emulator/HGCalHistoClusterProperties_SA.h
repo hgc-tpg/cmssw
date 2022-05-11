@@ -17,15 +17,17 @@ public:
 
 private:
 
-  // Cluster properties
-  l1thgcfirmware::HGCalClusterSAPtrCollection triggerCellToCluster( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& clusteredTriggerCells ) const;
+  // Cluster property steps
+  void triggerCellToCluster( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& clusteredTriggerCells, l1thgcfirmware::HGCalClusterSAPtrCollection& clustersOut ) const;
   void clusterSum( const l1thgcfirmware::HGCalClusterSAPtrCollection& protoClusters, const l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags, l1thgcfirmware::HGCalClusterSAPtrCollection& clusterAccumulation, l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums ) const;
+  void clusterProperties(l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums) const;
+
+  // Helper functions
   std::pair< unsigned int, unsigned int > sigma_Energy(unsigned int N_TC_W, unsigned long int Sum_W2, unsigned int Sum_W) const;
   std::pair< unsigned int, unsigned int > mean_coordinate(unsigned int Sum_Wc, unsigned int Sum_W) const;
   std::pair< unsigned int, unsigned int > sigma_Coordinate(unsigned int Sum_W, unsigned long int Sum_Wc2, unsigned int Sum_Wc) const;
   std::pair< unsigned int, unsigned int > energy_ratio(unsigned int E_N, unsigned int E_D) const;
   std::vector<int> showerLengthProperties(unsigned long int layerBits) const;
-  void clusterProperties(l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums) const;
 
   l1thgcfirmware::ClusterAlgoConfig& config_;
 };
