@@ -88,7 +88,7 @@ private:
   std::unordered_map<unsigned, unsigned> stage1link_to_stage2_;
   std::unordered_map<unsigned, unsigned> stage1link_to_stage1_;
   std::unordered_multimap<unsigned, unsigned> stage1_to_stage1links_;
-  std::unordered_map<unsigned, std::vector<unsigned> > stage1_to_lpgbts_;
+  std::unordered_map<unsigned, std::vector<unsigned>> stage1_to_lpgbts_;
   std::unordered_map<unsigned, unsigned> lpgbt_to_stage1_;
   std::unordered_multimap<unsigned, unsigned> lpgbt_to_modules_;
   std::unordered_multimap<unsigned, unsigned> module_to_lpgbts_;
@@ -659,9 +659,10 @@ std::vector<unsigned> HGCalTriggerGeometryV9Imp3::getLpgbtsFromStage1Fpga(const 
   HGCalTriggerBackendDetId id(stage1_id);
 
   auto stage1_itrs = stage1_to_lpgbts_.at(id.label());
+  lpgbt_ids.reserve(stage1_itrs.size());
   for (auto stage1_itr : stage1_itrs) {
-    lpgbt_ids.push_back(HGCalTriggerBackendDetId(
-        id.zside(), HGCalTriggerBackendDetId::BackendType::LpGBT, id.sector(), stage1_itr));
+    lpgbt_ids.push_back(
+        HGCalTriggerBackendDetId(id.zside(), HGCalTriggerBackendDetId::BackendType::LpGBT, id.sector(), stage1_itr));
   }
 
   return lpgbt_ids;
