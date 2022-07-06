@@ -56,7 +56,7 @@ public:
   float sigmaRRMean(const l1t::HGCalMulticluster& c3d, float radius = 5.) const;
   float varRR(const l1t::HGCalMulticluster& c3d) const;
   float sumLayers(const l1t::HGCalMulticluster& c3d, int start = 1, int end = 0) const;
-  int bitmap(const l1t::HGCalMulticluster& c3d, int start = 0, int end = 14, float threshold = 0) const;
+  int bitmap(const l1t::HGCalMulticluster& c3d, int start = 1, int end = 14, float threshold = 0) const;
   void fillShapes(l1t::HGCalMulticluster&, const HGCalTriggerGeometryBase&) const;
 
 private:
