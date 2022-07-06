@@ -569,13 +569,13 @@ int HGCalShowerShape::bitmap(const l1t::HGCalMulticluster& c3d, int start, int e
   for (unsigned i = 0; i < layers.size(); ++i)
     tot += layers[i];
   uint32_t bitmap = 0;
-  int bitmap_size = 32;
+  const int bitmap_size = 32;
   if (start == 0) {
-    edm::LogWarning("Layer0") << "layer 0 doesn't exist, defaulted start to layer 1";
+    edm::LogWarning("DataNotFound") << "Trying to read layer 0 that doesn't exist, defaulted start to layer 1";
     start = 1;
   }
-  if ((end - start) > bitmap_size) {
-    edm::LogWarning("ExcessedBitmapSize") << " Specified bound cannot fit into bitmap size, defaulting to 0.";
+  if ((end - start) + 1 > bitmap_size) {
+    edm::LogWarning("TooMuchData") << " Specified bounds cannot fit into bitmap size, defaulting to 0.";
   } else {
     for (int i = start; i <= end; i++) {
       bitmap += (layers[i - 1] >= threshold) << (end - (i));
