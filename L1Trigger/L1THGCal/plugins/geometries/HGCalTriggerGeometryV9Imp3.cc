@@ -658,11 +658,11 @@ std::vector<unsigned> HGCalTriggerGeometryV9Imp3::getLpgbtsFromStage1Fpga(const 
   std::vector<unsigned> lpgbt_ids;
   HGCalTriggerBackendDetId id(stage1_id);
 
-  auto stage1_itrs = stage1_to_lpgbts_.at(id.label());
-  lpgbt_ids.reserve(stage1_itrs.size());
-  for (auto stage1_itr : stage1_itrs) {
-    lpgbt_ids.push_back(
-        HGCalTriggerBackendDetId(id.zside(), HGCalTriggerBackendDetId::BackendType::LpGBT, id.sector(), stage1_itr));
+  const auto stage1_lpgbts = stage1_to_lpgbts_.at(id.label());
+  lpgbt_ids.reserve(stage1_lpgbts.size());
+  for (const auto& stage1_lpgbt : stage1_lpgbts) {
+    lpgbt_ids.emplace_back(
+        HGCalTriggerBackendDetId(id.zside(), HGCalTriggerBackendDetId::BackendType::LpGBT, id.sector(), stage1_lpgbt));
   }
 
   return lpgbt_ids;
