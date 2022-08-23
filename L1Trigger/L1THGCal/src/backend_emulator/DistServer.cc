@@ -19,6 +19,9 @@ DistServer::DistServer( unsigned int nInputs, unsigned int nOutputs, unsigned in
         }
     }
 
+// Main method of distribution server, executed on each clock
+// Not enough documentation on distribution server vhdl to give meaningful comments
+// Other than stating it's very complicated
 HGCalTriggerCellSAShrPtrCollection DistServer::clock(HGCalTriggerCellSAShrPtrCollection& data) {
     for ( unsigned int iInput=0; iInput<nInputs(); ++iInput ) {
         if ( data[iInput]->dataValid() ) {

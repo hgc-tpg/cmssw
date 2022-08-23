@@ -67,7 +67,6 @@ class HGCalHistogramCell {
     const HGCalHistogramCell& operator+=(const HGCalHistogramCell& hc);
     const HGCalHistogramCell operator/(const unsigned int factor) const;
     const HGCalHistogramCell operator+(const HGCalHistogramCell& hc) const;
-    const HGCalHistogramCell& operator*=(const unsigned int factor);
 
 
   private:

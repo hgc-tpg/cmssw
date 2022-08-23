@@ -29,9 +29,3 @@ const HGCalHistogramCell HGCalHistogramCell::operator+(const HGCalHistogramCell&
   return sum;
 }
 
-const HGCalHistogramCell& HGCalHistogramCell::operator*=(const unsigned int factor) {
-  S_ = int( 1.0*S_ * factor / 262144 ); // Magic numbers
-
-  return *this;
-}
-

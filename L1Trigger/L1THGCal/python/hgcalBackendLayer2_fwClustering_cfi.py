@@ -37,11 +37,37 @@ layer2ClusteringFw_Params = cms.PSet(
         ptDigiFactor = cms.double(10000),
     ),
 
+    inputLinkParams = cms.PSet(
+        maxClustersPerLink = cms.uint32(210),
+        nInputLinks = cms.uint32(72)
+    ),
+
+    # Trigger cell distribution parameters
+    tcDistParams = cms.PSet(
+        n60Sectors = cms.uint32(3),
+        nCoarsePhiRegionsDist1 = cms.uint32(6),
+        nDistServers1 = cms.uint32(15),
+        distServer1_nIn = cms.uint32(5),
+        distServer1_nOut = cms.uint32(6),
+        distServer1_nInterleave = cms.uint32(4),
+        nCoarsePhiRegionsDist2 = cms.uint32(6),
+        nDistServers2 = cms.uint32(18),
+        distServer2_nIn = cms.uint32(5),
+        distServer2_nOut = cms.uint32(6),
+        distServer2_nInterleave = cms.uint32(4),
+    ),
+
     # Histogram parameters
     cColumns=cms.uint32(108),
     cRows=cms.uint32(44),
     rOverZHistOffset = cms.uint32(440), # offset of first r/z bin in number of LSB
     rOverZBinSize = cms.uint32(64), # in number of LSB
+
+    # Smearing parameters
+    smearingParams = cms.PSet(
+        maxBinsSmearing1D=cms.uint32(6),
+        nBitsAreaNormLUT=cms.uint32(17)
+    ),
 
     # Threshold maxima parameters
     # Threshold for given histogram row (r/z bin) paramaterized as a+b*bin+c*bin^2
@@ -50,8 +76,20 @@ layer2ClusteringFw_Params = cms.PSet(
         b=cms.uint32(800),
         c=cms.int32(-20)
     ),
-    clusterizerMagicTime=cms.uint32(434),
-    nBinsCosLUT = cms.uint32(77), # Number of entries in 1-cos(delta phi) LUT when clustering to seeds
+
+    # Clusterizer parameters
+    clusterizerParams = cms.PSet(
+        nBinsCosLUT = cms.uint32(77), # Number of entries in 1-cos(delta phi) LUT when clustering to seeds
+        nBitsCosLUT = cms.uint32(18), # Number of bits used in 1-cos(delta phi) LUT
+        nFifos=cms.uint32(18),
+        nColumnsPerFifo=cms.uint32(4),
+        firstSeedBin=cms.uint32(18), # First bin considered as a seed for a cluster
+        nColumnsFifoVeto=cms.uint32(6), # Minimum distance between seeds in neighbouring fifos)
+        deltaR2Cut=cms.uint32(20000), # Delta R^2 threshold, in digitised units
+        nColumnsForClustering=cms.uint32(3), # Number of columns either side of column containing seed to stream for clustering
+        nRowsForClustering=cms.uint32(2), # Number of rows either side of row containing seed to consider during clustering
+        clusterizerMagicTime=cms.uint32(434),
+    ),
     depths = cms.vuint32(0 , # No zero layer
           0 , 30 , 59 , 89 , 118 , 148 , 178 , 208 , 237 , 267 , 297 , 327 , 356 , 386 , # CE-E
           415 , 445 , 475 , 505 , 534 , 564 , 594 , 624 , 653 , 683 , 712 , 742 , 772 , 802 , # CE-E

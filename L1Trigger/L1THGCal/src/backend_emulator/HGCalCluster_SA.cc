@@ -30,7 +30,7 @@ const HGCalCluster& HGCalCluster::operator+=(HGCalCluster& c) {
   this->set_sat_tc( this->sat_tc() | c.sat_tc() );
   this->set_shapeq( this->shapeq() | c.shapeq() );
 
-  if ( w_ <= 52438 && original.shapeq() == 1 && c.shapeq() == 1 ) { // Magic numbers
+  if ( w_ <= 52438 && original.shapeq() == 1 && c.shapeq() == 1 ) { // Magic numbers - possibly removed in newer versions of firmware?
     this->set_shapeq(1);
   }
   else {

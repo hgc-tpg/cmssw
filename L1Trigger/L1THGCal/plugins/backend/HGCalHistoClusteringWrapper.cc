@@ -132,21 +132,21 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
 
   // Distribute to links
   clusters_SA.clear();
-  clusters_SA.resize( 212 ); // Magic numbers
+  clusters_SA.resize( theConfiguration_.maxClustersPerLink() + 2 ); // Two empty frames at start of packet
   for ( auto& clusters : clusters_SA ) {
-    for ( unsigned int iCluster=0; iCluster < 72; ++iCluster ) {
+    for ( unsigned int iCluster=0; iCluster < theConfiguration_.nInputLinks(); ++iCluster ) {
       clusters.push_back( std::make_unique<l1thgcfirmware::HGCalTriggerCell>() );
     }
-    // clusters.resize(72, std::make_unique<l1thgcfirmware::HGCalTriggerCell>() ); // Magic numbers
   }
   iSector60 = 0;
+  unsigned int nLinksPerSector60 = theConfiguration_.nInputLinks() / 3;
   for (auto& sector60 : clusters_SA_perSector60) {
     unsigned iCluster = 0;
     for ( auto& cluster : sector60 ) {
       // Leave first two frames empty
-      unsigned frame = 2 + iCluster / 24; // Magic numbers
-      unsigned link = iCluster % 24 + iSector60 * 24; // Magic numbers
-      if ( frame >= 212 ) break; // Magic numbers
+      unsigned frame = 2 + iCluster / nLinksPerSector60; 
+      unsigned link = iCluster % nLinksPerSector60 + iSector60 * nLinksPerSector60; 
+      if ( frame >= theConfiguration_.maxClustersPerLink() + 2 ) break; 
       clusters_SA[frame][link] = move(cluster);
       ++iCluster;
     }
@@ -275,8 +275,6 @@ void HGCalHistoClusteringWrapper::configure(
   theConfiguration_.setCRows( pset.getParameter<unsigned int>("cRows") );
   theConfiguration_.setROverZHistOffset( pset.getParameter<unsigned int>("rOverZHistOffset") );
   theConfiguration_.setROverZBinSize( pset.getParameter<unsigned int>("rOverZBinSize") );
-  theConfiguration_.setClusterizerMagicTime( pset.getParameter<unsigned int>("clusterizerMagicTime") );
-  theConfiguration_.setNBinsCosLUT( pset.getParameter<unsigned int>("nBinsCosLUT") );
   theConfiguration_.setDepths( pset.getParameter<std::vector<unsigned int>>("depths"));
   theConfiguration_.setTriggerLayers( pset.getParameter<std::vector<unsigned int>>("triggerLayers"));
   theConfiguration_.setLayerWeights_E( pset.getParameter<std::vector<unsigned int>>("layerWeights_E"));
@@ -287,17 +285,53 @@ void HGCalHistoClusteringWrapper::configure(
   theConfiguration_.setSaturation( pset.getParameter<unsigned int>("saturation") );
   const edm::ParameterSet thresholdParams = pset.getParameterSet("thresholdMaximaParams");
   theConfiguration_.setThresholdParams( thresholdParams.getParameter<unsigned int>("a"), thresholdParams.getParameter<unsigned int>("b"), thresholdParams.getParameter<int>("c") );
-  theConfiguration_.initializeLUTs();
 
-  // const edm::ParameterSet digitizationPset = pset.getParameterSet("digiParams");
-  const edm::ParameterSet digitizationPset = std::get<1>(configuration).getParameterSet("C3d_parameters").getParameterSet("histoMax_C3d_clustering_parameters").getParameterSet("layer2FwClusteringParameters").getParameterSet("digiParams");
-
+  // Digitization parameters
+  const edm::ParameterSet digitizationPset = pset.getParameterSet("digiParams");
   theConfiguration_.setROverZRange( digitizationPset.getParameter<double>("rOverZRange"));
   theConfiguration_.setROverZNValues( digitizationPset.getParameter<double>("rOverZNValues"));
   theConfiguration_.setPhiRange( digitizationPset.getParameter<double>("phiRange"));
   theConfiguration_.setPhiNValues( digitizationPset.getParameter<double>("phiNValues"));
   theConfiguration_.setPtDigiFactor( digitizationPset.getParameter<double>("ptDigiFactor"));
+
+  // Input links parameters
+  const edm::ParameterSet inputLinksPset = pset.getParameterSet("inputLinkParams");
+  theConfiguration_.setMaxClustersPerLink( inputLinksPset.getParameter<unsigned int>("maxClustersPerLink") );
+  theConfiguration_.setNInputLinks( inputLinksPset.getParameter<unsigned int>("nInputLinks") );
+
+  // TC distribution parameters
+  const edm::ParameterSet tcDistPset = pset.getParameterSet("tcDistParams");
+  theConfiguration_.setN60Sectors( tcDistPset.getParameter<unsigned int>("n60Sectors") );
+  theConfiguration_.setNCoarsePhiDist1( tcDistPset.getParameter<unsigned int>("nCoarsePhiRegionsDist1") );
+  theConfiguration_.setNDistServers1( tcDistPset.getParameter<unsigned int>("nDistServers1") );
+  theConfiguration_.setDistServer1_nIn( tcDistPset.getParameter<unsigned int>("distServer1_nIn") );
+  theConfiguration_.setDistServer1_nOut( tcDistPset.getParameter<unsigned int>("distServer1_nOut") );
+  theConfiguration_.setDistServer1_nInterleave( tcDistPset.getParameter<unsigned int>("distServer1_nInterleave") );
+  theConfiguration_.setNCoarsePhiDist2( tcDistPset.getParameter<unsigned int>("nCoarsePhiRegionsDist2") );
+  theConfiguration_.setNDistServers2( tcDistPset.getParameter<unsigned int>("nDistServers2") );
+  theConfiguration_.setDistServer2_nIn( tcDistPset.getParameter<unsigned int>("distServer2_nIn") );
+  theConfiguration_.setDistServer2_nOut( tcDistPset.getParameter<unsigned int>("distServer2_nOut") );
+  theConfiguration_.setDistServer2_nInterleave( tcDistPset.getParameter<unsigned int>("distServer2_nInterleave") );
+
+  // Smearing parameters
+  const edm::ParameterSet smearingPset = pset.getParameterSet("smearingParams");
+  theConfiguration_.setMaxBinsSmearing1D( smearingPset.getParameter<unsigned int>("maxBinsSmearing1D") );
+  theConfiguration_.setNBitsAreaNormLUT( smearingPset.getParameter<unsigned int>("nBitsAreaNormLUT") );
   
+  // Clusterizer parameters
+  const edm::ParameterSet clusterizerPset = pset.getParameterSet("clusterizerParams");
+  theConfiguration_.setNBinsCosLUT( clusterizerPset.getParameter<unsigned int>("nBinsCosLUT") );
+  theConfiguration_.setNBitsCosLUT( clusterizerPset.getParameter<unsigned int>("nBitsCosLUT") );
+  theConfiguration_.setNFifos( clusterizerPset.getParameter<unsigned int>("nFifos"));
+  theConfiguration_.setNColumnsPerFifo( clusterizerPset.getParameter<unsigned int>("nColumnsPerFifo"));
+  theConfiguration_.setClusterizerMagicTime( clusterizerPset.getParameter<unsigned int>("clusterizerMagicTime") );
+  theConfiguration_.setFirstSeedBin( clusterizerPset.getParameter<unsigned int>("firstSeedBin") );
+  theConfiguration_.setNColumnFifoVeto( clusterizerPset.getParameter<unsigned int>("nColumnsFifoVeto") );
+  theConfiguration_.setDeltaR2Cut( clusterizerPset.getParameter<unsigned int>("deltaR2Cut") );
+  theConfiguration_.setNColumnsForClustering( clusterizerPset.getParameter<unsigned int>("nColumnsForClustering") );
+  theConfiguration_.setNRowsForClustering( clusterizerPset.getParameter<unsigned int>("nRowsForClustering") );
+
+  theConfiguration_.initializeLUTs();
 
 };
 

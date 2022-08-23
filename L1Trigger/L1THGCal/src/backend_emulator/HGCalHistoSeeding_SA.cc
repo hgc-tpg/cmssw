@@ -24,6 +24,8 @@ void HGCalHistoSeeding::runSeeding(const HGCalTriggerCellSAPtrCollection& trigge
   calculateAveragePosition( histogramOut );
 }
 
+// Convert each trigger cell into a histogram cell
+// Phi bin corresponds to the stream the TC is in, r/z bin is calculated from the TC r/z 
 void HGCalHistoSeeding::triggerCellToHistogramCell( const HGCalTriggerCellSAPtrCollection& triggerCellsIn, HGCalHistogramCellSAPtrCollection& histogramOut ) const {
 
   const unsigned int latency = config_.getStepLatency( TcToHc );
@@ -36,7 +38,7 @@ void HGCalHistoSeeding::triggerCellToHistogramCell( const HGCalTriggerCellSAPtrC
                                                tc->phi(),
                                                tc->rOverZ(),
                                                1,
-                                               int( ( tc->rOverZ() - config_.rOverZHistOffset() )/ config_.rOverZBinSize() ) // Magic numbers 
+                                               int( ( tc->rOverZ() - config_.rOverZHistOffset() )/ config_.rOverZBinSize() )
                                               );
     tc->setClock( hc->clock() );
     tc->setSortKey( hc->sortKey() );
@@ -45,6 +47,7 @@ void HGCalHistoSeeding::triggerCellToHistogramCell( const HGCalTriggerCellSAPtrC
 
 }
 
+// Sum all input istogram cells (each representing one TC) to produce one histogram
 void HGCalHistoSeeding::makeHistogram( const HGCalHistogramCellSAPtrCollection& histogramCells, HGCalHistogramCellSAPtrCollection& histogramOut ) const {
 
   const unsigned int latency = config_.getLatencyUpToAndIncluding( Hist );
@@ -62,6 +65,8 @@ void HGCalHistoSeeding::makeHistogram( const HGCalHistogramCellSAPtrCollection& 
   }
 }
 
+// Smearing at constant r/z using exponentially falling 2^-n kernel
+// Maximum extent of smearing (how many neighbouring bins included) can vary for each r/z bin, and is specified in the configuration
 void HGCalHistoSeeding::smearHistogram1D( HGCalHistogramCellSAPtrCollection& histogram ) const {
 
   HGCalHistogramCellSACollection lHistogram;
@@ -89,23 +94,23 @@ void HGCalHistoSeeding::smearHistogram1D( HGCalHistogramCellSAPtrCollection& his
 
       if ( width >= 2 ) {
         if ( int(col - offset - 1)  >= 0 ) {
-          l2 = make_unique<HGCalHistogramCell>(lHistogram[binIndex - offset - 1]/4); // Magic numbers (?)
+          l2 = make_unique<HGCalHistogramCell>(lHistogram[binIndex - offset - 1]/4);
         }
         if ( int(col + offset + 1) <= int(config_.cColumns()-1) ) {
-          r2 = make_unique<HGCalHistogramCell>(lHistogram[binIndex + offset + 1]/4); // Magic numbers (?)
+          r2 = make_unique<HGCalHistogramCell>(lHistogram[binIndex + offset + 1]/4);
         }
       }
       
       if ( int(col - offset)  >= 0 ) {
-        l1 = make_unique<HGCalHistogramCell>(lHistogram[binIndex - offset]/2); // Magic numbers (?)
+        l1 = make_unique<HGCalHistogramCell>(lHistogram[binIndex - offset]/2);
       }
       if ( int(col + offset)  <= int(config_.cColumns()-1) ) {
-        r1 = make_unique<HGCalHistogramCell>(lHistogram[binIndex + offset]/2); // Magic numbers (?)
+        r1 = make_unique<HGCalHistogramCell>(lHistogram[binIndex + offset]/2);
       }
       *hc += ( ( *l2 + *l1 ) / scale + ( *r2 + *r1 ) / scale );
-      scale *= 4; // Magic numbers
-      width -= 2; // Magic numbers
-      offset += 2; // Magic numbers
+      scale *= 4;
+      width -= 2;
+      offset += 2;
     }
   }
 }
@@ -115,10 +120,12 @@ void HGCalHistoSeeding::normalizeArea( HGCalHistogramCellSAPtrCollection& histog
   for ( unsigned int iBin = 0; iBin < histogram.size(); ++iBin ) {
     HGCalHistogramCell& hc = *histogram.at(iBin);
     hc.addLatency( stepLatency );
-    hc *= config_.areaNormalization(hc.sortKey());
+    hc.setS( int( 1.0*hc.S() * config_.areaNormalization(hc.sortKey()) / pow(2,config_.nBitsAreaNormLUT()+1) ) );
   }
 }
 
+// Smearing at constant phi with exponentially falling 2^-n kernel
+// Limited to +/- 1 bin in phi (only consider nearest neighbour), so adding half of the row above and below
 void HGCalHistoSeeding::smearHistogram2D( HGCalHistogramCellSAPtrCollection& histogram ) const {
   HGCalHistogramCellSACollection lHistogram;
   for ( unsigned int iBin = 0; iBin < histogram.size(); ++iBin ) {
@@ -133,20 +140,19 @@ void HGCalHistoSeeding::smearHistogram2D( HGCalHistogramCellSAPtrCollection& his
     const int row = hc->sortKey();
     const unsigned int binIndex = config_.cColumns() * row + col;
     if ( row - 1 >= 0 ) {
-      *hc += (lHistogram[binIndex - config_.cColumns()] / 2 ); // Magic numbers (?)
+      *hc += (lHistogram[binIndex - config_.cColumns()] / 2 );
     }
     if ( row + 1 <= int(config_.cRows()-1) ) {
-      *hc += (lHistogram[binIndex + config_.cColumns()] / 2 ); // Magic numbers (?)
+      *hc += (lHistogram[binIndex + config_.cColumns()] / 2 );
     }
   }
 }
 
+// Simple threshold maxima finder
+// Keep only bins passing threshold
+// Threshold can vary vs r/z
 void HGCalHistoSeeding::thresholdMaximaFinder( HGCalHistogramCellSAPtrCollection& histogram ) const {
   const unsigned int stepLatency = config_.getStepLatency( Maxima2D );
-
-  // std::cout << "Histogram for maxima finding" << std::endl;
-  // printHistogram( histogram );
-
   for ( auto& hc : histogram ) {
     hc->addLatency( stepLatency );
     if ( hc->S() <= config_.thresholdMaxima( hc->sortKey() ) ) {
@@ -156,8 +162,6 @@ void HGCalHistoSeeding::thresholdMaximaFinder( HGCalHistogramCellSAPtrCollection
       hc->setN(0);
     }
   }
-  // std::cout << "Threshold Maxima" << std::endl;
-  // printHistogram( histogram );
 }
 
 // Temporary simulation of local maxima finder
@@ -171,8 +175,6 @@ void HGCalHistoSeeding::localMaximaFinder( HGCalHistogramCellSAPtrCollection& hi
       const int colRef = hc->index();
       const int rowRef = hc->sortKey();
       bool isMaxima = true;
-      // std::cout << "Got a histo cell : " << hc->index() << " " << hc->sortKey() << " " << hc->S() << std::endl;
-      // std::cout << "Phi range : " << maximaWidths.at(hc->sortKey()) << std::endl;
       const int phiRange = maximaWidths.at(hc->sortKey());
       for ( int colOffset = -1 * phiRange; colOffset <= phiRange; ++colOffset ) {
         const int col = colRef + colOffset;
@@ -182,7 +184,6 @@ void HGCalHistoSeeding::localMaximaFinder( HGCalHistogramCellSAPtrCollection& hi
           if ( row < 0 || row >= (int) config_.cRows() ) continue;
           const unsigned int binIndex = config_.cColumns() * row + col;
           const auto& bin = histogram.at(binIndex);
-          // std::cout << "Comparing to : " << col << " " << row << " " << bin->S() << std::endl;
 
           if ( colOffset == 0 && rowOffset == 0 ) continue;
           else if ( ( col < colRef ) ||
@@ -203,22 +204,25 @@ void HGCalHistoSeeding::localMaximaFinder( HGCalHistogramCellSAPtrCollection& hi
       }
     }
   }
-  // std::cout << "Local Maxima" << std::endl;
-  // printHistogram( histogram );
 }
 
+
+// Calculate average of phi and r/z (now labelled X and Y) of TCs within a bin
+// As performed in firmware, where the sum of TC phi or r/z is multiplied by 2^17/N_TCs (factors stored in a LUT)
+// Then result is shifted by 17 bits 
 void HGCalHistoSeeding::calculateAveragePosition( HGCalHistogramCellSAPtrCollection& histogram ) const {
   const unsigned int stepLatency = config_.getStepLatency( CalcAverage );
   for ( auto& hc : histogram ) {
     hc->addLatency( stepLatency );
     if ( hc->N() > 0 ) {
-      unsigned int inv_N = int( round(1.0 * 0x1FFFF / hc->N() ) ); // Magic numbers
-      hc->setX( ( hc->X() * inv_N ) >> 17 ); //Magic numbers
-      hc->setY( ( hc->Y() * inv_N ) >> 17 ); //Magic numbers
+      unsigned int inv_N = int( round(1.0 * 0x1FFFF / hc->N() ) );
+      hc->setX( ( hc->X() * inv_N ) >> 17 );
+      hc->setY( ( hc->Y() * inv_N ) >> 17 );
     }
   }
 }
 
+// Useful debugging function for printing histogram contents
 void HGCalHistoSeeding::printHistogram( const HGCalHistogramCellSAPtrCollection& histogram ) const {
   for ( unsigned int iRow = 0; iRow < config_.cRows();  ++iRow ) {
     for ( unsigned int iCol = 0; iCol < config_.cColumns();  ++iCol ) {

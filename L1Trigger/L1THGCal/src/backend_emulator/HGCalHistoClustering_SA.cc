@@ -11,19 +11,20 @@ HGCalHistoClustering::HGCalHistoClustering(ClusterAlgoConfig& config) : config_(
 void HGCalHistoClustering::runClustering(const HGCalTriggerCellSAPtrCollection& triggerCellsIn, const HGCalHistogramCellSAPtrCollection& histogramIn, HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCellsOut, CentroidHelperPtrCollection& readoutFlagsOut, HGCalClusterSAPtrCollection& protoClusters  ) const {
 
   HGCalTriggerCellSAShrPtrCollection unclusteredTriggerCells;
-  CentroidHelperPtrCollection prioritizedMaxima;
-  clusterizer(triggerCellsIn, histogramIn, clusteredTriggerCellsOut, unclusteredTriggerCells, prioritizedMaxima, readoutFlagsOut );
+  clusterizer(triggerCellsIn, histogramIn, clusteredTriggerCellsOut, unclusteredTriggerCells, readoutFlagsOut );
   triggerCellToCluster( clusteredTriggerCellsOut, protoClusters );
 
 }
 
-
-void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& triggerCellsIn, const HGCalHistogramCellSAPtrCollection& histogram, HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCellsOut, HGCalTriggerCellSAShrPtrCollection& unclusteredTriggerCellsOut, CentroidHelperPtrCollection& prioritizedMaxima, CentroidHelperPtrCollection& readoutFlagsOut ) const {
-  
+// Main implementation of clustering
+// Takes histogram containing seeds and streams of TCs (each stream corresponds to one column of the histogram)
+// Outputs clustered and unclustered TCs, and readoutFlags which contain info on which clustered TCs belong to each cluster
+// Require more comments on firmware to provide more meanginful comments here
+void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& triggerCellsIn, const HGCalHistogramCellSAPtrCollection& histogram, HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCellsOut, HGCalTriggerCellSAShrPtrCollection& unclusteredTriggerCellsOut, CentroidHelperPtrCollection& readoutFlagsOut ) const {
   unsigned int seedCounter = 0;
-  CentroidHelperPtrCollections fifos( 18 ); // Magic numbers
+  CentroidHelperPtrCollections fifos( config_.nFifos() );
   vector<unsigned int> clock( config_.cColumns(), config_.clusterizerMagicTime() );
-  CentroidHelperShrPtrCollection latched( 18+1, make_shared<CentroidHelper>() ); // Magic numbers
+  CentroidHelperShrPtrCollection latched( config_.nFifos()+1, make_shared<CentroidHelper>() ); // 1 extra (dummy) entry compared to fifos, to match firmware behaviour (avoids issues with index wrap-around)
 
   HGCalTriggerCellSAShrPtrCollections clusteredTriggerCells( config_.cColumns(), HGCalTriggerCellSAShrPtrCollection() );
   HGCalTriggerCellSAShrPtrCollections unclusteredTriggerCells( config_.cColumns(), HGCalTriggerCellSAShrPtrCollection() );
@@ -36,13 +37,13 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
   }
 
   for ( unsigned int iRow = 0; iRow < config_.cRows(); ++iRow ) {
-    for ( unsigned int j = 0; j < 4; ++j ) { // Magic numbers
-      for ( unsigned int k = 0; k < 18; ++k ) { // Magic numbers
-        unsigned int col = 18 + (4*k) + j; // Magic numbers
+    for ( unsigned int j = 0; j < config_.nColumnsPerFifo(); ++j ) {
+      for ( unsigned int k = 0; k < config_.nFifos(); ++k ) { 
+        unsigned int col = config_.firstSeedBin() + (config_.nColumnsPerFifo()*k) + j;
         const auto& cell = histogram.at( config_.cColumns() * iRow + col );
         if ( cell->S() > 0 ) {
           auto ch = make_unique<CentroidHelper>( cell->clock() + 1 + j,
-                                                4*k + j, // Magic numbers
+                                                config_.nColumnsPerFifo()*k + j,
                                                 cell->index(),
                                                 cell->sortKey(),
                                                 cell->S(),
@@ -56,9 +57,8 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
       }
     }
   }
-
   while ( seedCounter > 0 ) {
-    for ( unsigned int i = 0; i < 18; ++i ) { // Magic numbers
+    for ( unsigned int i = 0; i < config_.nFifos(); ++i ) {
       if ( !latched[i]->dataValid() ) {
         if ( fifos[i].size() > 0 ) {
           latched[i] = move(fifos[i][0]);
@@ -67,19 +67,20 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
       }
     }
 
-    CentroidHelperShrPtrCollection accepted( 20, make_shared<CentroidHelper>() ); // Magic numbers
+    CentroidHelperShrPtrCollection accepted( config_.nFifos()+2, make_shared<CentroidHelper>() ); // 1 extra (dummy) entry compared to latched, to match firmware behaviour (avoids issues with index wrap-around)
     CentroidHelperShrPtrCollection lastLatched( latched );
 
-    for ( unsigned int i = 0; i < 18; ++i ) { // Magic numbers
+    for ( unsigned int i = 0; i < config_.nFifos(); ++i ) {
+
       // Different implementation to python emulator
       // For i=0, i-1=-1, which would give the last element of lastLatched in python, but is out of bounds in C++
-      // Similar for i=17
+      // Similar for i=17 (==config_.nFifos()-1)
       // Need to find out intended behaviour
-      bool deltaMinus = (i>0) ? ( lastLatched[i]->column() - lastLatched[i-1]->column() ) > 6 : true ; // Magic numbers
-      bool deltaPlus = (i<17) ? ( lastLatched[i+1]->column() - lastLatched[i]->column() ) > 6 : true ; // Magic numbers
+      bool deltaMinus = (i>0) ? ( lastLatched[i]->column() - lastLatched[i-1]->column() ) > config_.nColumnFifoVeto() : true ;
+      bool deltaPlus = (i<config_.nFifos()-1) ? ( lastLatched[i+1]->column() - lastLatched[i]->column() ) > config_.nColumnFifoVeto() : true ;
 
-      bool compareEMinus = (i>0) ? ( lastLatched[i]->energy() > lastLatched[i-1]->energy() ) : true; // Magic numbers
-      bool compareEPlus = (i<17) ? ( lastLatched[i]->energy() >= lastLatched[i+1]->energy() ) : true; // Magic numbers
+      bool compareEMinus = (i>0) ? ( lastLatched[i]->energy() > lastLatched[i-1]->energy() ) : true;
+      bool compareEPlus = (i<config_.nFifos()-1) ? ( lastLatched[i]->energy() >= lastLatched[i+1]->energy() ) : true;
 
       if ( lastLatched[i]->dataValid() ) {
         // Similar out of bounds issue here
@@ -112,27 +113,26 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
       }
     }
 
-    CentroidHelperPtrCollection output( config_.cColumns() );
     for ( const auto& a : accepted ) {
       if ( a->dataValid() ) {
-        for ( unsigned int iCol = a->column() - 3; iCol < a->column() + 4; ++iCol ) { // Magic numbers
+        for ( unsigned int iCol = a->column() - config_.nColumnsForClustering(); iCol < a->column() + config_.nColumnsForClustering() + 1; ++iCol ) {
           clock[iCol] = clock[a->column()];
-          output[iCol] = make_unique<CentroidHelper>(*a);
-          output[iCol]->setIndex( iCol );
-          output[iCol]->setClock( clock[iCol] );
-          prioritizedMaxima.push_back( move(output[iCol]) );
         }
       }
     }
 
     for ( const auto& a : accepted ) {
       if ( a->dataValid() ) {
-        unsigned int dR2Cut = 20000; // Magic numbers
-        unsigned int T=0; // Magic numbers
+        // Firmware does support layer-dependent delta R threshold
+        // But all thresholds currently set to same value
+        // And python emulator just has one threshold, which is why it's not configurable here yet
+        // i.e. I directly translated what is implemented in the python emulator, not the actual firmware
+        unsigned int dR2Cut = config_.deltaR2Cut();
+        unsigned int T=0;
 
-        for ( unsigned int iCol = a->column() - 3; iCol < a->column() + 4; ++iCol ) { // Magic numbers
-          clock[ iCol ] += 8; // Magic numbers
-          for ( int k = -2; k < 3; ++k ) { // Magic numbers
+        for ( unsigned int iCol = a->column() - config_.nColumnsForClustering(); iCol < a->column() + config_.nColumnsForClustering() + 1; ++iCol ) {
+          clock[ iCol ] += 8; // Magic numbers - latency of which particular step?
+          for ( int k = -1*config_.nRowsForClustering(); k < int(config_.nRowsForClustering())+1; ++k ) {
             int row = a->row() + k;
             if ( row < 0 ) continue;
             if ( row >= int(config_.cRows()) ) continue; // Not in python emulator, but required to avoid out of bounds access
@@ -140,7 +140,6 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
               clock[iCol] += 1 ;
               continue;
             }
-
             for ( auto& tc : triggerCellBuffers[iCol][row] ) {
               clock[iCol] += 1 ;
 
@@ -149,13 +148,12 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
               int dR = r1 - r2;
               int dPhi = tc->phi() - a->X();
               unsigned int dR2 = dR * dR;
-              unsigned int cosTerm = ( abs(dPhi) > config_.nBinsCosLUT() ) ? 2047 : config_.cosLUT( abs(dPhi) ); // Magic numbers
-              dR2 += int( r1 * r2 / pow(2,7) ) * cosTerm / pow(2,10); // Magic numbers
+              unsigned int cosTerm = ( abs(dPhi) > config_.nBinsCosLUT() ) ? 2047 : config_.cosLUT( abs(dPhi) );
+              dR2 += int( r1 * r2 / pow(2,7) ) * cosTerm / pow(2,10); // Magic numbers - number of bits involved in deltaR calculation?
               tc->setClock( clock[iCol] + 1 );
               if ( clock[iCol] > T ) T = clock[iCol];
 
               if ( dR2 < dR2Cut ) {
-                // std::cout << "Clustered a TC to a seed : " << tc->energy() << " " << a->row() << " " << a->column() << " " << a->energy() << std::endl;
                 clusteredTriggerCells[iCol].push_back(tc);
               }
               else {
@@ -186,11 +184,12 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
             }
           }
         }
-        for ( unsigned int iCol = a->column() - 3; iCol < a->column() + 4; ++iCol ) { // Magic numbers
+
+        for ( unsigned int iCol = a->column() - config_.nColumnsForClustering(); iCol < a->column() + config_.nColumnsForClustering() + 1; ++iCol ) {
           clock[iCol] = T+1;
 
           CentroidHelperPtr readoutFlag = make_unique<CentroidHelper>(T-2, iCol, true);
-          if ( readoutFlag->clock() == 448 ) { // Magic numbers
+          if ( readoutFlag->clock() == config_.clusterizerMagicTime()+14 ) { // Magic numbers - latency of which particular step?
             readoutFlag->setClock( readoutFlag->clock() + 1 );
           }
 
@@ -200,7 +199,7 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
     }
   }
 
-  for ( unsigned int i = 0; i <1000; ++i ) { // Magic numbers
+  for ( unsigned int i = 0; i <1000; ++i ) { // Magic numbers - a large number to ensure we read out all clustered trigger cells etc.?
     for ( unsigned int iCol = 0; iCol < config_.cColumns(); ++iCol ) {
       for ( const auto& clustered : clusteredTriggerCells[iCol] ) {
         if ( clustered->clock() == config_.clusterizerMagicTime() + i ) {
@@ -238,6 +237,7 @@ void HGCalHistoClustering::clusterizer( const HGCalTriggerCellSAPtrCollection& t
   // }
 }
 
+// Converts clustered TCs into cluster object (one for each TC) ready for accumulation
 void HGCalHistoClustering::triggerCellToCluster( const HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCells, HGCalClusterSAPtrCollection& clustersOut ) const {
 
   const unsigned int stepLatency = config_.getStepLatency( TriggerCellToCluster );
@@ -252,7 +252,8 @@ void HGCalHistoClustering::triggerCellToCluster( const HGCalTriggerCellSAShrPtrC
 
     // Cluster from single TC
     // Does this ever happen?
-    if ( tc->deltaR2() >= 25000 ) { // Magic numbers
+    // Removed from newer versions of firmware in any case
+    if ( tc->deltaR2() >= 25000 ) { // Magic numbers - but removed in newer versions of firmware, so leave for now
       clustersOut.push_back( move( cluster ) );
       continue;
     }
@@ -270,8 +271,8 @@ void HGCalHistoClustering::triggerCellToCluster( const HGCalTriggerCellSAShrPtrC
     if ( s_E_EM_core > config_.saturation() ) s_E_EM_core = config_.saturation();
 
     // Alternative constructor perhaps?
-    cluster->set_n_tc( 1 ); // Magic numbers
-    cluster->set_n_tc_w( 1 ); // Magic numbers
+    cluster->set_n_tc( 1 );
+    cluster->set_n_tc_w( 1 );
     
     cluster->set_e( ( config_.layerWeight_E( triggerLayer ) == 1 ) ? tc->energy() : 0  );
     cluster->set_e_h_early( ( config_.layerWeight_E_H_early( triggerLayer ) == 1 ) ? tc->energy() : 0  );
@@ -292,7 +293,7 @@ void HGCalHistoClustering::triggerCellToCluster( const HGCalTriggerCellSAShrPtrC
     cluster->set_wphi2( s_TC_W * tc->phi() * tc->phi() );
     cluster->set_wroz2( s_TC_W * tc->rOverZ() * tc->rOverZ() );
 
-    cluster->set_layerbits( cluster->layerbits() | ( ( (unsigned long int) 1) << ( 36 - triggerLayer ) ) ); // Magic numbers
+    cluster->set_layerbits( cluster->layerbits() | ( ( (unsigned long int) 1) << ( 36 - triggerLayer ) ) );
     cluster->set_sat_tc( cluster->e() == config_.saturation() || cluster->e_em() == config_.saturation() );
     cluster->set_shapeq(1);
 

@@ -72,8 +72,7 @@ void ClusterAlgoConfig::initializeLUTs() {
 
 void ClusterAlgoConfig::initializeSmearingKernelConstants( unsigned int bins, unsigned int offset, unsigned int height ) {
   const unsigned int lWidth0 = offset + (0.5*height);
-  const unsigned int lTarget = int( 6.5*lWidth0 - 0.5 ); // Magic numbers
-
+  const unsigned int lTarget = int( (maxBinsSmearing1D_+0.5)*lWidth0 - 0.5 );
   for ( unsigned int iBin = 0; iBin < bins; ++iBin ) {
     unsigned int lCentre = lWidth0 + ( height * iBin );
     const unsigned int lBins = int( round(1.0 * lTarget / lCentre) );
@@ -82,7 +81,7 @@ void ClusterAlgoConfig::initializeSmearingKernelConstants( unsigned int bins, un
 
     lCentre *= lBins;
 
-    const unsigned int lRatio = int( round(1.0*lTarget/lCentre * pow(2,17) ) ); // Magic numbers
+    const unsigned int lRatio = int( round(1.0*lTarget/lCentre * pow(2,nBitsAreaNormLUT_) ) );
 
     areaNormalizations_.push_back( lRatio );
   }
@@ -97,7 +96,7 @@ void ClusterAlgoConfig::initializeThresholdMaximaConstants( unsigned int bins, u
 
 void ClusterAlgoConfig::initializeCosLUT() {
   for ( unsigned int iBin = 0; iBin < nBinsCosLUT_+1; ++iBin ) { 
-    unsigned int cosBin = round( pow(2,18) * ( 1 - cos(iBin*M_PI/1944) ) ); // Magic numbers
+    unsigned int cosBin = round( pow(2,nBitsCosLUT_) * ( 1 - cos(iBin*M_PI/phiNValues_) ) );
     cosLUT_.push_back( cosBin );
   }
 }

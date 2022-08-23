@@ -70,19 +70,68 @@ namespace l1thgcfirmware {
     void setROverZBinSize( const unsigned rOverZBinSize ) { rOverZBinSize_ = rOverZBinSize;}
     unsigned int rOverZBinSize() const { return rOverZBinSize_; }
 
+    void setMaxBinsSmearing1D( const unsigned maxBinsSmearing1D ) { maxBinsSmearing1D_ = maxBinsSmearing1D; }
+    unsigned maxBinsSmearing1D() const { return maxBinsSmearing1D_; }
+    void setNBitsAreaNormLUT( const unsigned nBitsAreaNormLUT ) { nBitsAreaNormLUT_ = nBitsAreaNormLUT; }
+    unsigned nBitsAreaNormLUT() const { return nBitsAreaNormLUT_; }
     unsigned int kernelWidth( unsigned int iBin ) const { return kernelWidths_.at(iBin); }
     unsigned int areaNormalization( unsigned int iBin ) const { return areaNormalizations_.at(iBin); }
     
     void setROverZRange( const float rOverZRange ) { rOverZRange_ = rOverZRange; }
     float rOverZRange() const { return rOverZRange_; }
-    void setROverZNValues( const float rOverZNValues ) { rOverZNValues_ = rOverZNValues; }
-    float rOverZNValues() const { return rOverZNValues_; }
+    void setROverZNValues( const unsigned rOverZNValues ) { rOverZNValues_ = rOverZNValues; }
+    unsigned rOverZNValues() const { return rOverZNValues_; }
     void setPhiRange( const float phiRange ) { phiRange_ = phiRange; }
     float phiRange() const { return phiRange_; }
-    void setPhiNValues( const float phiNValues ) { phiNValues_ = phiNValues; }
-    float phiNValues() const { return phiNValues_; }
+    void setPhiNValues( const unsigned phiNValues ) { phiNValues_ = phiNValues; }
+    unsigned phiNValues() const { return phiNValues_; }
     void setPtDigiFactor( const float ptDigiFactor ) { ptDigiFactor_ = ptDigiFactor; }
     float ptDigiFactor() const { return ptDigiFactor_; }
+
+    void setMaxClustersPerLink( const unsigned maxClustersPerLink ) { maxClustersPerLink_ = maxClustersPerLink; }
+    unsigned maxClustersPerLink() const { return maxClustersPerLink_; }
+    void setNInputLinks( const unsigned nInputLinks ) { nInputLinks_ = nInputLinks; }
+    unsigned nInputLinks() const { return nInputLinks_; }
+
+    void setN60Sectors( const unsigned n60Sectors ) { n60Sectors_ = n60Sectors; }
+    unsigned n60Sectors() const { return n60Sectors_; }
+    void setNCoarsePhiDist1( const unsigned nCoarsePhiDist1 ) { nCoarsePhiDist1_ = nCoarsePhiDist1; }
+    unsigned nCoarsePhiDist1() const { return nCoarsePhiDist1_; }
+    void setNDistServers1( const unsigned nDistServers1 ) { nDistServers1_ = nDistServers1; }
+    unsigned nDistServers1() const { return nDistServers1_; }
+    void setDistServer1_nIn( const unsigned distServer1_nIn ) { distServer1_nIn_ = distServer1_nIn; }
+    unsigned distServer1_nIn() const { return distServer1_nIn_; }
+    void setDistServer1_nOut( const unsigned distServer1_nOut ) { distServer1_nOut_ = distServer1_nOut; }
+    unsigned distServer1_nOut() const { return distServer1_nOut_; }
+    void setDistServer1_nInterleave( const unsigned distServer1_nInterleave ) { distServer1_nInterleave_ = distServer1_nInterleave; }
+    unsigned distServer1_nInterleave() const { return distServer1_nInterleave_; }
+    void setNCoarsePhiDist2( const unsigned nCoarsePhiDist2 ) { nCoarsePhiDist2_ = nCoarsePhiDist2; }
+    unsigned nCoarsePhiDist2() const { return nCoarsePhiDist2_; }
+    void setNDistServers2( const unsigned nDistServers2 ) { nDistServers2_ = nDistServers2; }
+    unsigned nDistServers2() const { return nDistServers2_; }
+    void setDistServer2_nIn( const unsigned distServer2_nIn ) { distServer2_nIn_ = distServer2_nIn; }
+    unsigned distServer2_nIn() const { return distServer2_nIn_; }
+    void setDistServer2_nOut( const unsigned distServer2_nOut ) { distServer2_nOut_ = distServer2_nOut; }
+    unsigned distServer2_nOut() const { return distServer2_nOut_; }
+    void setDistServer2_nInterleave( const unsigned distServer2_nInterleave ) { distServer2_nInterleave_ = distServer2_nInterleave; }
+    unsigned distServer2_nInterleave() const { return distServer2_nInterleave_; }
+
+    void setClusterizerMagicTime( const unsigned clusterizerMagicTime ) { clusterizerMagicTime_ = clusterizerMagicTime;}
+    unsigned int clusterizerMagicTime() const { return clusterizerMagicTime_; }
+    void setNFifos( const unsigned nFifos ) { nFifos_ = nFifos;}
+    unsigned int nFifos() const { return nFifos_; }
+    void setNColumnsPerFifo( const unsigned nColumnsPerFifo ) { nColumnsPerFifo_ = nColumnsPerFifo;}
+    unsigned int nColumnsPerFifo() const { return nColumnsPerFifo_; }
+    void setFirstSeedBin( const unsigned firstSeedBin ) { firstSeedBin_ = firstSeedBin;}
+    unsigned int firstSeedBin() const { return firstSeedBin_; }
+    void setNColumnFifoVeto( const unsigned nColumnFifoVeto ) { nColumnFifoVeto_ = nColumnFifoVeto;}
+    unsigned int nColumnFifoVeto() const { return nColumnFifoVeto_; }
+    void setDeltaR2Cut( const unsigned deltaR2Cut ) { deltaR2Cut_ = deltaR2Cut;}
+    unsigned int deltaR2Cut() const { return deltaR2Cut_; }
+    void setNColumnsForClustering( const unsigned nColumnsForClustering ) { nColumnsForClustering_ = nColumnsForClustering;}
+    unsigned int nColumnsForClustering() const { return nColumnsForClustering_; }
+    void setNRowsForClustering( const unsigned nRowsForClustering ) { nRowsForClustering_ = nRowsForClustering;}
+    unsigned int nRowsForClustering() const { return nRowsForClustering_; }
 
     void setThresholdParams( const unsigned int a, const unsigned int b, const int c ) { 
       thresholdMaximaParam_a_ = a;
@@ -93,11 +142,10 @@ namespace l1thgcfirmware {
 
     void setNBinsCosLUT( const unsigned int nBinsCosLUT ) { nBinsCosLUT_ = nBinsCosLUT; }
     unsigned int nBinsCosLUT() const { return nBinsCosLUT_; }
+    void setNBitsCosLUT( const unsigned int nBitsCosLUT ) { nBitsCosLUT_ = nBitsCosLUT; }
+    unsigned int nBitsCosLUT() const { return nBitsCosLUT_; }
 
     unsigned int cosLUT( unsigned int iBin ) const { return cosLUT_.at(iBin); }
-
-    void setClusterizerMagicTime( const unsigned clusterizerMagicTime ) { clusterizerMagicTime_ = clusterizerMagicTime;}
-    unsigned int clusterizerMagicTime() const { return clusterizerMagicTime_; }
 
     void setDepths( const std::vector<unsigned int> depths ) {
       depths_.clear();
@@ -168,23 +216,53 @@ namespace l1thgcfirmware {
     unsigned int rOverZHistOffset_;
     unsigned int rOverZBinSize_;
 
+    // Digitisation parameters
     float rOverZRange_;
-    float rOverZNValues_;
+    unsigned rOverZNValues_;
     float phiRange_;
-    float phiNValues_;
+    unsigned phiNValues_;
     float ptDigiFactor_;
 
+    // Input link params
+    unsigned int maxClustersPerLink_;
+    unsigned int nInputLinks_;
+
+    // TC distribution parameters
+    unsigned int n60Sectors_;
+    unsigned int nCoarsePhiDist1_;
+    unsigned int nDistServers1_;
+    unsigned int distServer1_nIn_;
+    unsigned int distServer1_nOut_;
+    unsigned int distServer1_nInterleave_;
+    unsigned int nCoarsePhiDist2_;
+    unsigned int nDistServers2_;
+    unsigned int distServer2_nIn_;
+    unsigned int distServer2_nOut_;
+    unsigned int distServer2_nInterleave_;
+
+    // Smearing and normalization parameters
+    unsigned int maxBinsSmearing1D_;
+    unsigned int nBitsAreaNormLUT_;
     std::vector<unsigned int> kernelWidths_;
     std::vector<unsigned int> areaNormalizations_;
 
+    // Threshold maxima parameters
     unsigned int thresholdMaximaParam_a_;
     unsigned int thresholdMaximaParam_b_;
     int thresholdMaximaParam_c_;
     std::vector<int> thresholdMaximaConstants_;
 
+    // Clusterizer parameters
     unsigned int nBinsCosLUT_;
+    unsigned int nBitsCosLUT_;
     std::vector<unsigned int> cosLUT_;
-
+    unsigned int nFifos_;
+    unsigned int nColumnsPerFifo_;
+    unsigned int firstSeedBin_;
+    unsigned int nColumnFifoVeto_;
+    unsigned int deltaR2Cut_;
+    unsigned int nColumnsForClustering_;
+    unsigned int nRowsForClustering_;
     unsigned int clusterizerMagicTime_;
 
     std::map<Step,unsigned int> stepLatency_;

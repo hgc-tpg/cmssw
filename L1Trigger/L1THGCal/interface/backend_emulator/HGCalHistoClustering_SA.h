@@ -14,12 +14,12 @@ public:
   HGCalHistoClustering(l1thgcfirmware::ClusterAlgoConfig& config);
   ~HGCalHistoClustering() {}
 
-  void runClustering(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramIn, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCellsOut, l1thgcfirmware::CentroidHelperPtrCollection& readoutFlagsOut, l1thgcfirmware::HGCalClusterSAPtrCollection& protoClusters ) const;
+  void runClustering(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramIn, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCellsOut, l1thgcfirmware::CentroidHelperPtrCollection& readoutFlagsOut, l1thgcfirmware::HGCalClusterSAPtrCollection& protoClustersOut ) const;
 
 private:
 
   // Clustering
-  void clusterizer( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCells, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& unclusteredTriggerCells, l1thgcfirmware::CentroidHelperPtrCollection& prioritizedMaxima, l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags ) const;
+  void clusterizer( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCells, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& unclusteredTriggerCells, l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags ) const;
   void triggerCellToCluster( const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCells, l1thgcfirmware::HGCalClusterSAPtrCollection& clustersOut ) const;
 
   l1thgcfirmware::ClusterAlgoConfig& config_;

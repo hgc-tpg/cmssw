@@ -15,13 +15,14 @@ void HGCalHistoClusterProperties::runClusterProperties(const l1thgcfirmware::HGC
   clusterProperties(clustersOut);
 }
 
+// Accumulates/combines inputs cluster objects (each corresponding to one TC belonging to a cluster) into clusters  (one per cluster made up of TCs)
 void HGCalHistoClusterProperties::clusterSum( const HGCalClusterSAPtrCollection& protoClusters, const CentroidHelperPtrCollection& readoutFlags, HGCalClusterSAPtrCollection& clusterAccumulation, HGCalClusterSAPtrCollection& clusterSums ) const {
 
   HGCalClusterSAPtrCollections protoClustersPerColumn( config_.cColumns() );
   vector<unsigned int> clock( config_.cColumns(), 0 );
   for ( const auto& protoCluster : protoClusters ) {
     auto index = protoCluster->index();
-    // Do we need to make a copy of protoCluster here?
+    // Do we have to make a copy of protoCluster here?
     protoClustersPerColumn.at( index ).push_back( make_unique<HGCalCluster>( *protoCluster ) );
   }
 
@@ -32,7 +33,7 @@ void HGCalHistoClusterProperties::clusterSum( const HGCalClusterSAPtrCollection&
                                                   0,
                                                   true, true
                                                 );
-    flag->setClock( flag->clock() + 23 ); // Magic numbers
+    flag->setClock( flag->clock() + 23 ); // Magic numbers - latency of which particular step?
 
     for ( const auto& protoCluster : protoClustersPerColumn.at( flag->index() ) ) {
       if ( protoCluster->clock() <= clock.at( flag->index() ) ) continue;
@@ -46,7 +47,7 @@ void HGCalHistoClusterProperties::clusterSum( const HGCalClusterSAPtrCollection&
     accumulator->setDataValid( true );
 
     if ( sums.find( flag->clock() ) == sums.end() ) {
-      auto sum = make_unique<HGCalCluster>( flag->clock() + 7, // Magic numbers
+      auto sum = make_unique<HGCalCluster>( flag->clock() + 7, // Magic numbers - latency of which particular step?
                                             0,
                                             true, true
                                           );
@@ -83,6 +84,7 @@ void HGCalHistoClusterProperties::clusterSum( const HGCalClusterSAPtrCollection&
 
 }
 
+// Calculates properties of clusters from accumulated quantities
 void HGCalHistoClusterProperties::clusterProperties(  HGCalClusterSAPtrCollection& clusterSums ) const {
    unsigned int nTCs = 0;
   //  std::cout << "Cluster Prop" << std::endl;
