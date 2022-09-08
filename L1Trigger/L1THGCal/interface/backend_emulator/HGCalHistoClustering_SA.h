@@ -9,21 +9,29 @@
 
 namespace l1thgcfirmware {
 
-class HGCalHistoClustering {
-public:
-  HGCalHistoClustering(l1thgcfirmware::ClusterAlgoConfig& config);
-  ~HGCalHistoClustering() {}
+  class HGCalHistoClustering {
+  public:
+    HGCalHistoClustering(l1thgcfirmware::ClusterAlgoConfig& config);
+    ~HGCalHistoClustering() {}
 
-  void runClustering(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramIn, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCellsOut, l1thgcfirmware::CentroidHelperPtrCollection& readoutFlagsOut, l1thgcfirmware::HGCalClusterSAPtrCollection& protoClustersOut ) const;
+    void runClustering(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn,
+                       const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramIn,
+                       l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCellsOut,
+                       l1thgcfirmware::CentroidHelperPtrCollection& readoutFlagsOut,
+                       l1thgcfirmware::HGCalClusterSAPtrCollection& protoClustersOut) const;
 
-private:
+  private:
+    // Clustering
+    void clusterizer(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn,
+                     const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram,
+                     l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCells,
+                     l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& unclusteredTriggerCells,
+                     l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags) const;
+    void triggerCellToCluster(const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCells,
+                              l1thgcfirmware::HGCalClusterSAPtrCollection& clustersOut) const;
 
-  // Clustering
-  void clusterizer( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCells, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& unclusteredTriggerCells, l1thgcfirmware::CentroidHelperPtrCollection& readoutFlags ) const;
-  void triggerCellToCluster( const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCells, l1thgcfirmware::HGCalClusterSAPtrCollection& clustersOut ) const;
-
-  l1thgcfirmware::ClusterAlgoConfig& config_;
-};
-}
+    l1thgcfirmware::ClusterAlgoConfig& config_;
+  };
+}  // namespace l1thgcfirmware
 
 #endif

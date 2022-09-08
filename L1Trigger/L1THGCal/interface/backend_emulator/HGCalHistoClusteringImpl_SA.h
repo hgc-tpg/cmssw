@@ -15,23 +15,23 @@
 
 namespace l1thgcfirmware {
 
-class HGCalHistoClusteringImplSA {
-public:
-  HGCalHistoClusteringImplSA(l1thgcfirmware::ClusterAlgoConfig& config);
-  ~HGCalHistoClusteringImplSA() {}
+  class HGCalHistoClusteringImplSA {
+  public:
+    HGCalHistoClusteringImplSA(l1thgcfirmware::ClusterAlgoConfig& config);
+    ~HGCalHistoClusteringImplSA() {}
 
-  void runAlgorithm(const HGCalTriggerCellSAPtrCollections& inputs, HGCalTriggerCellSAShrPtrCollection& clusteredTCs,
-  HGCalClusterSAPtrCollection& clusterSums ) const;
+    void runAlgorithm(const HGCalTriggerCellSAPtrCollections& inputs,
+                      HGCalTriggerCellSAShrPtrCollection& clusteredTCs,
+                      HGCalClusterSAPtrCollection& clusterSums) const;
 
-private:
-  l1thgcfirmware::ClusterAlgoConfig& config_;
-  l1thgcfirmware::HGCalTCDistribution tcDistribution_;
-  l1thgcfirmware::HGCalHistoSeeding seeding_;
-  l1thgcfirmware::HGCalHistoClustering clustering_;
-  l1thgcfirmware::HGCalHistoClusterProperties clusterProperties_;
+  private:
+    l1thgcfirmware::ClusterAlgoConfig& config_;
+    l1thgcfirmware::HGCalTCDistribution tcDistribution_;
+    l1thgcfirmware::HGCalHistoSeeding seeding_;
+    l1thgcfirmware::HGCalHistoClustering clustering_;
+    l1thgcfirmware::HGCalHistoClusterProperties clusterProperties_;
+  };
 
-};
-
-}
+}  // namespace l1thgcfirmware
 
 #endif

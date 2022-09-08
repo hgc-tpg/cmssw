@@ -52,8 +52,7 @@ public:
 
     /* create a persistent vector of pointers to the trigger-cells */
     std::unordered_map<uint32_t, std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>> tcs_per_fpga;
-    
-    
+
     for (unsigned i = 0; i < collHandle->size(); ++i) {
       edm::Ptr<l1t::HGCalCluster> tc_ptr(collHandle, i);
       uint32_t module = geometry()->getModuleFromTriggerCell(tc_ptr->detId());
@@ -71,15 +70,15 @@ public:
         HGCalTriggerBackendDetId stage2_fpga_id(fpga);
         auto stage2_sector = stage2_fpga_id.sector();
         unsigned sector60 = 999;
-        if ( !isDuplicatedRegion ) sector60 = 1;
-        else if ( stage2_fpga_id.zside() == 1 ) {
-          sector60 = ( stage2_sector == stage1_sector ) ? 0 : 2;
-        }
-        else {
-          sector60 = ( stage2_sector == stage1_sector ) ? 0 : 2;
+        if (!isDuplicatedRegion)
+          sector60 = 1;
+        else if (stage2_fpga_id.zside() == 1) {
+          sector60 = (stage2_sector == stage1_sector) ? 0 : 2;
+        } else {
+          sector60 = (stage2_sector == stage1_sector) ? 0 : 2;
         }
 
-        if ( tcs_per_fpga[fpga].size() == 0 ) {
+        if (tcs_per_fpga[fpga].size() == 0) {
           tcs_per_fpga[fpga].resize(3);
         }
         tcs_per_fpga[fpga][sector60].push_back(tc_ptr);
@@ -114,7 +113,7 @@ public:
                                                       outputMulticlustersAndRejectedClusters_perFPGA);
       multiclusteringSortingTruncationWrapper_->process(collCluster3D_perFPGA, collCluster3D_perFPGA_sorted);
 
-      for (const auto& collcluster : collCluster3D_perFPGA) { //collCluster3D_perFPGA_sorted) {
+      for (const auto& collcluster : collCluster3D_perFPGA) {  //collCluster3D_perFPGA_sorted) {
         collCluster3D_sorted.push_back(0, collcluster);
       }
       for (const auto& rejectedcluster : rejectedClusters_perFPGA) {

@@ -7,33 +7,36 @@
 
 namespace l1thgcfirmware {
 
-class HGCalHistoSeeding {
-public:
-  HGCalHistoSeeding(l1thgcfirmware::ClusterAlgoConfig& config);
-  ~HGCalHistoSeeding() {}
+  class HGCalHistoSeeding {
+  public:
+    HGCalHistoSeeding(l1thgcfirmware::ClusterAlgoConfig& config);
+    ~HGCalHistoSeeding() {}
 
-  void runSeeding(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramOut ) const;
+    void runSeeding(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn,
+                    l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramOut) const;
 
-private:
-  // Histogram steps
-  void triggerCellToHistogramCell( const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn, l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramOut ) const;
-  void makeHistogram( const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramCells, l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramOut  ) const;
+  private:
+    // Histogram steps
+    void triggerCellToHistogramCell(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn,
+                                    l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramOut) const;
+    void makeHistogram(const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramCells,
+                       l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogramOut) const;
 
-  // Smearing steps
-  void smearHistogram1D( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
-  void normalizeArea( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
-  void smearHistogram2D( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
+    // Smearing steps
+    void smearHistogram1D(l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
+    void normalizeArea(l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
+    void smearHistogram2D(l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
 
-  // Maxima finding
-  void thresholdMaximaFinder( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
-  void localMaximaFinder( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
-  void calculateAveragePosition( l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
+    // Maxima finding
+    void thresholdMaximaFinder(l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
+    void localMaximaFinder(l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
+    void calculateAveragePosition(l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
 
-  // For debugging
-  void printHistogram( const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram ) const;
+    // For debugging
+    void printHistogram(const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
 
-  l1thgcfirmware::ClusterAlgoConfig& config_;
-};
-}
+    l1thgcfirmware::ClusterAlgoConfig& config_;
+  };
+}  // namespace l1thgcfirmware
 
 #endif

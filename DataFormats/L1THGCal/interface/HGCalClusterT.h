@@ -220,7 +220,7 @@ namespace l1t {
     void hbm(int hbm) { hbm_ = hbm; }
 
     // Firmware-specific cluster properties
-    unsigned long int Sigma_E_Quotient()  const { return Sigma_E_Quotient_SA_; }
+    unsigned long int Sigma_E_Quotient() const { return Sigma_E_Quotient_SA_; }
     unsigned long int Sigma_E_Fraction() const { return Sigma_E_Fraction_SA_; }
     unsigned long int Mean_z_Quotient() const { return Mean_z_Quotient_SA_; }
     unsigned long int Mean_z_Fraction() const { return Mean_z_Fraction_SA_; }
@@ -245,7 +245,7 @@ namespace l1t {
     unsigned long int E_H_early_over_E_Quotient() const { return E_H_early_over_E_Quotient_SA_; }
     unsigned long int E_H_early_over_E_Fraction() const { return E_H_early_over_E_Fraction_SA_; }
 
-    void Sigma_E_Quotient(unsigned long int Sigma_E_Quotient_SA)  { Sigma_E_Quotient_SA_ = Sigma_E_Quotient_SA; }
+    void Sigma_E_Quotient(unsigned long int Sigma_E_Quotient_SA) { Sigma_E_Quotient_SA_ = Sigma_E_Quotient_SA; }
     void Sigma_E_Fraction(unsigned long int Sigma_E_Fraction_SA) { Sigma_E_Fraction_SA_ = Sigma_E_Fraction_SA; }
     void Mean_z_Quotient(unsigned long int Mean_z_Quotient_SA) { Mean_z_Quotient_SA_ = Mean_z_Quotient_SA; }
     void Mean_z_Fraction(unsigned long int Mean_z_Fraction_SA) { Mean_z_Fraction_SA_ = Mean_z_Fraction_SA; }
@@ -263,12 +263,24 @@ namespace l1t {
     void Sigma_eta_Fraction(unsigned long int Sigma_eta_Fraction_SA) { Sigma_eta_Fraction_SA_ = Sigma_eta_Fraction_SA; }
     void Sigma_roz_Quotient(unsigned long int Sigma_roz_Quotient_SA) { Sigma_roz_Quotient_SA_ = Sigma_roz_Quotient_SA; }
     void Sigma_roz_Fraction(unsigned long int Sigma_roz_Fraction_SA) { Sigma_roz_Fraction_SA_ = Sigma_roz_Fraction_SA; }
-    void E_EM_over_E_Quotient(unsigned long int E_EM_over_E_Quotient_SA) { E_EM_over_E_Quotient_SA_ = E_EM_over_E_Quotient_SA; }
-    void E_EM_over_E_Fraction(unsigned long int E_EM_over_E_Fraction_SA) { E_EM_over_E_Fraction_SA_ = E_EM_over_E_Fraction_SA; }
-    void E_EM_core_over_E_EM_Quotient(unsigned long int E_EM_core_over_E_EM_Quotient_SA) { E_EM_core_over_E_EM_Quotient_SA_ = E_EM_core_over_E_EM_Quotient_SA; }
-    void E_EM_core_over_E_EM_Fraction(unsigned long int E_EM_core_over_E_EM_Fraction_SA) { E_EM_core_over_E_EM_Fraction_SA_ = E_EM_core_over_E_EM_Fraction_SA; }
-    void E_H_early_over_E_Quotient(unsigned long int E_H_early_over_E_Quotient_SA) { E_H_early_over_E_Quotient_SA_ = E_H_early_over_E_Quotient_SA; }
-    void E_H_early_over_E_Fraction(unsigned long int E_H_early_over_E_Fraction_SA) { E_H_early_over_E_Fraction_SA_ = E_H_early_over_E_Fraction_SA; }
+    void E_EM_over_E_Quotient(unsigned long int E_EM_over_E_Quotient_SA) {
+      E_EM_over_E_Quotient_SA_ = E_EM_over_E_Quotient_SA;
+    }
+    void E_EM_over_E_Fraction(unsigned long int E_EM_over_E_Fraction_SA) {
+      E_EM_over_E_Fraction_SA_ = E_EM_over_E_Fraction_SA;
+    }
+    void E_EM_core_over_E_EM_Quotient(unsigned long int E_EM_core_over_E_EM_Quotient_SA) {
+      E_EM_core_over_E_EM_Quotient_SA_ = E_EM_core_over_E_EM_Quotient_SA;
+    }
+    void E_EM_core_over_E_EM_Fraction(unsigned long int E_EM_core_over_E_EM_Fraction_SA) {
+      E_EM_core_over_E_EM_Fraction_SA_ = E_EM_core_over_E_EM_Fraction_SA;
+    }
+    void E_H_early_over_E_Quotient(unsigned long int E_H_early_over_E_Quotient_SA) {
+      E_H_early_over_E_Quotient_SA_ = E_H_early_over_E_Quotient_SA;
+    }
+    void E_H_early_over_E_Fraction(unsigned long int E_H_early_over_E_Fraction_SA) {
+      E_H_early_over_E_Fraction_SA_ = E_H_early_over_E_Fraction_SA;
+    }
 
     /* operators */
     bool operator<(const HGCalClusterT<C>& cl) const { return mipPt() < cl.mipPt(); }

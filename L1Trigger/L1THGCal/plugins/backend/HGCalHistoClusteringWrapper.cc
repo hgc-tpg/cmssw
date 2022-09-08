@@ -23,7 +23,8 @@ public:
   ~HGCalHistoClusteringWrapper() override {}
 
   void configure(
-      const std::tuple<const HGCalTriggerGeometryBase* const, const edm::ParameterSet&, const unsigned int, const int>& configuration) override;
+      const std::tuple<const HGCalTriggerGeometryBase* const, const edm::ParameterSet&, const unsigned int, const int>&
+          configuration) override;
 
   void process(const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& inputClusters,
                std::pair<l1t::HGCalMulticlusterBxCollection&, l1t::HGCalClusterBxCollection&>&
@@ -32,10 +33,14 @@ public:
 private:
   void convertCMSSWInputs(const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& clustersPtrs,
                           l1thgcfirmware::HGCalTriggerCellSAPtrCollections& clusters_SA) const;
-  void convertAlgorithmOutputs( l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums, l1t::HGCalMulticlusterBxCollection& multiClusters_out, const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& inputClustersPtrs ) const;
+  void convertAlgorithmOutputs(l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums,
+                               l1t::HGCalMulticlusterBxCollection& multiClusters_out,
+                               const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& inputClustersPtrs) const;
 
-  void clusterizeHisto( const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCells_in_SA, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTCs, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& unclusteredTCs,
-  l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums ) const;
+  void clusterizeHisto(const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCells_in_SA,
+                       l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTCs,
+                       l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& unclusteredTCs,
+                       l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums) const;
 
   void setGeometry(const HGCalTriggerGeometryBase* const geom) { triggerTools_.setGeometry(geom); }
 
@@ -49,12 +54,11 @@ private:
 };
 
 HGCalHistoClusteringWrapper::HGCalHistoClusteringWrapper(const edm::ParameterSet& conf)
-    : HGCalHistoClusteringWrapperBase(conf),
-      theConfiguration_(),
-      theAlgo_(theConfiguration_) {}
+    : HGCalHistoClusteringWrapperBase(conf), theConfiguration_(), theAlgo_(theConfiguration_) {}
 
-void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& clustersPtrs, l1thgcfirmware::HGCalTriggerCellSAPtrCollections& clusters_SA ) const {
-
+void HGCalHistoClusteringWrapper::convertCMSSWInputs(
+    const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& clustersPtrs,
+    l1thgcfirmware::HGCalTriggerCellSAPtrCollections& clusters_SA) const {
   // Convert trigger cells to format required by emulator
   l1thgcfirmware::HGCalTriggerCellSAPtrCollections clusters_SA_perSector60(3);
   unsigned iSector60 = 0;
@@ -66,7 +70,8 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
       double x = position.x();
       double y = position.y();
       double z = position.z();
-      unsigned int digi_rOverZ = ( std::sqrt(x * x + y * y) / std::abs(z) ) * theConfiguration_.rOverZNValues()/ theConfiguration_.rOverZRange();
+      unsigned int digi_rOverZ = (std::sqrt(x * x + y * y) / std::abs(z)) * theConfiguration_.rOverZNValues() /
+                                 theConfiguration_.rOverZRange();
 
       if (z > 0)
         x = -x;
@@ -84,12 +89,12 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
 
       // Ignore TCs that are outside of the nominal 180 degree S2 sector
       // Assume these cannot be part of a cluster found within the central 120 degrees of the S2 sector?
-      if ( phi < 0 || phi > M_PI ) {
+      if (phi < 0 || phi > M_PI) {
         continue;
       }
 
-      unsigned int digi_phi = ( phi ) * theConfiguration_.phiNValues() / theConfiguration_.phiRange();
-      unsigned int digi_energy = ( cluster->pt() ) * theConfiguration_.ptDigiFactor();
+      unsigned int digi_phi = (phi)*theConfiguration_.phiNValues() / theConfiguration_.phiRange();
+      unsigned int digi_energy = (cluster->pt()) * theConfiguration_.ptDigiFactor();
 
       // The existing S2 firmware is assuming the TCs on one S1->S2 link originate from
       // a 60 degree region of a S1 sector, and the links from one 60 degree region
@@ -99,23 +104,15 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
       unsigned tcSector60 = iSector60;
       unsigned int minSectorPhi = iSector60 * 648;
       unsigned int maxSectorPhi = (iSector60 + 1) * 648;
-      if ( digi_phi < minSectorPhi ) {
+      if (digi_phi < minSectorPhi) {
         tcSector60 -= 1;
-      }
-      else if ( digi_phi > maxSectorPhi ) {
+      } else if (digi_phi > maxSectorPhi) {
         tcSector60 += 1;
       }
 
-      clusters_SA_perSector60[tcSector60].emplace_back( 
-                                            std::make_unique<l1thgcfirmware::HGCalTriggerCell>(
-                                              true,
-                                              true,
-                                              digi_rOverZ,
-                                              digi_phi,
-                                              triggerTools_.layerWithOffset(cluster->detId()),
-                                              digi_energy
-                                          ) );
-      clusters_SA_perSector60[tcSector60].back()->setCmsswIndex( std::pair<int, int>{iSector60, iCluster} );
+      clusters_SA_perSector60[tcSector60].emplace_back(std::make_unique<l1thgcfirmware::HGCalTriggerCell>(
+          true, true, digi_rOverZ, digi_phi, triggerTools_.layerWithOffset(cluster->detId()), digi_energy));
+      clusters_SA_perSector60[tcSector60].back()->setCmsswIndex(std::pair<int, int>{iSector60, iCluster});
       ++iCluster;
     }
     ++iSector60;
@@ -127,26 +124,31 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
   // Ultimately, links/ordering in time should come from S1 emulation
   // Sort by r/z in each 60 degree sector
   for (auto& clusters : clusters_SA_perSector60) {
-    std::sort(clusters.begin(), clusters.end(), [](const l1thgcfirmware::HGCalTriggerCellSAPtr& a, const l1thgcfirmware::HGCalTriggerCellSAPtr& b) { return a->rOverZ()<b->rOverZ(); });
+    std::sort(clusters.begin(),
+              clusters.end(),
+              [](const l1thgcfirmware::HGCalTriggerCellSAPtr& a, const l1thgcfirmware::HGCalTriggerCellSAPtr& b) {
+                return a->rOverZ() < b->rOverZ();
+              });
   }
 
   // Distribute to links
   clusters_SA.clear();
-  clusters_SA.resize( theConfiguration_.maxClustersPerLink() + 2 ); // Two empty frames at start of packet
-  for ( auto& clusters : clusters_SA ) {
-    for ( unsigned int iCluster=0; iCluster < theConfiguration_.nInputLinks(); ++iCluster ) {
-      clusters.push_back( std::make_unique<l1thgcfirmware::HGCalTriggerCell>() );
+  clusters_SA.resize(theConfiguration_.maxClustersPerLink() + 2);  // Two empty frames at start of packet
+  for (auto& clusters : clusters_SA) {
+    for (unsigned int iCluster = 0; iCluster < theConfiguration_.nInputLinks(); ++iCluster) {
+      clusters.push_back(std::make_unique<l1thgcfirmware::HGCalTriggerCell>());
     }
   }
   iSector60 = 0;
   unsigned int nLinksPerSector60 = theConfiguration_.nInputLinks() / 3;
   for (auto& sector60 : clusters_SA_perSector60) {
     unsigned iCluster = 0;
-    for ( auto& cluster : sector60 ) {
+    for (auto& cluster : sector60) {
       // Leave first two frames empty
-      unsigned frame = 2 + iCluster / nLinksPerSector60; 
-      unsigned link = iCluster % nLinksPerSector60 + iSector60 * nLinksPerSector60; 
-      if ( frame >= theConfiguration_.maxClustersPerLink() + 2 ) break; 
+      unsigned frame = 2 + iCluster / nLinksPerSector60;
+      unsigned link = iCluster % nLinksPerSector60 + iSector60 * nLinksPerSector60;
+      if (frame >= theConfiguration_.maxClustersPerLink() + 2)
+        break;
       clusters_SA[frame][link] = move(cluster);
       ++iCluster;
     }
@@ -154,20 +156,23 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(const std::vector<std::vect
   }
 }
 
-void HGCalHistoClusteringWrapper::convertAlgorithmOutputs( l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums,
-l1t::HGCalMulticlusterBxCollection& multiClusters_out, const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& inputClustersPtrs
- ) const {
-  for ( const auto& cluster : clusterSums ) {
-
+void HGCalHistoClusteringWrapper::convertAlgorithmOutputs(
+    l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums,
+    l1t::HGCalMulticlusterBxCollection& multiClusters_out,
+    const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& inputClustersPtrs) const {
+  for (const auto& cluster : clusterSums) {
     // Convert from digitised quantities
-    if ( cluster->w() == 0 || cluster->e() == 0 ) continue;
-    double phi = ( cluster->wphi() / cluster->w() ) * theConfiguration_.phiRange() / theConfiguration_.phiNValues();
+    if (cluster->w() == 0 || cluster->e() == 0)
+      continue;
+    double phi = (cluster->wphi() / cluster->w()) * theConfiguration_.phiRange() / theConfiguration_.phiNValues();
     double pt = cluster->e() / theConfiguration_.ptDigiFactor();
 
-    if ( pt < 0.5 ) continue; // Add (or take) cut threshold to config
+    if (pt < 0.5)
+      continue;  // Add (or take) cut threshold to config
 
-    double rOverZ = ( cluster->wroz() / cluster->w() ) * theConfiguration_.rOverZRange() / theConfiguration_.rOverZNValues();
-    double eta = -1.0 * std::log( tan( atan( rOverZ ) / 2 ) );
+    double rOverZ =
+        (cluster->wroz() / cluster->w()) * theConfiguration_.rOverZRange() / theConfiguration_.rOverZNValues();
+    double eta = -1.0 * std::log(tan(atan(rOverZ) / 2));
     eta *= theConfiguration_.zSide();
 
     auto sector = theConfiguration_.sector();
@@ -176,70 +181,72 @@ l1t::HGCalMulticlusterBxCollection& multiClusters_out, const std::vector<std::ve
     } else if (sector == 2) {
       phi = phi + (4. * M_PI / 3.);
     }
-    if ( theConfiguration_.zSide() == 1 ) {
+    if (theConfiguration_.zSide() == 1) {
       phi = M_PI - phi;
     }
-    phi -= ( phi > M_PI ) ? 2 * M_PI : 0;
+    phi -= (phi > M_PI) ? 2 * M_PI : 0;
 
     math::PtEtaPhiMLorentzVector clusterP4(pt, eta, phi, 0.);
 
     l1t::HGCalMulticluster multicluster;
     multicluster.setP4(clusterP4);
-    std::cout << "Got a cluster : " << cluster->e() << " " << cluster->constituents().size() << " " << multicluster.pt() << " " << multicluster.eta() << " " << multicluster.phi()  << " " << rOverZ << " " << phi << " " << eta << std::endl;
-    for ( const auto& tc : cluster->constituents() ) {
+    std::cout << "Got a cluster : " << cluster->e() << " " << cluster->constituents().size() << " " << multicluster.pt()
+              << " " << multicluster.eta() << " " << multicluster.phi() << " " << rOverZ << " " << phi << " " << eta
+              << std::endl;
+    for (const auto& tc : cluster->constituents()) {
       const auto& tc_cmssw = inputClustersPtrs.at(tc->cmsswIndex().first).at(tc->cmsswIndex().second);
       // Add tc as constituent, but don't update any other properties of the multicluster i.e. leave them unchanged from those calculated by the emulator
-      multicluster.addConstituent( tc_cmssw, false, 0. );
+      multicluster.addConstituent(tc_cmssw, false, 0.);
     }
 
     double emIntFraction = 1.0 * cluster->e_em() / cluster->e();
-    multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::EM, emIntFraction * multicluster.energy() );
+    multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::EM,
+                                          emIntFraction * multicluster.energy());
 
     double emCoreIntFraction = 1.0 * cluster->e_em_core() / cluster->e();
-    multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::EM_CORE, emCoreIntFraction * multicluster.energy() );
+    multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::EM_CORE,
+                                          emCoreIntFraction * multicluster.energy());
 
     double emHEarlyIntFraction = 1.0 * cluster->e_h_early() / cluster->e();
-    multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::H_EARLY, emHEarlyIntFraction * multicluster.energy() );
+    multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::H_EARLY,
+                                          emHEarlyIntFraction * multicluster.energy());
 
     multiClusters_out.push_back(0, multicluster);
 
     // Set cluster shower shape properties
-    multicluster.showerLength( cluster->ShowerLen() );
-    multicluster.coreShowerLength( cluster->CoreShowerLen() );
-    multicluster.firstLayer( cluster->FirstLayer() );
-    multicluster.Sigma_E_Quotient( cluster->Sigma_E_Quotient() );
-    multicluster.Sigma_E_Fraction( cluster->Sigma_E_Fraction() );
-    multicluster.Mean_z_Quotient( cluster->Mean_z_Quotient() );
-    multicluster.Mean_z_Fraction( cluster->Mean_z_Fraction() );
-    multicluster.Mean_phi_Quotient( cluster->Mean_phi_Quotient() );
-    multicluster.Mean_phi_Fraction( cluster->Mean_phi_Fraction() );
-    multicluster.Mean_eta_Quotient( cluster->Mean_eta_Quotient() );
-    multicluster.Mean_eta_Fraction( cluster->Mean_eta_Fraction() );
-    multicluster.Mean_roz_Quotient( cluster->Mean_roz_Quotient() );
-    multicluster.Mean_roz_Fraction( cluster->Mean_roz_Fraction() );
-    multicluster.Sigma_z_Quotient( cluster->Sigma_z_Quotient() );
-    multicluster.Sigma_z_Fraction( cluster->Sigma_z_Fraction() );
-    multicluster.Sigma_phi_Quotient( cluster->Sigma_phi_Quotient() );
-    multicluster.Sigma_phi_Fraction( cluster->Sigma_phi_Fraction() );
-    multicluster.Sigma_eta_Quotient( cluster->Sigma_eta_Quotient() );
-    multicluster.Sigma_eta_Fraction( cluster->Sigma_eta_Fraction() );
-    multicluster.Sigma_roz_Quotient( cluster->Sigma_roz_Quotient() );
-    multicluster.Sigma_roz_Fraction( cluster->Sigma_roz_Fraction() );
-    multicluster.E_EM_over_E_Quotient( cluster->E_EM_over_E_Quotient() );
-    multicluster.E_EM_over_E_Fraction( cluster->E_EM_over_E_Fraction() );
-    multicluster.E_EM_core_over_E_EM_Quotient( cluster->E_EM_core_over_E_EM_Quotient() );
-    multicluster.E_EM_core_over_E_EM_Fraction( cluster->E_EM_core_over_E_EM_Fraction() );
-    multicluster.E_H_early_over_E_Quotient( cluster->E_H_early_over_E_Quotient() );
-    multicluster.E_H_early_over_E_Fraction( cluster->E_H_early_over_E_Fraction() );
+    multicluster.showerLength(cluster->ShowerLen());
+    multicluster.coreShowerLength(cluster->CoreShowerLen());
+    multicluster.firstLayer(cluster->FirstLayer());
+    multicluster.Sigma_E_Quotient(cluster->Sigma_E_Quotient());
+    multicluster.Sigma_E_Fraction(cluster->Sigma_E_Fraction());
+    multicluster.Mean_z_Quotient(cluster->Mean_z_Quotient());
+    multicluster.Mean_z_Fraction(cluster->Mean_z_Fraction());
+    multicluster.Mean_phi_Quotient(cluster->Mean_phi_Quotient());
+    multicluster.Mean_phi_Fraction(cluster->Mean_phi_Fraction());
+    multicluster.Mean_eta_Quotient(cluster->Mean_eta_Quotient());
+    multicluster.Mean_eta_Fraction(cluster->Mean_eta_Fraction());
+    multicluster.Mean_roz_Quotient(cluster->Mean_roz_Quotient());
+    multicluster.Mean_roz_Fraction(cluster->Mean_roz_Fraction());
+    multicluster.Sigma_z_Quotient(cluster->Sigma_z_Quotient());
+    multicluster.Sigma_z_Fraction(cluster->Sigma_z_Fraction());
+    multicluster.Sigma_phi_Quotient(cluster->Sigma_phi_Quotient());
+    multicluster.Sigma_phi_Fraction(cluster->Sigma_phi_Fraction());
+    multicluster.Sigma_eta_Quotient(cluster->Sigma_eta_Quotient());
+    multicluster.Sigma_eta_Fraction(cluster->Sigma_eta_Fraction());
+    multicluster.Sigma_roz_Quotient(cluster->Sigma_roz_Quotient());
+    multicluster.Sigma_roz_Fraction(cluster->Sigma_roz_Fraction());
+    multicluster.E_EM_over_E_Quotient(cluster->E_EM_over_E_Quotient());
+    multicluster.E_EM_over_E_Fraction(cluster->E_EM_over_E_Fraction());
+    multicluster.E_EM_core_over_E_EM_Quotient(cluster->E_EM_core_over_E_EM_Quotient());
+    multicluster.E_EM_core_over_E_EM_Fraction(cluster->E_EM_core_over_E_EM_Fraction());
+    multicluster.E_H_early_over_E_Quotient(cluster->E_H_early_over_E_Quotient());
+    multicluster.E_H_early_over_E_Fraction(cluster->E_H_early_over_E_Fraction());
   }
 }
 
-void HGCalHistoClusteringWrapper::process(
-    const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>&
-        inputClusters,
-    std::pair<l1t::HGCalMulticlusterBxCollection&, l1t::HGCalClusterBxCollection&>&
-        outputMulticlustersAndRejectedClusters) const {
-
+void HGCalHistoClusteringWrapper::process(const std::vector<std::vector<edm::Ptr<l1t::HGCalCluster>>>& inputClusters,
+                                          std::pair<l1t::HGCalMulticlusterBxCollection&, l1t::HGCalClusterBxCollection&>&
+                                              outputMulticlustersAndRejectedClusters) const {
   l1thgcfirmware::HGCalTriggerCellSAPtrCollections triggerCells_in_SA;
   convertCMSSWInputs(inputClusters, triggerCells_in_SA);
 
@@ -247,92 +254,100 @@ void HGCalHistoClusteringWrapper::process(
   l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection unclusteredTCs_out_SA;
   l1thgcfirmware::HGCalClusterSAPtrCollection clusterSums_out_SA;
   clusterizeHisto(triggerCells_in_SA, clusteredTCs_out_SA, unclusteredTCs_out_SA, clusterSums_out_SA);
-  
-  convertAlgorithmOutputs( clusterSums_out_SA, outputMulticlustersAndRejectedClusters.first, inputClusters );
+
+  convertAlgorithmOutputs(clusterSums_out_SA, outputMulticlustersAndRejectedClusters.first, inputClusters);
 }
 
-void HGCalHistoClusteringWrapper::clusterizeHisto( const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCells_in_SA, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTCs, l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& unclusteredTCs, l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums ) const {
-
-  theAlgo_.runAlgorithm( triggerCells_in_SA, clusteredTCs, clusterSums );
+void HGCalHistoClusteringWrapper::clusterizeHisto(
+    const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCells_in_SA,
+    l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTCs,
+    l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& unclusteredTCs,
+    l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums) const {
+  theAlgo_.runAlgorithm(triggerCells_in_SA, clusteredTCs, clusterSums);
 }
 
 void HGCalHistoClusteringWrapper::configure(
-    const std::tuple<const HGCalTriggerGeometryBase* const, const edm::ParameterSet&, const unsigned int, const int>& configuration) {
+    const std::tuple<const HGCalTriggerGeometryBase* const, const edm::ParameterSet&, const unsigned int, const int>&
+        configuration) {
   setGeometry(std::get<0>(configuration));
 
-  theConfiguration_.setSector( std::get<2>(configuration) );
-  theConfiguration_.setZSide( std::get<3>(configuration) );
+  theConfiguration_.setSector(std::get<2>(configuration));
+  theConfiguration_.setZSide(std::get<3>(configuration));
 
-  const edm::ParameterSet pset = std::get<1>(configuration).getParameterSet("C3d_parameters").getParameterSet("histoMax_C3d_clustering_parameters").getParameterSet("layer2FwClusteringParameters");
+  const edm::ParameterSet pset = std::get<1>(configuration)
+                                     .getParameterSet("C3d_parameters")
+                                     .getParameterSet("histoMax_C3d_clustering_parameters")
+                                     .getParameterSet("layer2FwClusteringParameters");
 
-  theConfiguration_.setClusterizerOffset( pset.getParameter<unsigned int>("clusterizerOffset"));
-  theConfiguration_.setStepLatencies( pset.getParameter<std::vector<unsigned int>>("stepLatencies"));
-  theConfiguration_.setCClocks( pset.getParameter<unsigned int>("cClocks") );
-  theConfiguration_.setCInputs( pset.getParameter<unsigned int>("cInputs") );
-  theConfiguration_.setCInputs2( pset.getParameter<unsigned int>("cInputs2") );
-  theConfiguration_.setCInt( pset.getParameter<unsigned int>("cInt") );
-  theConfiguration_.setCColumns( pset.getParameter<unsigned int>("cColumns") );
-  theConfiguration_.setCRows( pset.getParameter<unsigned int>("cRows") );
-  theConfiguration_.setROverZHistOffset( pset.getParameter<unsigned int>("rOverZHistOffset") );
-  theConfiguration_.setROverZBinSize( pset.getParameter<unsigned int>("rOverZBinSize") );
-  theConfiguration_.setDepths( pset.getParameter<std::vector<unsigned int>>("depths"));
-  theConfiguration_.setTriggerLayers( pset.getParameter<std::vector<unsigned int>>("triggerLayers"));
-  theConfiguration_.setLayerWeights_E( pset.getParameter<std::vector<unsigned int>>("layerWeights_E"));
-  theConfiguration_.setLayerWeights_E_EM( pset.getParameter<std::vector<unsigned int>>("layerWeights_E_EM"));
-  theConfiguration_.setLayerWeights_E_EM_core( pset.getParameter<std::vector<unsigned int>>("layerWeights_E_EM_core"));
-  theConfiguration_.setLayerWeights_E_H_early( pset.getParameter<std::vector<unsigned int>>("layerWeights_E_H_early"));
-  theConfiguration_.setCorrection( pset.getParameter<unsigned int>("correction") );
-  theConfiguration_.setSaturation( pset.getParameter<unsigned int>("saturation") );
+  theConfiguration_.setClusterizerOffset(pset.getParameter<unsigned int>("clusterizerOffset"));
+  theConfiguration_.setStepLatencies(pset.getParameter<std::vector<unsigned int>>("stepLatencies"));
+  theConfiguration_.setCClocks(pset.getParameter<unsigned int>("cClocks"));
+  theConfiguration_.setCInputs(pset.getParameter<unsigned int>("cInputs"));
+  theConfiguration_.setCInputs2(pset.getParameter<unsigned int>("cInputs2"));
+  theConfiguration_.setCInt(pset.getParameter<unsigned int>("cInt"));
+  theConfiguration_.setCColumns(pset.getParameter<unsigned int>("cColumns"));
+  theConfiguration_.setCRows(pset.getParameter<unsigned int>("cRows"));
+  theConfiguration_.setROverZHistOffset(pset.getParameter<unsigned int>("rOverZHistOffset"));
+  theConfiguration_.setROverZBinSize(pset.getParameter<unsigned int>("rOverZBinSize"));
+  theConfiguration_.setDepths(pset.getParameter<std::vector<unsigned int>>("depths"));
+  theConfiguration_.setTriggerLayers(pset.getParameter<std::vector<unsigned int>>("triggerLayers"));
+  theConfiguration_.setLayerWeights_E(pset.getParameter<std::vector<unsigned int>>("layerWeights_E"));
+  theConfiguration_.setLayerWeights_E_EM(pset.getParameter<std::vector<unsigned int>>("layerWeights_E_EM"));
+  theConfiguration_.setLayerWeights_E_EM_core(pset.getParameter<std::vector<unsigned int>>("layerWeights_E_EM_core"));
+  theConfiguration_.setLayerWeights_E_H_early(pset.getParameter<std::vector<unsigned int>>("layerWeights_E_H_early"));
+  theConfiguration_.setCorrection(pset.getParameter<unsigned int>("correction"));
+  theConfiguration_.setSaturation(pset.getParameter<unsigned int>("saturation"));
   const edm::ParameterSet thresholdParams = pset.getParameterSet("thresholdMaximaParams");
-  theConfiguration_.setThresholdParams( thresholdParams.getParameter<unsigned int>("a"), thresholdParams.getParameter<unsigned int>("b"), thresholdParams.getParameter<int>("c") );
+  theConfiguration_.setThresholdParams(thresholdParams.getParameter<unsigned int>("a"),
+                                       thresholdParams.getParameter<unsigned int>("b"),
+                                       thresholdParams.getParameter<int>("c"));
 
   // Digitization parameters
   const edm::ParameterSet digitizationPset = pset.getParameterSet("digiParams");
-  theConfiguration_.setROverZRange( digitizationPset.getParameter<double>("rOverZRange"));
-  theConfiguration_.setROverZNValues( digitizationPset.getParameter<double>("rOverZNValues"));
-  theConfiguration_.setPhiRange( digitizationPset.getParameter<double>("phiRange"));
-  theConfiguration_.setPhiNValues( digitizationPset.getParameter<double>("phiNValues"));
-  theConfiguration_.setPtDigiFactor( digitizationPset.getParameter<double>("ptDigiFactor"));
+  theConfiguration_.setROverZRange(digitizationPset.getParameter<double>("rOverZRange"));
+  theConfiguration_.setROverZNValues(digitizationPset.getParameter<double>("rOverZNValues"));
+  theConfiguration_.setPhiRange(digitizationPset.getParameter<double>("phiRange"));
+  theConfiguration_.setPhiNValues(digitizationPset.getParameter<double>("phiNValues"));
+  theConfiguration_.setPtDigiFactor(digitizationPset.getParameter<double>("ptDigiFactor"));
 
   // Input links parameters
   const edm::ParameterSet inputLinksPset = pset.getParameterSet("inputLinkParams");
-  theConfiguration_.setMaxClustersPerLink( inputLinksPset.getParameter<unsigned int>("maxClustersPerLink") );
-  theConfiguration_.setNInputLinks( inputLinksPset.getParameter<unsigned int>("nInputLinks") );
+  theConfiguration_.setMaxClustersPerLink(inputLinksPset.getParameter<unsigned int>("maxClustersPerLink"));
+  theConfiguration_.setNInputLinks(inputLinksPset.getParameter<unsigned int>("nInputLinks"));
 
   // TC distribution parameters
   const edm::ParameterSet tcDistPset = pset.getParameterSet("tcDistParams");
-  theConfiguration_.setN60Sectors( tcDistPset.getParameter<unsigned int>("n60Sectors") );
-  theConfiguration_.setNCoarsePhiDist1( tcDistPset.getParameter<unsigned int>("nCoarsePhiRegionsDist1") );
-  theConfiguration_.setNDistServers1( tcDistPset.getParameter<unsigned int>("nDistServers1") );
-  theConfiguration_.setDistServer1_nIn( tcDistPset.getParameter<unsigned int>("distServer1_nIn") );
-  theConfiguration_.setDistServer1_nOut( tcDistPset.getParameter<unsigned int>("distServer1_nOut") );
-  theConfiguration_.setDistServer1_nInterleave( tcDistPset.getParameter<unsigned int>("distServer1_nInterleave") );
-  theConfiguration_.setNCoarsePhiDist2( tcDistPset.getParameter<unsigned int>("nCoarsePhiRegionsDist2") );
-  theConfiguration_.setNDistServers2( tcDistPset.getParameter<unsigned int>("nDistServers2") );
-  theConfiguration_.setDistServer2_nIn( tcDistPset.getParameter<unsigned int>("distServer2_nIn") );
-  theConfiguration_.setDistServer2_nOut( tcDistPset.getParameter<unsigned int>("distServer2_nOut") );
-  theConfiguration_.setDistServer2_nInterleave( tcDistPset.getParameter<unsigned int>("distServer2_nInterleave") );
+  theConfiguration_.setN60Sectors(tcDistPset.getParameter<unsigned int>("n60Sectors"));
+  theConfiguration_.setNCoarsePhiDist1(tcDistPset.getParameter<unsigned int>("nCoarsePhiRegionsDist1"));
+  theConfiguration_.setNDistServers1(tcDistPset.getParameter<unsigned int>("nDistServers1"));
+  theConfiguration_.setDistServer1_nIn(tcDistPset.getParameter<unsigned int>("distServer1_nIn"));
+  theConfiguration_.setDistServer1_nOut(tcDistPset.getParameter<unsigned int>("distServer1_nOut"));
+  theConfiguration_.setDistServer1_nInterleave(tcDistPset.getParameter<unsigned int>("distServer1_nInterleave"));
+  theConfiguration_.setNCoarsePhiDist2(tcDistPset.getParameter<unsigned int>("nCoarsePhiRegionsDist2"));
+  theConfiguration_.setNDistServers2(tcDistPset.getParameter<unsigned int>("nDistServers2"));
+  theConfiguration_.setDistServer2_nIn(tcDistPset.getParameter<unsigned int>("distServer2_nIn"));
+  theConfiguration_.setDistServer2_nOut(tcDistPset.getParameter<unsigned int>("distServer2_nOut"));
+  theConfiguration_.setDistServer2_nInterleave(tcDistPset.getParameter<unsigned int>("distServer2_nInterleave"));
 
   // Smearing parameters
   const edm::ParameterSet smearingPset = pset.getParameterSet("smearingParams");
-  theConfiguration_.setMaxBinsSmearing1D( smearingPset.getParameter<unsigned int>("maxBinsSmearing1D") );
-  theConfiguration_.setNBitsAreaNormLUT( smearingPset.getParameter<unsigned int>("nBitsAreaNormLUT") );
-  
+  theConfiguration_.setMaxBinsSmearing1D(smearingPset.getParameter<unsigned int>("maxBinsSmearing1D"));
+  theConfiguration_.setNBitsAreaNormLUT(smearingPset.getParameter<unsigned int>("nBitsAreaNormLUT"));
+
   // Clusterizer parameters
   const edm::ParameterSet clusterizerPset = pset.getParameterSet("clusterizerParams");
-  theConfiguration_.setNBinsCosLUT( clusterizerPset.getParameter<unsigned int>("nBinsCosLUT") );
-  theConfiguration_.setNBitsCosLUT( clusterizerPset.getParameter<unsigned int>("nBitsCosLUT") );
-  theConfiguration_.setNFifos( clusterizerPset.getParameter<unsigned int>("nFifos"));
-  theConfiguration_.setNColumnsPerFifo( clusterizerPset.getParameter<unsigned int>("nColumnsPerFifo"));
-  theConfiguration_.setClusterizerMagicTime( clusterizerPset.getParameter<unsigned int>("clusterizerMagicTime") );
-  theConfiguration_.setFirstSeedBin( clusterizerPset.getParameter<unsigned int>("firstSeedBin") );
-  theConfiguration_.setNColumnFifoVeto( clusterizerPset.getParameter<unsigned int>("nColumnsFifoVeto") );
-  theConfiguration_.setDeltaR2Cut( clusterizerPset.getParameter<unsigned int>("deltaR2Cut") );
-  theConfiguration_.setNColumnsForClustering( clusterizerPset.getParameter<unsigned int>("nColumnsForClustering") );
-  theConfiguration_.setNRowsForClustering( clusterizerPset.getParameter<unsigned int>("nRowsForClustering") );
+  theConfiguration_.setNBinsCosLUT(clusterizerPset.getParameter<unsigned int>("nBinsCosLUT"));
+  theConfiguration_.setNBitsCosLUT(clusterizerPset.getParameter<unsigned int>("nBitsCosLUT"));
+  theConfiguration_.setNFifos(clusterizerPset.getParameter<unsigned int>("nFifos"));
+  theConfiguration_.setNColumnsPerFifo(clusterizerPset.getParameter<unsigned int>("nColumnsPerFifo"));
+  theConfiguration_.setClusterizerMagicTime(clusterizerPset.getParameter<unsigned int>("clusterizerMagicTime"));
+  theConfiguration_.setFirstSeedBin(clusterizerPset.getParameter<unsigned int>("firstSeedBin"));
+  theConfiguration_.setNColumnFifoVeto(clusterizerPset.getParameter<unsigned int>("nColumnsFifoVeto"));
+  theConfiguration_.setDeltaR2Cut(clusterizerPset.getParameter<unsigned int>("deltaR2Cut"));
+  theConfiguration_.setNColumnsForClustering(clusterizerPset.getParameter<unsigned int>("nColumnsForClustering"));
+  theConfiguration_.setNRowsForClustering(clusterizerPset.getParameter<unsigned int>("nRowsForClustering"));
 
   theConfiguration_.initializeLUTs();
-
 };
 
 DEFINE_EDM_PLUGIN(HGCalHistoClusteringWrapperBaseFactory, HGCalHistoClusteringWrapper, "HGCalHistoClusteringWrapper");

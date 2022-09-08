@@ -12,7 +12,6 @@ const HGCalHistogramCell& HGCalHistogramCell::operator+=(const HGCalHistogramCel
 }
 
 const HGCalHistogramCell HGCalHistogramCell::operator/(const unsigned int factor) const {
-  
   HGCalHistogramCell hc(*this);
 
   hc.S_ /= factor;
@@ -23,9 +22,7 @@ const HGCalHistogramCell HGCalHistogramCell::operator/(const unsigned int factor
 }
 
 const HGCalHistogramCell HGCalHistogramCell::operator+(const HGCalHistogramCell& hc) const {
-  
   HGCalHistogramCell sum(*this);
   sum += hc;
   return sum;
 }
-

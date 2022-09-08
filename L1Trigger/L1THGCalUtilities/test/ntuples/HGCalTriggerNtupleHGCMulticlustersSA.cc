@@ -49,10 +49,11 @@ private:
   std::vector<unsigned long int> cl3d_E_EM_core_over_E_EM_Fraction_;
   std::vector<unsigned long int> cl3d_E_H_early_over_E_Quotient_;
   std::vector<unsigned long int> cl3d_E_H_early_over_E_Fraction_;
-
 };
 
-DEFINE_EDM_PLUGIN(HGCalTriggerNtupleFactory, HGCalTriggerNtupleHGCMulticlustersSA, "HGCalTriggerNtupleHGCMulticlustersSA");
+DEFINE_EDM_PLUGIN(HGCalTriggerNtupleFactory,
+                  HGCalTriggerNtupleHGCMulticlustersSA,
+                  "HGCalTriggerNtupleHGCMulticlustersSA");
 
 HGCalTriggerNtupleHGCMulticlustersSA::HGCalTriggerNtupleHGCMulticlustersSA(const edm::ParameterSet& conf)
     : HGCalTriggerNtupleBase(conf) {
@@ -60,8 +61,8 @@ HGCalTriggerNtupleHGCMulticlustersSA::HGCalTriggerNtupleHGCMulticlustersSA(const
 }
 
 void HGCalTriggerNtupleHGCMulticlustersSA::initialize(TTree& tree,
-                                                    const edm::ParameterSet& conf,
-                                                    edm::ConsumesCollector&& collector) {
+                                                      const edm::ParameterSet& conf,
+                                                      edm::ConsumesCollector&& collector) {
   multiclusters_token_ =
       collector.consumes<l1t::HGCalMulticlusterBxCollection>(conf.getParameter<edm::InputTag>("Multiclusters"));
 
