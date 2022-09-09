@@ -200,7 +200,7 @@ std::vector<int> HGCalHistoClusterProperties::showerLengthProperties(unsigned lo
   }
   int showerLen = lastLayer - firstLayer + 1;
   int coreShowerLen = 36;
-  if (layerBits_array.size() > 0) {
+  if (!layerBits_array.empty()) {
     coreShowerLen = *std::max_element(layerBits_array.begin(), layerBits_array.end());
   }
 

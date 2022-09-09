@@ -69,7 +69,7 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
   while (seedCounter > 0) {
     for (unsigned int i = 0; i < config_.nFifos(); ++i) {
       if (!latched[i]->dataValid()) {
-        if (fifos[i].size() > 0) {
+        if (!fifos[i].empty()) {
           latched[i] = move(fifos[i][0]);
           fifos[i].erase(fifos.at(i).begin());
         }
@@ -155,7 +155,7 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
               continue;
             if (row >= int(config_.cRows()))
               continue;  // Not in python emulator, but required to avoid out of bounds access
-            if (triggerCellBuffers[iCol][row].size() == 0) {
+            if (triggerCellBuffers[iCol][row].empty()) {
               clock[iCol] += 1;
               continue;
             }
@@ -165,9 +165,9 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
               unsigned int r1 = tc->rOverZ();
               unsigned int r2 = a->Y();
               int dR = r1 - r2;
-              int dPhi = tc->phi() - a->X();
+              unsigned int absDPhi = abs(int(tc->phi()) - int(a->X()));
               unsigned int dR2 = dR * dR;
-              unsigned int cosTerm = (abs(dPhi) > config_.nBinsCosLUT()) ? 2047 : config_.cosLUT(abs(dPhi));
+              unsigned int cosTerm = (absDPhi > config_.nBinsCosLUT()) ? 2047 : config_.cosLUT(absDPhi);
               dR2 += int(r1 * r2 / pow(2, 7)) * cosTerm /
                      pow(2, 10);  // Magic numbers - number of bits involved in deltaR calculation?
               tc->setClock(clock[iCol] + 1);

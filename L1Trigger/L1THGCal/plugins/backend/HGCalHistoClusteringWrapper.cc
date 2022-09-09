@@ -297,13 +297,13 @@ void HGCalHistoClusteringWrapper::configure(
   theConfiguration_.setLayerWeights_E_H_early(pset.getParameter<std::vector<unsigned int>>("layerWeights_E_H_early"));
   theConfiguration_.setCorrection(pset.getParameter<unsigned int>("correction"));
   theConfiguration_.setSaturation(pset.getParameter<unsigned int>("saturation"));
-  const edm::ParameterSet thresholdParams = pset.getParameterSet("thresholdMaximaParams");
+  const edm::ParameterSet& thresholdParams = pset.getParameterSet("thresholdMaximaParams");
   theConfiguration_.setThresholdParams(thresholdParams.getParameter<unsigned int>("a"),
                                        thresholdParams.getParameter<unsigned int>("b"),
                                        thresholdParams.getParameter<int>("c"));
 
   // Digitization parameters
-  const edm::ParameterSet digitizationPset = pset.getParameterSet("digiParams");
+  const edm::ParameterSet& digitizationPset = pset.getParameterSet("digiParams");
   theConfiguration_.setROverZRange(digitizationPset.getParameter<double>("rOverZRange"));
   theConfiguration_.setROverZNValues(digitizationPset.getParameter<double>("rOverZNValues"));
   theConfiguration_.setPhiRange(digitizationPset.getParameter<double>("phiRange"));
@@ -311,12 +311,12 @@ void HGCalHistoClusteringWrapper::configure(
   theConfiguration_.setPtDigiFactor(digitizationPset.getParameter<double>("ptDigiFactor"));
 
   // Input links parameters
-  const edm::ParameterSet inputLinksPset = pset.getParameterSet("inputLinkParams");
+  const edm::ParameterSet& inputLinksPset = pset.getParameterSet("inputLinkParams");
   theConfiguration_.setMaxClustersPerLink(inputLinksPset.getParameter<unsigned int>("maxClustersPerLink"));
   theConfiguration_.setNInputLinks(inputLinksPset.getParameter<unsigned int>("nInputLinks"));
 
   // TC distribution parameters
-  const edm::ParameterSet tcDistPset = pset.getParameterSet("tcDistParams");
+  const edm::ParameterSet& tcDistPset = pset.getParameterSet("tcDistParams");
   theConfiguration_.setN60Sectors(tcDistPset.getParameter<unsigned int>("n60Sectors"));
   theConfiguration_.setNCoarsePhiDist1(tcDistPset.getParameter<unsigned int>("nCoarsePhiRegionsDist1"));
   theConfiguration_.setNDistServers1(tcDistPset.getParameter<unsigned int>("nDistServers1"));
@@ -330,12 +330,12 @@ void HGCalHistoClusteringWrapper::configure(
   theConfiguration_.setDistServer2_nInterleave(tcDistPset.getParameter<unsigned int>("distServer2_nInterleave"));
 
   // Smearing parameters
-  const edm::ParameterSet smearingPset = pset.getParameterSet("smearingParams");
+  const edm::ParameterSet& smearingPset = pset.getParameterSet("smearingParams");
   theConfiguration_.setMaxBinsSmearing1D(smearingPset.getParameter<unsigned int>("maxBinsSmearing1D"));
   theConfiguration_.setNBitsAreaNormLUT(smearingPset.getParameter<unsigned int>("nBitsAreaNormLUT"));
 
   // Clusterizer parameters
-  const edm::ParameterSet clusterizerPset = pset.getParameterSet("clusterizerParams");
+  const edm::ParameterSet& clusterizerPset = pset.getParameterSet("clusterizerParams");
   theConfiguration_.setNBinsCosLUT(clusterizerPset.getParameter<unsigned int>("nBinsCosLUT"));
   theConfiguration_.setNBitsCosLUT(clusterizerPset.getParameter<unsigned int>("nBitsCosLUT"));
   theConfiguration_.setNFifos(clusterizerPset.getParameter<unsigned int>("nFifos"));

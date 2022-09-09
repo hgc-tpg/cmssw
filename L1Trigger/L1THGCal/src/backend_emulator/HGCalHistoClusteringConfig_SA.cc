@@ -1,5 +1,5 @@
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalHistoClusteringConfig_SA.h"
-#include <math.h>
+#include <cmath>
 #include <iostream>
 using namespace std;
 using namespace l1thgcfirmware;

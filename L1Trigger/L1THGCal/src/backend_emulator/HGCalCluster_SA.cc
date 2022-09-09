@@ -1,6 +1,6 @@
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalCluster_SA.h"
-#include <math.h>
 #include <algorithm>
+#include <cmath>
 
 using namespace l1thgcfirmware;
 

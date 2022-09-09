@@ -78,7 +78,7 @@ public:
           sector60 = (stage2_sector == stage1_sector) ? 0 : 2;
         }
 
-        if (tcs_per_fpga[fpga].size() == 0) {
+        if (tcs_per_fpga[fpga].empty()) {
           tcs_per_fpga[fpga].resize(3);
         }
         tcs_per_fpga[fpga][sector60].push_back(tc_ptr);
