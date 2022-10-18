@@ -220,66 +220,66 @@ namespace l1t {
     void hbm(int hbm) { hbm_ = hbm; }
 
     // Firmware-specific cluster properties
-    unsigned long int Sigma_E_Quotient() const { return Sigma_E_Quotient_SA_; }
-    unsigned long int Sigma_E_Fraction() const { return Sigma_E_Fraction_SA_; }
-    unsigned long int Mean_z_Quotient() const { return Mean_z_Quotient_SA_; }
-    unsigned long int Mean_z_Fraction() const { return Mean_z_Fraction_SA_; }
-    unsigned long int Mean_phi_Quotient() const { return Mean_phi_Quotient_SA_; }
-    unsigned long int Mean_phi_Fraction() const { return Mean_phi_Fraction_SA_; }
-    unsigned long int Mean_eta_Quotient() const { return Mean_eta_Quotient_SA_; }
-    unsigned long int Mean_eta_Fraction() const { return Mean_eta_Fraction_SA_; }
-    unsigned long int Mean_roz_Quotient() const { return Mean_roz_Quotient_SA_; }
-    unsigned long int Mean_roz_Fraction() const { return Mean_roz_Fraction_SA_; }
-    unsigned long int Sigma_z_Quotient() const { return Sigma_z_Quotient_SA_; }
-    unsigned long int Sigma_z_Fraction() const { return Sigma_z_Fraction_SA_; }
-    unsigned long int Sigma_phi_Quotient() const { return Sigma_phi_Quotient_SA_; }
-    unsigned long int Sigma_phi_Fraction() const { return Sigma_phi_Fraction_SA_; }
-    unsigned long int Sigma_eta_Quotient() const { return Sigma_eta_Quotient_SA_; }
-    unsigned long int Sigma_eta_Fraction() const { return Sigma_eta_Fraction_SA_; }
-    unsigned long int Sigma_roz_Quotient() const { return Sigma_roz_Quotient_SA_; }
-    unsigned long int Sigma_roz_Fraction() const { return Sigma_roz_Fraction_SA_; }
-    unsigned long int E_EM_over_E_Quotient() const { return E_EM_over_E_Quotient_SA_; }
-    unsigned long int E_EM_over_E_Fraction() const { return E_EM_over_E_Fraction_SA_; }
-    unsigned long int E_EM_core_over_E_EM_Quotient() const { return E_EM_core_over_E_EM_Quotient_SA_; }
-    unsigned long int E_EM_core_over_E_EM_Fraction() const { return E_EM_core_over_E_EM_Fraction_SA_; }
-    unsigned long int E_H_early_over_E_Quotient() const { return E_H_early_over_E_Quotient_SA_; }
-    unsigned long int E_H_early_over_E_Fraction() const { return E_H_early_over_E_Fraction_SA_; }
+    unsigned long int hw_sigma_e_quotient() const { return hw_sigma_e_quotient_; }
+    unsigned long int hw_sigma_e_fraction() const { return hw_sigma_e_fraction_; }
+    unsigned long int hw_mean_z_quotient() const { return hw_mean_z_quotient_; }
+    unsigned long int hw_mean_z_fraction() const { return hw_mean_z_fraction_; }
+    unsigned long int hw_mean_phi_quotient() const { return hw_mean_phi_quotient_; }
+    unsigned long int hw_mean_phi_fraction() const { return hw_mean_phi_fraction_; }
+    unsigned long int hw_mean_eta_quotient() const { return hw_mean_eta_quotient_; }
+    unsigned long int hw_mean_eta_fraction() const { return hw_mean_eta_fraction_; }
+    unsigned long int hw_mean_roz_quotient() const { return hw_mean_roz_quotient_; }
+    unsigned long int hw_mean_roz_fraction() const { return hw_mean_roz_fraction_; }
+    unsigned long int hw_sigma_z_quotient() const { return hw_sigma_z_quotient_; }
+    unsigned long int hw_sigma_z_fraction() const { return hw_sigma_z_fraction_; }
+    unsigned long int hw_sigma_phi_quotient() const { return hw_sigma_phi_quotient_; }
+    unsigned long int hw_sigma_phi_fraction() const { return hw_sigma_phi_fraction_; }
+    unsigned long int hw_sigma_eta_quotient() const { return hw_sigma_eta_quotient_; }
+    unsigned long int hw_sigma_eta_fraction() const { return hw_sigma_eta_fraction_; }
+    unsigned long int hw_sigma_roz_quotient() const { return hw_sigma_roz_quotient_; }
+    unsigned long int hw_sigma_roz_fraction() const { return hw_sigma_roz_fraction_; }
+    unsigned long int hw_e_em_over_e_quotient() const { return hw_e_em_over_e_quotient_; }
+    unsigned long int hw_e_em_over_e_fraction() const { return hw_e_em_over_e_fraction_; }
+    unsigned long int hw_e_em_core_over_e_em_quotient() const { return hw_e_em_core_over_e_em_quotient_; }
+    unsigned long int hw_e_em_core_over_e_em_fraction() const { return hw_e_em_core_over_e_em_fraction_; }
+    unsigned long int hw_e_h_early_over_e_quotient() const { return hw_e_h_early_over_e_quotient_; }
+    unsigned long int hw_e_h_early_over_e_fraction() const { return hw_e_h_early_over_e_fraction_; }
 
-    void Sigma_E_Quotient(unsigned long int Sigma_E_Quotient_SA) { Sigma_E_Quotient_SA_ = Sigma_E_Quotient_SA; }
-    void Sigma_E_Fraction(unsigned long int Sigma_E_Fraction_SA) { Sigma_E_Fraction_SA_ = Sigma_E_Fraction_SA; }
-    void Mean_z_Quotient(unsigned long int Mean_z_Quotient_SA) { Mean_z_Quotient_SA_ = Mean_z_Quotient_SA; }
-    void Mean_z_Fraction(unsigned long int Mean_z_Fraction_SA) { Mean_z_Fraction_SA_ = Mean_z_Fraction_SA; }
-    void Mean_phi_Quotient(unsigned long int Mean_phi_Quotient_SA) { Mean_phi_Quotient_SA_ = Mean_phi_Quotient_SA; }
-    void Mean_phi_Fraction(unsigned long int Mean_phi_Fraction_SA) { Mean_phi_Fraction_SA_ = Mean_phi_Fraction_SA; }
-    void Mean_eta_Quotient(unsigned long int Mean_eta_Quotient_SA) { Mean_eta_Quotient_SA_ = Mean_eta_Quotient_SA; }
-    void Mean_eta_Fraction(unsigned long int Mean_eta_Fraction_SA) { Mean_eta_Fraction_SA_ = Mean_eta_Fraction_SA; }
-    void Mean_roz_Quotient(unsigned long int Mean_roz_Quotient_SA) { Mean_roz_Quotient_SA_ = Mean_roz_Quotient_SA; }
-    void Mean_roz_Fraction(unsigned long int Mean_roz_Fraction_SA) { Mean_roz_Fraction_SA_ = Mean_roz_Fraction_SA; }
-    void Sigma_z_Quotient(unsigned long int Sigma_z_Quotient_SA) { Sigma_z_Quotient_SA_ = Sigma_z_Quotient_SA; }
-    void Sigma_z_Fraction(unsigned long int Sigma_z_Fraction_SA) { Sigma_z_Fraction_SA_ = Sigma_z_Fraction_SA; }
-    void Sigma_phi_Quotient(unsigned long int Sigma_phi_Quotient_SA) { Sigma_phi_Quotient_SA_ = Sigma_phi_Quotient_SA; }
-    void Sigma_phi_Fraction(unsigned long int Sigma_phi_Fraction_SA) { Sigma_phi_Fraction_SA_ = Sigma_phi_Fraction_SA; }
-    void Sigma_eta_Quotient(unsigned long int Sigma_eta_Quotient_SA) { Sigma_eta_Quotient_SA_ = Sigma_eta_Quotient_SA; }
-    void Sigma_eta_Fraction(unsigned long int Sigma_eta_Fraction_SA) { Sigma_eta_Fraction_SA_ = Sigma_eta_Fraction_SA; }
-    void Sigma_roz_Quotient(unsigned long int Sigma_roz_Quotient_SA) { Sigma_roz_Quotient_SA_ = Sigma_roz_Quotient_SA; }
-    void Sigma_roz_Fraction(unsigned long int Sigma_roz_Fraction_SA) { Sigma_roz_Fraction_SA_ = Sigma_roz_Fraction_SA; }
-    void E_EM_over_E_Quotient(unsigned long int E_EM_over_E_Quotient_SA) {
-      E_EM_over_E_Quotient_SA_ = E_EM_over_E_Quotient_SA;
+    void hw_sigma_e_quotient(unsigned long int sigma_e_quotient) { hw_sigma_e_quotient_ = sigma_e_quotient; }
+    void hw_sigma_e_fraction(unsigned long int sigma_e_fraction) { hw_sigma_e_fraction_ = sigma_e_fraction; }
+    void hw_mean_z_quotient(unsigned long int mean_z_quotient) { hw_mean_z_quotient_ = mean_z_quotient; }
+    void hw_mean_z_fraction(unsigned long int mean_z_fraction) { hw_mean_z_fraction_ = mean_z_fraction; }
+    void hw_mean_phi_quotient(unsigned long int mean_phi_quotient) { hw_mean_phi_quotient_ = mean_phi_quotient; }
+    void hw_mean_phi_fraction(unsigned long int mean_phi_fraction) { hw_mean_phi_fraction_ = mean_phi_fraction; }
+    void hw_mean_eta_quotient(unsigned long int mean_eta_quotient) { hw_mean_eta_quotient_ = mean_eta_quotient; }
+    void hw_mean_eta_fraction(unsigned long int mean_eta_fraction) { hw_mean_eta_fraction_ = mean_eta_fraction; }
+    void hw_mean_roz_quotient(unsigned long int mean_roz_quotient) { hw_mean_roz_quotient_ = mean_roz_quotient; }
+    void hw_mean_roz_fraction(unsigned long int mean_roz_fraction) { hw_mean_roz_fraction_ = mean_roz_fraction; }
+    void hw_sigma_z_quotient(unsigned long int sigma_z_quotient) { hw_sigma_z_quotient_ = sigma_z_quotient; }
+    void hw_sigma_z_fraction(unsigned long int sigma_z_fraction) { hw_sigma_z_fraction_ = sigma_z_fraction; }
+    void hw_sigma_phi_quotient(unsigned long int sigma_phi_quotient) { hw_sigma_phi_quotient_ = sigma_phi_quotient; }
+    void hw_sigma_phi_fraction(unsigned long int sigma_phi_fraction) { hw_sigma_phi_fraction_ = sigma_phi_fraction; }
+    void hw_sigma_eta_quotient(unsigned long int sigma_eta_quotient) { hw_sigma_eta_quotient_ = sigma_eta_quotient; }
+    void hw_sigma_eta_fraction(unsigned long int sigma_eta_fraction) { hw_sigma_eta_fraction_ = sigma_eta_fraction; }
+    void hw_sigma_roz_quotient(unsigned long int sigma_roz_quotient) { hw_sigma_roz_quotient_ = sigma_roz_quotient; }
+    void hw_sigma_roz_fraction(unsigned long int sigma_roz_fraction) { hw_sigma_roz_fraction_ = sigma_roz_fraction; }
+    void hw_e_em_over_e_quotient(unsigned long int e_em_over_e_quotient) {
+      hw_e_em_over_e_quotient_ = e_em_over_e_quotient;
     }
-    void E_EM_over_E_Fraction(unsigned long int E_EM_over_E_Fraction_SA) {
-      E_EM_over_E_Fraction_SA_ = E_EM_over_E_Fraction_SA;
+    void hw_e_em_over_e_fraction(unsigned long int e_em_over_e_fraction) {
+      hw_e_em_over_e_fraction_ = e_em_over_e_fraction;
     }
-    void E_EM_core_over_E_EM_Quotient(unsigned long int E_EM_core_over_E_EM_Quotient_SA) {
-      E_EM_core_over_E_EM_Quotient_SA_ = E_EM_core_over_E_EM_Quotient_SA;
+    void hw_e_em_core_over_e_em_quotient(unsigned long int e_em_core_over_e_em_quotient) {
+      hw_e_em_core_over_e_em_quotient_ = e_em_core_over_e_em_quotient;
     }
-    void E_EM_core_over_E_EM_Fraction(unsigned long int E_EM_core_over_E_EM_Fraction_SA) {
-      E_EM_core_over_E_EM_Fraction_SA_ = E_EM_core_over_E_EM_Fraction_SA;
+    void hw_e_em_core_over_e_em_fraction(unsigned long int e_em_core_over_e_em_fraction) {
+      hw_e_em_core_over_e_em_fraction_ = e_em_core_over_e_em_fraction;
     }
-    void E_H_early_over_E_Quotient(unsigned long int E_H_early_over_E_Quotient_SA) {
-      E_H_early_over_E_Quotient_SA_ = E_H_early_over_E_Quotient_SA;
+    void hw_e_h_early_over_e_quotient(unsigned long int e_h_early_over_e_quotient) {
+      hw_e_h_early_over_e_quotient_ = e_h_early_over_e_quotient;
     }
-    void E_H_early_over_E_Fraction(unsigned long int E_H_early_over_E_Fraction_SA) {
-      E_H_early_over_E_Fraction_SA_ = E_H_early_over_E_Fraction_SA;
+    void hw_e_h_early_over_e_fraction(unsigned long int e_h_early_over_e_fraction) {
+      hw_e_h_early_over_e_fraction_ = e_h_early_over_e_fraction;
     }
 
     /* operators */
@@ -345,30 +345,30 @@ namespace l1t {
     int hbm_ = 0;
 
     // firmware-specific cluster properties
-    unsigned long int Sigma_E_Quotient_SA_ = 0;
-    unsigned long int Sigma_E_Fraction_SA_ = 0;
-    unsigned long int Mean_z_Quotient_SA_ = 0;
-    unsigned long int Mean_z_Fraction_SA_ = 0;
-    unsigned long int Mean_phi_Quotient_SA_ = 0;
-    unsigned long int Mean_phi_Fraction_SA_ = 0;
-    unsigned long int Mean_eta_Quotient_SA_ = 0;
-    unsigned long int Mean_eta_Fraction_SA_ = 0;
-    unsigned long int Mean_roz_Quotient_SA_ = 0;
-    unsigned long int Mean_roz_Fraction_SA_ = 0;
-    unsigned long int Sigma_z_Quotient_SA_ = 0;
-    unsigned long int Sigma_z_Fraction_SA_ = 0;
-    unsigned long int Sigma_phi_Quotient_SA_ = 0;
-    unsigned long int Sigma_phi_Fraction_SA_ = 0;
-    unsigned long int Sigma_eta_Quotient_SA_ = 0;
-    unsigned long int Sigma_eta_Fraction_SA_ = 0;
-    unsigned long int Sigma_roz_Quotient_SA_ = 0;
-    unsigned long int Sigma_roz_Fraction_SA_ = 0;
-    unsigned long int E_EM_over_E_Quotient_SA_ = 0;
-    unsigned long int E_EM_over_E_Fraction_SA_ = 0;
-    unsigned long int E_EM_core_over_E_EM_Quotient_SA_ = 0;
-    unsigned long int E_EM_core_over_E_EM_Fraction_SA_ = 0;
-    unsigned long int E_H_early_over_E_Quotient_SA_ = 0;
-    unsigned long int E_H_early_over_E_Fraction_SA_ = 0;
+    unsigned long int hw_sigma_e_quotient_ = 0;
+    unsigned long int hw_sigma_e_fraction_ = 0;
+    unsigned long int hw_mean_z_quotient_ = 0;
+    unsigned long int hw_mean_z_fraction_ = 0;
+    unsigned long int hw_mean_phi_quotient_ = 0;
+    unsigned long int hw_mean_phi_fraction_ = 0;
+    unsigned long int hw_mean_eta_quotient_ = 0;
+    unsigned long int hw_mean_eta_fraction_ = 0;
+    unsigned long int hw_mean_roz_quotient_ = 0;
+    unsigned long int hw_mean_roz_fraction_ = 0;
+    unsigned long int hw_sigma_z_quotient_ = 0;
+    unsigned long int hw_sigma_z_fraction_ = 0;
+    unsigned long int hw_sigma_phi_quotient_ = 0;
+    unsigned long int hw_sigma_phi_fraction_ = 0;
+    unsigned long int hw_sigma_eta_quotient_ = 0;
+    unsigned long int hw_sigma_eta_fraction_ = 0;
+    unsigned long int hw_sigma_roz_quotient_ = 0;
+    unsigned long int hw_sigma_roz_fraction_ = 0;
+    unsigned long int hw_e_em_over_e_quotient_ = 0;
+    unsigned long int hw_e_em_over_e_fraction_ = 0;
+    unsigned long int hw_e_em_core_over_e_em_quotient_ = 0;
+    unsigned long int hw_e_em_core_over_e_em_fraction_ = 0;
+    unsigned long int hw_e_h_early_over_e_quotient_ = 0;
+    unsigned long int hw_e_h_early_over_e_fraction_ = 0;
 
     void updateP4AndPosition(const edm::Ptr<C>& c, bool updateCentre = true, float fraction = 1.) {
       double cMipt = c->mipPt() * fraction;

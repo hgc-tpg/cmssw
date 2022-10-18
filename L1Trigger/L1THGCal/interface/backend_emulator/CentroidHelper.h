@@ -23,8 +23,8 @@ namespace l1thgcfirmware {
           column_(column),
           row_(row),
           energy_(energy),
-          X_(X),
-          Y_(Y),
+          x_(X),
+          y_(Y),
           dataValid_(dataValid) {}
     ~CentroidHelper() {}
 
@@ -34,16 +34,13 @@ namespace l1thgcfirmware {
     unsigned int column() const { return column_; }
     unsigned int row() const { return row_; }
     unsigned int energy() const { return energy_; }
-    unsigned int X() const { return X_; }
-    unsigned int Y() const { return Y_; }
+    unsigned int X() const { return x_; }
+    unsigned int Y() const { return y_; }
     bool dataValid() const { return dataValid_; }
 
     // Setters
     void setClock(const unsigned int clock) { clock_ = clock; }
     void setIndex(const unsigned int index) { index_ = index; }
-
-    // Operators
-    bool operator>(const CentroidHelper& ch_other) { return true; }  // Nothing implemented?
 
   private:
     unsigned int clock_;
@@ -51,8 +48,8 @@ namespace l1thgcfirmware {
     unsigned int column_;
     unsigned int row_;
     unsigned int energy_;
-    unsigned int X_;
-    unsigned int Y_;
+    unsigned int x_;
+    unsigned int y_;
     bool dataValid_;
   };
 

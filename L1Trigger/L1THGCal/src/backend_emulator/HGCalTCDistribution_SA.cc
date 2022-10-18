@@ -3,7 +3,7 @@
 using namespace std;
 using namespace l1thgcfirmware;
 
-HGCalTCDistribution::HGCalTCDistribution(ClusterAlgoConfig& config) : config_(config) {}
+HGCalTCDistribution::HGCalTCDistribution(const ClusterAlgoConfig& config) : config_(config) {}
 
 // Rearranges/distributes input streams of TCs so that each output stream contains TCs corresponding to one histogram bin
 void HGCalTCDistribution::runTriggerCellDistribution(const HGCalTriggerCellSAPtrCollections& triggerCellsIn,

@@ -11,7 +11,7 @@ namespace l1thgcfirmware {
 
   class HGCalHistoClustering {
   public:
-    HGCalHistoClustering(l1thgcfirmware::ClusterAlgoConfig& config);
+    HGCalHistoClustering(const l1thgcfirmware::ClusterAlgoConfig& config);
     ~HGCalHistoClustering() {}
 
     void runClustering(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn,
@@ -30,7 +30,7 @@ namespace l1thgcfirmware {
     void triggerCellToCluster(const l1thgcfirmware::HGCalTriggerCellSAShrPtrCollection& clusteredTriggerCells,
                               l1thgcfirmware::HGCalClusterSAPtrCollection& clustersOut) const;
 
-    l1thgcfirmware::ClusterAlgoConfig& config_;
+    const l1thgcfirmware::ClusterAlgoConfig& config_;
   };
 }  // namespace l1thgcfirmware
 

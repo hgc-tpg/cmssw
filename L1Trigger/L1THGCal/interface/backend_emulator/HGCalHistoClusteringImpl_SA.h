@@ -17,7 +17,7 @@ namespace l1thgcfirmware {
 
   class HGCalHistoClusteringImplSA {
   public:
-    HGCalHistoClusteringImplSA(l1thgcfirmware::ClusterAlgoConfig& config);
+    HGCalHistoClusteringImplSA(const l1thgcfirmware::ClusterAlgoConfig& config);
     ~HGCalHistoClusteringImplSA() {}
 
     void runAlgorithm(const HGCalTriggerCellSAPtrCollections& inputs,
@@ -25,7 +25,7 @@ namespace l1thgcfirmware {
                       HGCalClusterSAPtrCollection& clusterSums) const;
 
   private:
-    l1thgcfirmware::ClusterAlgoConfig& config_;
+    const l1thgcfirmware::ClusterAlgoConfig& config_;
     l1thgcfirmware::HGCalTCDistribution tcDistribution_;
     l1thgcfirmware::HGCalHistoSeeding seeding_;
     l1thgcfirmware::HGCalHistoClustering clustering_;

@@ -113,7 +113,7 @@ public:
                                                       outputMulticlustersAndRejectedClusters_perFPGA);
       multiclusteringSortingTruncationWrapper_->process(collCluster3D_perFPGA, collCluster3D_perFPGA_sorted);
 
-      for (const auto& collcluster : collCluster3D_perFPGA) {  //collCluster3D_perFPGA_sorted) {
+      for (const auto& collcluster : collCluster3D_perFPGA) {
         collCluster3D_sorted.push_back(0, collcluster);
       }
       for (const auto& rejectedcluster : rejectedClusters_perFPGA) {

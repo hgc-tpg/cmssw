@@ -50,7 +50,7 @@ namespace l1thgcfirmware {
     unsigned int Y() const { return Y_; }
     bool frameValid() const { return frameValid_; }
     bool dataValid() const { return dataValid_; }
-    std::pair<int, int> cmsswIndex() const { return index_cmssw_; }
+    const std::pair<int, int>& cmsswIndex() const { return index_cmssw_; }
 
     // Operators
     bool operator==(const HGCalTriggerCell& rhs) const;

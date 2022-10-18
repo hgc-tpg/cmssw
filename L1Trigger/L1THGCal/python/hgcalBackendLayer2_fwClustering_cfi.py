@@ -28,6 +28,8 @@ layer2ClusteringFw_Params = cms.PSet(
     cInputs2=cms.uint32(75),
     cInt=cms.uint32(90),
 
+    minClusterPtOut=cms.double(0.5),
+
     # Digitzation parameters
     digiParams = cms.PSet(
         rOverZRange = cms.double(0.7),
@@ -128,5 +130,5 @@ layer2ClusteringFw_Params = cms.PSet(
                          1 , 1 , 1 , 1 , # CE-H (early)
                          0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0), # CE-H 
     correction=cms.uint32(131071), # 0b011111111111111111
-    saturation=cms.uint32(524287) # (2 ** 19) - 1
+    saturation=cms.uint32((2 ** 19) - 1) # 524287
 )

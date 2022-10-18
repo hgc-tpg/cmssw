@@ -28,8 +28,8 @@ namespace l1thgcfirmware {
     HGCalHistogramCell()
         : clock_(0), index_(0), S_(0), X_(0), Y_(0), N_(0), sortKey_(0), frameValid_(false), dataValid_(false) {}
 
-    HGCalHistogramCell(unsigned int clock, unsigned int index, unsigned int sortKey)
-        : HGCalHistogramCell(4 * sortKey + clock, index, 0, 0, 0, 0, sortKey) {}
+    HGCalHistogramCell(unsigned int clock, unsigned int index, unsigned int sortKey, unsigned latencyOffset)
+        : HGCalHistogramCell(latencyOffset * sortKey + clock, index, 0, 0, 0, 0, sortKey) {}
 
     ~HGCalHistogramCell() {}
 
@@ -62,10 +62,10 @@ namespace l1thgcfirmware {
   private:
     unsigned int clock_;
     unsigned int index_;
-    unsigned int S_;
-    unsigned int X_;
-    unsigned int Y_;
-    unsigned int N_;
+    unsigned int S_; // Sum of cell contents i.e. total p_T in histogram bin
+    unsigned int X_; // Average X coordinate of trigger cells in a cell.  Will contain sum of X coordinates whilst trigger cells are being added to this cell
+    unsigned int Y_; // Average X coordinate of trigger cells in a cell.  Will contain sum of Y coordinates whilst trigger cells are being added to this cell
+    unsigned int N_; // Number of entries (trigger cells) in a cell
     unsigned int sortKey_;
     bool frameValid_;
     bool dataValid_;

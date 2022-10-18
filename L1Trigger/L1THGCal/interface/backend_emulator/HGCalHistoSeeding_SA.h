@@ -4,12 +4,13 @@
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalTriggerCell_SA.h"
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalHistogramCell_SA.h"
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalHistoClusteringConfig_SA.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 namespace l1thgcfirmware {
 
   class HGCalHistoSeeding {
   public:
-    HGCalHistoSeeding(l1thgcfirmware::ClusterAlgoConfig& config);
+    HGCalHistoSeeding(const l1thgcfirmware::ClusterAlgoConfig& config);
     ~HGCalHistoSeeding() {}
 
     void runSeeding(const l1thgcfirmware::HGCalTriggerCellSAPtrCollection& triggerCellsIn,
@@ -35,7 +36,7 @@ namespace l1thgcfirmware {
     // For debugging
     void printHistogram(const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
 
-    l1thgcfirmware::ClusterAlgoConfig& config_;
+    const l1thgcfirmware::ClusterAlgoConfig& config_;
   };
 }  // namespace l1thgcfirmware
 

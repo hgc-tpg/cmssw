@@ -6,7 +6,7 @@
 using namespace std;
 using namespace l1thgcfirmware;
 
-HGCalHistoClustering::HGCalHistoClustering(ClusterAlgoConfig& config) : config_(config) {}
+HGCalHistoClustering::HGCalHistoClustering(const ClusterAlgoConfig& config) : config_(config) {}
 
 void HGCalHistoClustering::runClustering(const HGCalTriggerCellSAPtrCollection& triggerCellsIn,
                                          const HGCalHistogramCellSAPtrCollection& histogramIn,
@@ -30,8 +30,9 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
   unsigned int seedCounter = 0;
   CentroidHelperPtrCollections fifos(config_.nFifos());
   vector<unsigned int> clock(config_.cColumns(), config_.clusterizerMagicTime());
+  const unsigned dummy_entries_latched = 1;
   CentroidHelperShrPtrCollection latched(
-      config_.nFifos() + 1,
+      config_.nFifos() + dummy_entries_latched,
       make_shared<
           CentroidHelper>());  // 1 extra (dummy) entry compared to fifos, to match firmware behaviour (avoids issues with index wrap-around)
 
@@ -76,10 +77,11 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
       }
     }
 
+    const unsigned dummy_entries_accepted = 2;
     CentroidHelperShrPtrCollection accepted(
-        config_.nFifos() + 2,
+        config_.nFifos() + dummy_entries_accepted,
         make_shared<
-            CentroidHelper>());  // 1 extra (dummy) entry compared to latched, to match firmware behaviour (avoids issues with index wrap-around)
+            CentroidHelper>());  // 2 extra (dummy) entry compared to fifos (1 compared to latched), to match firmware behaviour (avoids issues with index wrap-around)
     CentroidHelperShrPtrCollection lastLatched(latched);
 
     for (unsigned int i = 0; i < config_.nFifos(); ++i) {
@@ -148,7 +150,8 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
         for (unsigned int iCol = a->column() - config_.nColumnsForClustering();
              iCol < a->column() + config_.nColumnsForClustering() + 1;
              ++iCol) {
-          clock[iCol] += 8;  // Magic numbers - latency of which particular step?
+              const unsigned stepLatency = 8;
+          clock[iCol] += stepLatency;
           for (int k = -1 * config_.nRowsForClustering(); k < int(config_.nRowsForClustering()) + 1; ++k) {
             int row = a->row() + k;
             if (row < 0)
@@ -168,8 +171,11 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
               unsigned int absDPhi = abs(int(tc->phi()) - int(a->X()));
               unsigned int dR2 = dR * dR;
               unsigned int cosTerm = (absDPhi > config_.nBinsCosLUT()) ? 2047 : config_.cosLUT(absDPhi);
-              dR2 += int(r1 * r2 / pow(2, 7)) * cosTerm /
-                     pow(2, 10);  // Magic numbers - number of bits involved in deltaR calculation?
+
+              const unsigned a = 128; // 2^7
+              const unsigned b = 1024; // 2^10
+              dR2 += int(r1 * r2 / a) * cosTerm /
+                     b;
               tc->setClock(clock[iCol] + 1);
               if (clock[iCol] > T)
                 T = clock[iCol];
@@ -208,8 +214,9 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
           clock[iCol] = T + 1;
 
           CentroidHelperPtr readoutFlag = make_unique<CentroidHelper>(T - 2, iCol, true);
+          const unsigned stepLatency = 14;
           if (readoutFlag->clock() ==
-              config_.clusterizerMagicTime() + 14) {  // Magic numbers - latency of which particular step?
+              config_.clusterizerMagicTime() + stepLatency) {
             readoutFlag->setClock(readoutFlag->clock() + 1);
           }
 
@@ -219,7 +226,8 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
     }
   }
 
-  for (unsigned int i = 0; i < 1000;
+  const unsigned largeReadoutTime = 1000;
+  for (unsigned int i = 0; i < largeReadoutTime;
        ++i) {  // Magic numbers - a large number to ensure we read out all clustered trigger cells etc.?
     for (unsigned int iCol = 0; iCol < config_.cColumns(); ++iCol) {
       for (const auto& clustered : clusteredTriggerCells[iCol]) {
@@ -245,17 +253,6 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
       }
     }
   }
-
-  // std::cout << "Output from Clusterizer" << std::endl;
-  // std::cout << "Number of clustered TCs : " << clusteredTriggerCellsOut.size() << std::endl;
-  // for ( const auto& tc : clusteredTriggerCellsOut ) {
-  //   std::cout << tc->clock() << " " << tc->index() << " " << tc->rOverZ() << " " << tc->layer() << " " << tc->energy() << " " << tc->phi() << " " << tc->sortKey() << " " << tc->deltaR2() << " " << tc->dX() << " " << tc->Y() << " " << tc->dataValid() << std::endl;
-  // }
-  // std::cout << "Number of unclustered TCs : " << unclusteredTriggerCellsOut.size() << std::endl;
-  // std::cout << "Number of readoutFlags : " << readoutFlagsOut.size() << std::endl;
-  // for ( const auto& f : readoutFlagsOut ) {
-  //   std::cout << f->clock() << " " << f->index() << " " << f->column() << " " << f->row() << " " << f->energy() << " " << f->X() << " " << f->Y() << " " << f->dataValid() << std::endl;
-  // }
 }
 
 // Converts clustered TCs into cluster object (one for each TC) ready for accumulation
@@ -269,23 +266,26 @@ void HGCalHistoClustering::triggerCellToCluster(const HGCalTriggerCellSAShrPtrCo
 
     // Cluster from single TC
     // Does this ever happen?
-    // Removed from newer versions of firmware in any case
-    if (tc->deltaR2() >= 25000) {  // Magic numbers - but removed in newer versions of firmware, so leave for now
+    // Removed from newer versions of firmware in any case, but leave for now
+    const unsigned singleTCDeltaR2Thresh = 25000;
+    if (tc->deltaR2() >= singleTCDeltaR2Thresh) {
       clustersOut.push_back(move(cluster));
       continue;
     }
 
-    unsigned long int s_TC_W = (int(tc->energy() / 4) == 0) ? 1 : tc->energy() / 4;
+    const unsigned weightFactor = 4;
+    unsigned long int s_TC_W = (int(tc->energy() / weightFactor) == 0) ? 1 : tc->energy() / weightFactor;
     unsigned long int s_TC_Z = config_.depth(tc->layer());
 
     unsigned int triggerLayer = config_.triggerLayer(tc->layer());
+    const unsigned nBitsESums = 18;  // Need to double check this is correct description of constant
     unsigned int s_E_EM =
-        ((((unsigned long int)tc->energy() * config_.layerWeight_E_EM(triggerLayer)) + config_.correction()) >> 18);
+        ((((unsigned long int)tc->energy() * config_.layerWeight_E_EM(triggerLayer)) + config_.correction()) >> nBitsESums);
     if (s_E_EM > config_.saturation())
       s_E_EM = config_.saturation();
 
     unsigned int s_E_EM_core =
-        (((unsigned long int)tc->energy() * config_.layerWeight_E_EM_core(triggerLayer) + config_.correction()) >> 18);
+        (((unsigned long int)tc->energy() * config_.layerWeight_E_EM_core(triggerLayer) + config_.correction()) >> nBitsESums);
     if (s_E_EM_core > config_.saturation())
       s_E_EM_core = config_.saturation();
 
@@ -312,7 +312,8 @@ void HGCalHistoClustering::triggerCellToCluster(const HGCalTriggerCellSAShrPtrCo
     cluster->set_wphi2(s_TC_W * tc->phi() * tc->phi());
     cluster->set_wroz2(s_TC_W * tc->rOverZ() * tc->rOverZ());
 
-    cluster->set_layerbits(cluster->layerbits() | (((unsigned long int)1) << (36 - triggerLayer)));
+    const unsigned nTriggerLayers = 36; // Should get from config/elsewhere in CMSSW
+    cluster->set_layerbits(cluster->layerbits() | (((unsigned long int)1) << (nTriggerLayers - triggerLayer)));
     cluster->set_sat_tc(cluster->e() == config_.saturation() || cluster->e_em() == config_.saturation());
     cluster->set_shapeq(1);
 
@@ -320,11 +321,4 @@ void HGCalHistoClustering::triggerCellToCluster(const HGCalTriggerCellSAShrPtrCo
     cluster->add_constituent(make_shared<HGCalTriggerCell>(*tc));
     clustersOut.push_back(move(cluster));
   }
-
-  // std::cout << "Output from triggerCellToCluster" << std::endl;
-  // std::cout << "Protoclusters : " << protoClusters.size() << std::endl;
-  // for ( const auto& pclus : protoClusters ) {
-
-  //     std::cout << pclus->clock() << " " << pclus->index() << " " << pclus->n_tc() << " " << pclus->e() << " " << pclus->e_em() << " " << pclus->e_em_core() << " " << pclus->e_h_early() << " " << pclus->w() << " " << pclus->n_tc_w() << " " << pclus->weta2() << " " << pclus->wphi2() << std::endl;
-  // }
 }

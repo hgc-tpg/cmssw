@@ -92,8 +92,9 @@ ntuple_multiclusters = cms.PSet(
     NtupleName = cms.string('HGCalTriggerNtupleHGCMulticlusters'),
     Multiclusters = cms.InputTag('hgcalBackEndLayer2Producer:HGCalBackendLayer2Processor3DClustering'),
     EGIdentification = egamma_identification_histomax.clone(),
-    FillLayerInfo = cms.bool(False),
-    FillInterpretationInfo = cms.bool(True)
+    FillLayerInfo = cms.bool(True),
+    FillInterpretationInfo = cms.bool(True),
+    FillHWClusterProperties = cms.bool(False)
 )
 
 ntuple_towers = cms.PSet(

@@ -2,13 +2,12 @@
 
 using namespace std;
 using namespace l1thgcfirmware;
-HGCalHistoClusteringImplSA::HGCalHistoClusteringImplSA(ClusterAlgoConfig& config)
+HGCalHistoClusteringImplSA::HGCalHistoClusteringImplSA(const ClusterAlgoConfig& config)
     : config_(config), tcDistribution_(config), seeding_(config), clustering_(config), clusterProperties_(config) {}
 
 void HGCalHistoClusteringImplSA::runAlgorithm(const HGCalTriggerCellSAPtrCollections& inputs,
                                               HGCalTriggerCellSAShrPtrCollection& clusteredTCs,
                                               HGCalClusterSAPtrCollection& clusterSums) const {
-  // config_.printConfiguration();
 
   // TC distribution
   HGCalTriggerCellSAPtrCollection distributedTCs;

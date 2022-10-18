@@ -44,6 +44,9 @@ private:
 
   void setGeometry(const HGCalTriggerGeometryBase* const geom) { triggerTools_.setGeometry(geom); }
 
+  double rotatePhiToSectorZero(const double phi, const unsigned sector) const;
+  double rotatePhiFromSectorZero(const double phi, const unsigned sector) const;
+
   HGCalTriggerTools triggerTools_;
 
   l1thgcfirmware::ClusterAlgoConfig theConfiguration_;
@@ -78,14 +81,7 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(
       double phi = std::atan2(y, x);
       // Rotate phi to sector 0
       auto sector = theConfiguration_.sector();
-      if (sector == 1) {
-        if (phi < M_PI and phi > 0)
-          phi = phi - (2. * M_PI / 3.);
-        else
-          phi = phi + (4. * M_PI / 3.);
-      } else if (sector == 2) {
-        phi = phi + (2. * M_PI / 3.);
-      }
+      phi = rotatePhiToSectorZero(phi, sector);
 
       // Ignore TCs that are outside of the nominal 180 degree S2 sector
       // Assume these cannot be part of a cluster found within the central 120 degrees of the S2 sector?
@@ -102,8 +98,9 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(
       // But some of the TCs in the S1 emulation fall outside of the 60 degree region
       // For now, assign these TCs to the 60 degree sector that the S2 emulation is expecting them to be in.
       unsigned tcSector60 = iSector60;
-      unsigned int minSectorPhi = iSector60 * 648;
-      unsigned int maxSectorPhi = (iSector60 + 1) * 648;
+      const unsigned sectorPhiWidth = 648;
+      unsigned int minSectorPhi = iSector60 * sectorPhiWidth;
+      unsigned int maxSectorPhi = (iSector60 + 1) * sectorPhiWidth;
       if (digi_phi < minSectorPhi) {
         tcSector60 -= 1;
       } else if (digi_phi > maxSectorPhi) {
@@ -133,7 +130,8 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(
 
   // Distribute to links
   clusters_SA.clear();
-  clusters_SA.resize(theConfiguration_.maxClustersPerLink() + 2);  // Two empty frames at start of packet
+  const unsigned empty_frames = 2;
+  clusters_SA.resize(theConfiguration_.maxClustersPerLink() + empty_frames);
   for (auto& clusters : clusters_SA) {
     for (unsigned int iCluster = 0; iCluster < theConfiguration_.nInputLinks(); ++iCluster) {
       clusters.push_back(std::make_unique<l1thgcfirmware::HGCalTriggerCell>());
@@ -144,12 +142,12 @@ void HGCalHistoClusteringWrapper::convertCMSSWInputs(
   for (auto& sector60 : clusters_SA_perSector60) {
     unsigned iCluster = 0;
     for (auto& cluster : sector60) {
-      // Leave first two frames empty
-      unsigned frame = 2 + iCluster / nLinksPerSector60;
+      const unsigned empty_frames = 2;
+      unsigned frame = empty_frames + iCluster / nLinksPerSector60;
       unsigned link = iCluster % nLinksPerSector60 + iSector60 * nLinksPerSector60;
-      if (frame >= theConfiguration_.maxClustersPerLink() + 2)
+      if (frame >= theConfiguration_.maxClustersPerLink() + empty_frames)
         break;
-      clusters_SA[frame][link] = move(cluster);
+      clusters_SA[frame][link] = std::move(cluster);
       ++iCluster;
     }
     ++iSector60;
@@ -167,8 +165,8 @@ void HGCalHistoClusteringWrapper::convertAlgorithmOutputs(
     double phi = (cluster->wphi() / cluster->w()) * theConfiguration_.phiRange() / theConfiguration_.phiNValues();
     double pt = cluster->e() / theConfiguration_.ptDigiFactor();
 
-    if (pt < 0.5)
-      continue;  // Add (or take) cut threshold to config
+    if (pt < theConfiguration_.minClusterPtOut())
+      continue;
 
     double rOverZ =
         (cluster->wroz() / cluster->w()) * theConfiguration_.rOverZRange() / theConfiguration_.rOverZNValues();
@@ -176,11 +174,8 @@ void HGCalHistoClusteringWrapper::convertAlgorithmOutputs(
     eta *= theConfiguration_.zSide();
 
     auto sector = theConfiguration_.sector();
-    if (sector == 1) {
-      phi += (2. * M_PI / 3.);
-    } else if (sector == 2) {
-      phi = phi + (4. * M_PI / 3.);
-    }
+    phi = rotatePhiFromSectorZero(phi, sector);
+
     if (theConfiguration_.zSide() == 1) {
       phi = M_PI - phi;
     }
@@ -190,57 +185,55 @@ void HGCalHistoClusteringWrapper::convertAlgorithmOutputs(
 
     l1t::HGCalMulticluster multicluster;
     multicluster.setP4(clusterP4);
-    std::cout << "Got a cluster : " << cluster->e() << " " << cluster->constituents().size() << " " << multicluster.pt()
-              << " " << multicluster.eta() << " " << multicluster.phi() << " " << rOverZ << " " << phi << " " << eta
-              << std::endl;
+
     for (const auto& tc : cluster->constituents()) {
       const auto& tc_cmssw = inputClustersPtrs.at(tc->cmsswIndex().first).at(tc->cmsswIndex().second);
       // Add tc as constituent, but don't update any other properties of the multicluster i.e. leave them unchanged from those calculated by the emulator
       multicluster.addConstituent(tc_cmssw, false, 0.);
     }
 
-    double emIntFraction = 1.0 * cluster->e_em() / cluster->e();
+    double emIntfraction = float(cluster->e_em()) / cluster->e();
     multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::EM,
-                                          emIntFraction * multicluster.energy());
+                                          emIntfraction * multicluster.energy());
 
-    double emCoreIntFraction = 1.0 * cluster->e_em_core() / cluster->e();
+    double emCoreIntfraction = float(cluster->e_em_core()) / cluster->e();
     multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::EM_CORE,
-                                          emCoreIntFraction * multicluster.energy());
+                                          emCoreIntfraction * multicluster.energy());
 
-    double emHEarlyIntFraction = 1.0 * cluster->e_h_early() / cluster->e();
+    double emHEarlyIntfraction = float(cluster->e_h_early()) / cluster->e();
     multicluster.saveEnergyInterpretation(l1t::HGCalMulticluster::EnergyInterpretation::H_EARLY,
-                                          emHEarlyIntFraction * multicluster.energy());
-
-    multiClusters_out.push_back(0, multicluster);
+                                          emHEarlyIntfraction * multicluster.energy());
 
     // Set cluster shower shape properties
-    multicluster.showerLength(cluster->ShowerLen());
-    multicluster.coreShowerLength(cluster->CoreShowerLen());
-    multicluster.firstLayer(cluster->FirstLayer());
-    multicluster.Sigma_E_Quotient(cluster->Sigma_E_Quotient());
-    multicluster.Sigma_E_Fraction(cluster->Sigma_E_Fraction());
-    multicluster.Mean_z_Quotient(cluster->Mean_z_Quotient());
-    multicluster.Mean_z_Fraction(cluster->Mean_z_Fraction());
-    multicluster.Mean_phi_Quotient(cluster->Mean_phi_Quotient());
-    multicluster.Mean_phi_Fraction(cluster->Mean_phi_Fraction());
-    multicluster.Mean_eta_Quotient(cluster->Mean_eta_Quotient());
-    multicluster.Mean_eta_Fraction(cluster->Mean_eta_Fraction());
-    multicluster.Mean_roz_Quotient(cluster->Mean_roz_Quotient());
-    multicluster.Mean_roz_Fraction(cluster->Mean_roz_Fraction());
-    multicluster.Sigma_z_Quotient(cluster->Sigma_z_Quotient());
-    multicluster.Sigma_z_Fraction(cluster->Sigma_z_Fraction());
-    multicluster.Sigma_phi_Quotient(cluster->Sigma_phi_Quotient());
-    multicluster.Sigma_phi_Fraction(cluster->Sigma_phi_Fraction());
-    multicluster.Sigma_eta_Quotient(cluster->Sigma_eta_Quotient());
-    multicluster.Sigma_eta_Fraction(cluster->Sigma_eta_Fraction());
-    multicluster.Sigma_roz_Quotient(cluster->Sigma_roz_Quotient());
-    multicluster.Sigma_roz_Fraction(cluster->Sigma_roz_Fraction());
-    multicluster.E_EM_over_E_Quotient(cluster->E_EM_over_E_Quotient());
-    multicluster.E_EM_over_E_Fraction(cluster->E_EM_over_E_Fraction());
-    multicluster.E_EM_core_over_E_EM_Quotient(cluster->E_EM_core_over_E_EM_Quotient());
-    multicluster.E_EM_core_over_E_EM_Fraction(cluster->E_EM_core_over_E_EM_Fraction());
-    multicluster.E_H_early_over_E_Quotient(cluster->E_H_early_over_E_Quotient());
-    multicluster.E_H_early_over_E_Fraction(cluster->E_H_early_over_E_Fraction());
+    multicluster.showerLength(cluster->showerLen());
+    multicluster.coreShowerLength(cluster->coreShowerLen());
+    multicluster.firstLayer(cluster->firstLayer());
+    multicluster.hw_sigma_e_quotient(cluster->sigma_e_quotient());
+    multicluster.hw_sigma_e_fraction(cluster->sigma_e_fraction());
+    multicluster.hw_mean_z_quotient(cluster->mean_z_quotient());
+    multicluster.hw_mean_z_fraction(cluster->mean_z_fraction());
+    multicluster.hw_mean_phi_quotient(cluster->mean_phi_quotient());
+    multicluster.hw_mean_phi_fraction(cluster->mean_phi_fraction());
+    multicluster.hw_mean_eta_quotient(cluster->mean_eta_quotient());
+    multicluster.hw_mean_eta_fraction(cluster->mean_eta_fraction());
+    multicluster.hw_mean_roz_quotient(cluster->mean_roz_quotient());
+    multicluster.hw_mean_roz_fraction(cluster->mean_roz_fraction());
+    multicluster.hw_sigma_z_quotient(cluster->sigma_z_quotient());
+    multicluster.hw_sigma_z_fraction(cluster->sigma_z_fraction());
+    multicluster.hw_sigma_phi_quotient(cluster->sigma_phi_quotient());
+    multicluster.hw_sigma_phi_fraction(cluster->sigma_phi_fraction());
+    multicluster.hw_sigma_eta_quotient(cluster->sigma_eta_quotient());
+    multicluster.hw_sigma_eta_fraction(cluster->sigma_eta_fraction());
+    multicluster.hw_sigma_roz_quotient(cluster->sigma_roz_quotient());
+    multicluster.hw_sigma_roz_fraction(cluster->sigma_roz_fraction());
+    multicluster.hw_e_em_over_e_quotient(cluster->e_em_over_e_quotient());
+    multicluster.hw_e_em_over_e_fraction(cluster->e_em_over_e_fraction());
+    multicluster.hw_e_em_core_over_e_em_quotient(cluster->e_em_core_over_e_em_quotient());
+    multicluster.hw_e_em_core_over_e_em_fraction(cluster->e_em_core_over_e_em_fraction());
+    multicluster.hw_e_h_early_over_e_quotient(cluster->e_h_early_over_e_quotient());
+    multicluster.hw_e_h_early_over_e_fraction(cluster->e_h_early_over_e_fraction());
+
+    multiClusters_out.push_back(0, multicluster);
   }
 }
 
@@ -270,6 +263,8 @@ void HGCalHistoClusteringWrapper::configure(
     const std::tuple<const HGCalTriggerGeometryBase* const, const edm::ParameterSet&, const unsigned int, const int>&
         configuration) {
   setGeometry(std::get<0>(configuration));
+
+  theConfiguration_.setNTriggerLayers(std::get<0>(configuration)->lastTriggerLayer());
 
   theConfiguration_.setSector(std::get<2>(configuration));
   theConfiguration_.setZSide(std::get<3>(configuration));
@@ -310,6 +305,9 @@ void HGCalHistoClusteringWrapper::configure(
   theConfiguration_.setPhiNValues(digitizationPset.getParameter<double>("phiNValues"));
   theConfiguration_.setPtDigiFactor(digitizationPset.getParameter<double>("ptDigiFactor"));
 
+  // Parameters for selecting output clusters
+  theConfiguration_.setMinClusterPtOut(pset.getParameter<double>("minClusterPtOut"));
+
   // Input links parameters
   const edm::ParameterSet& inputLinksPset = pset.getParameterSet("inputLinkParams");
   theConfiguration_.setMaxClustersPerLink(inputLinksPset.getParameter<unsigned int>("maxClustersPerLink"));
@@ -349,5 +347,28 @@ void HGCalHistoClusteringWrapper::configure(
 
   theConfiguration_.initializeLUTs();
 };
+
+double HGCalHistoClusteringWrapper::rotatePhiToSectorZero(const double phi, const unsigned sector) const {
+  double rotatedPhi = phi;
+  if (sector == 1) {
+    if (rotatedPhi < M_PI and rotatedPhi > 0)
+      rotatedPhi = rotatedPhi - (2. * M_PI / 3.);
+    else
+      rotatedPhi = rotatedPhi + (4. * M_PI / 3.);
+  } else if (sector == 2) {
+    rotatedPhi = rotatedPhi + (2. * M_PI / 3.);
+  }
+  return rotatedPhi;
+}
+
+double HGCalHistoClusteringWrapper::rotatePhiFromSectorZero(const double phi, const unsigned sector) const {
+  double rotatedPhi = phi;
+  if (sector == 1) {
+    rotatedPhi += (2. * M_PI / 3.);
+  } else if (sector == 2) {
+    rotatedPhi += (4. * M_PI / 3.);
+  }
+  return rotatedPhi;
+}
 
 DEFINE_EDM_PLUGIN(HGCalHistoClusteringWrapperBaseFactory, HGCalHistoClusteringWrapper, "HGCalHistoClusteringWrapper");

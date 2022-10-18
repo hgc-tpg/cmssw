@@ -5,7 +5,7 @@
 using namespace std;
 using namespace l1thgcfirmware;
 
-HGCalHistoSeeding::HGCalHistoSeeding(ClusterAlgoConfig& config) : config_(config) {}
+HGCalHistoSeeding::HGCalHistoSeeding(const ClusterAlgoConfig& config) : config_(config) {}
 
 void HGCalHistoSeeding::runSeeding(const HGCalTriggerCellSAPtrCollection& triggerCellsIn,
                                    HGCalHistogramCellSAPtrCollection& histogramOut) const {
@@ -46,15 +46,16 @@ void HGCalHistoSeeding::triggerCellToHistogramCell(const HGCalTriggerCellSAPtrCo
   }
 }
 
-// Sum all input istogram cells (each representing one TC) to produce one histogram
+// Sum all input histogram cells (each representing one TC) to produce one histogram
 void HGCalHistoSeeding::makeHistogram(const HGCalHistogramCellSAPtrCollection& histogramCells,
                                       HGCalHistogramCellSAPtrCollection& histogramOut) const {
   const unsigned int latency = config_.getLatencyUpToAndIncluding(Hist);
 
   histogramOut.clear();
+  const unsigned latencyOffset = 4;
   for (unsigned int iRow = 0; iRow < config_.cRows(); ++iRow) {
     for (unsigned int iColumn = 0; iColumn < config_.cColumns(); ++iColumn) {
-      histogramOut.push_back(make_unique<HGCalHistogramCell>(latency, iColumn, iRow));
+      histogramOut.push_back(make_unique<HGCalHistogramCell>(latency, iColumn, iRow, latencyOffset));
     }
   }
 
@@ -83,6 +84,9 @@ void HGCalHistoSeeding::smearHistogram1D(HGCalHistogramCellSAPtrCollection& hist
     unsigned int scale = 1;
     int width = config_.kernelWidth(row);
     unsigned int offset = 1;
+    const unsigned scaleMultiplier = 4;
+    const unsigned widthUpdate = 2;
+    const unsigned offsetUpdate = 2;
     while (width > 0) {
       unique_ptr<HGCalHistogramCell> l1 = make_unique<HGCalHistogramCell>(HGCalHistogramCell());
       unique_ptr<HGCalHistogramCell> l2 = make_unique<HGCalHistogramCell>(HGCalHistogramCell());
@@ -90,24 +94,26 @@ void HGCalHistoSeeding::smearHistogram1D(HGCalHistogramCellSAPtrCollection& hist
       unique_ptr<HGCalHistogramCell> r2 = make_unique<HGCalHistogramCell>(HGCalHistogramCell());
 
       if (width >= 2) {
+        const unsigned cellWeightTwoAway = 4;
         if (int(col - offset - 1) >= 0) {
-          l2 = make_unique<HGCalHistogramCell>(lHistogram[binIndex - offset - 1] / 4);
+          l2 = make_unique<HGCalHistogramCell>(lHistogram[binIndex - offset - 1] / cellWeightTwoAway);
         }
         if (int(col + offset + 1) <= int(config_.cColumns() - 1)) {
-          r2 = make_unique<HGCalHistogramCell>(lHistogram[binIndex + offset + 1] / 4);
+          r2 = make_unique<HGCalHistogramCell>(lHistogram[binIndex + offset + 1] / cellWeightTwoAway);
         }
       }
 
+      const unsigned cellWeightNeighbour = 2;
       if (int(col - offset) >= 0) {
-        l1 = make_unique<HGCalHistogramCell>(lHistogram[binIndex - offset] / 2);
+        l1 = make_unique<HGCalHistogramCell>(lHistogram[binIndex - offset] / cellWeightNeighbour);
       }
       if (int(col + offset) <= int(config_.cColumns() - 1)) {
-        r1 = make_unique<HGCalHistogramCell>(lHistogram[binIndex + offset] / 2);
+        r1 = make_unique<HGCalHistogramCell>(lHistogram[binIndex + offset] / cellWeightNeighbour);
       }
       *hc += ((*l2 + *l1) / scale + (*r2 + *r1) / scale);
-      scale *= 4;
-      width -= 2;
-      offset += 2;
+      scale *= scaleMultiplier;
+      width -= widthUpdate;
+      offset += offsetUpdate;
     }
   }
 }
@@ -117,7 +123,7 @@ void HGCalHistoSeeding::normalizeArea(HGCalHistogramCellSAPtrCollection& histogr
   for (unsigned int iBin = 0; iBin < histogram.size(); ++iBin) {
     HGCalHistogramCell& hc = *histogram.at(iBin);
     hc.addLatency(stepLatency);
-    hc.setS(int(1.0 * hc.S() * config_.areaNormalization(hc.sortKey()) / pow(2, config_.nBitsAreaNormLUT() + 1)));
+    hc.setS(int( float(hc.S()) * config_.areaNormalization(hc.sortKey()) / (0x1<<(config_.nBitsAreaNormLUT()+1))));
   }
 }
 
@@ -136,11 +142,12 @@ void HGCalHistoSeeding::smearHistogram2D(HGCalHistogramCellSAPtrCollection& hist
     const unsigned int col = hc->index();
     const int row = hc->sortKey();
     const unsigned int binIndex = config_.cColumns() * row + col;
+    const unsigned cellWeight = 2;
     if (row - 1 >= 0) {
-      *hc += (lHistogram[binIndex - config_.cColumns()] / 2);
+      *hc += (lHistogram[binIndex - config_.cColumns()] / cellWeight);
     }
     if (row + 1 <= int(config_.cRows() - 1)) {
-      *hc += (lHistogram[binIndex + config_.cColumns()] / 2);
+      *hc += (lHistogram[binIndex + config_.cColumns()] / cellWeight);
     }
   }
 }
@@ -164,7 +171,6 @@ void HGCalHistoSeeding::thresholdMaximaFinder(HGCalHistogramCellSAPtrCollection&
 // Temporary simulation of local maxima finder
 // Not an emulation of any firmware
 void HGCalHistoSeeding::localMaximaFinder(HGCalHistogramCellSAPtrCollection& histogram) const {
-  // const std::vector<unsigned> maximaWidths{ 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }; // Padded this with 4*1 at the end.  Firmware this was based on has 40 entries, but there are 44 bins.
   const std::vector<unsigned> maximaWidths(config_.cRows(), 1);
 
   for (auto& hc : histogram) {
@@ -212,21 +218,27 @@ void HGCalHistoSeeding::calculateAveragePosition(HGCalHistogramCellSAPtrCollecti
   const unsigned int stepLatency = config_.getStepLatency(CalcAverage);
   for (auto& hc : histogram) {
     hc->addLatency(stepLatency);
+    const unsigned nBits = 17;
     if (hc->N() > 0) {
-      unsigned int inv_N = int(round(1.0 * 0x1FFFF / hc->N()));
-      hc->setX((hc->X() * inv_N) >> 17);
-      hc->setY((hc->Y() * inv_N) >> 17);
+      unsigned int inv_N = int(round( float(0x1<<nBits) / hc->N()));
+      hc->setX((hc->X() * inv_N) >> nBits);
+      hc->setY((hc->Y() * inv_N) >> nBits);
     }
   }
 }
 
 // Useful debugging function for printing histogram contents
 void HGCalHistoSeeding::printHistogram(const HGCalHistogramCellSAPtrCollection& histogram) const {
+  std::string histogramString = "";
   for (unsigned int iRow = 0; iRow < config_.cRows(); ++iRow) {
     for (unsigned int iCol = 0; iCol < config_.cColumns(); ++iCol) {
       unsigned binIndex = config_.cColumns() * iRow + iCol;
-      std::cout << histogram.at(binIndex)->S() << " ";
+      // std::cout << histogram.at(binIndex)->S() << " ";
+      histogramString += histogram.at(binIndex)->S();
+      histogramString += " ";
     }
-    std::cout << std::endl;
+    histogramString += "\n";
   }
+  edm::LogInfo("HGCalHistoSeeding") << "Histogram :";
+  edm::LogInfo("HGCalHistoSeeding") << histogramString;
 }

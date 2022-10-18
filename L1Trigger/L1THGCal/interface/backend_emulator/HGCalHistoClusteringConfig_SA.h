@@ -8,24 +8,24 @@ namespace l1thgcfirmware {
 
   enum Step {
     Uninitialized = -1,
-    Input = 0,
-    Dist0 = 1,
-    Dist1 = 2,
-    Dist2 = 3,
-    Dist3 = 4,
-    Dist4 = 5,
-    Dist5 = 6,
-    TcToHc = 7,
-    Hist = 8,
-    Smearing1D = 9,
-    NormArea = 10,
-    Smearing2D = 11,
-    Maxima1D = 12,  // Not actually used currently
-    Maxima2D = 13,
-    CalcAverage = 14,
-    Clusterizer = 15,
-    TriggerCellToCluster = 16,
-    ClusterSum = 17
+    Input,
+    Dist0,
+    Dist1,
+    Dist2,
+    Dist3,
+    Dist4,
+    Dist5,
+    TcToHc,
+    Hist,
+    Smearing1D ,
+    NormArea,
+    Smearing2D,
+    Maxima1D,  // Not actually used currently
+    Maxima2D,
+    CalcAverage,
+    Clusterizer,
+    TriggerCellToCluster,
+    ClusterSum
   };
 
   class ClusterAlgoConfig {
@@ -40,9 +40,9 @@ namespace l1thgcfirmware {
     void setZSide(const int zSide) { zSide_ = zSide; }
     int zSide() const { return zSide_; }
 
-    void setStepLatencies(const std::vector<unsigned int> latencies);
+    void setStepLatencies(const std::vector<unsigned int>& latencies);
     unsigned int getStepLatency(const Step step) const { return stepLatency_.at(step); }
-    unsigned int getLatencyUpToAndIncluding(const Step step);
+    unsigned int getLatencyUpToAndIncluding(const Step step) const;
 
     void setClusterizerOffset(const unsigned clusterizerOffset) { clusterizerOffset_ = clusterizerOffset; }
     unsigned int clusterizerOffset() const { return clusterizerOffset_; }
@@ -88,6 +88,9 @@ namespace l1thgcfirmware {
     unsigned phiNValues() const { return phiNValues_; }
     void setPtDigiFactor(const float ptDigiFactor) { ptDigiFactor_ = ptDigiFactor; }
     float ptDigiFactor() const { return ptDigiFactor_; }
+
+    void setMinClusterPtOut(const float pt) { minClusterPtOut_ = pt; }
+    float minClusterPtOut() const { return minClusterPtOut_; }
 
     void setMaxClustersPerLink(const unsigned maxClustersPerLink) { maxClustersPerLink_ = maxClustersPerLink; }
     unsigned maxClustersPerLink() const { return maxClustersPerLink_; }
@@ -154,54 +157,60 @@ namespace l1thgcfirmware {
 
     unsigned int cosLUT(unsigned int iBin) const { return cosLUT_.at(iBin); }
 
-    void setDepths(const std::vector<unsigned int> depths) {
+    void setDepths(const std::vector<unsigned int>& depths) {
       depths_.clear();
+      depths_.reserve(depths.size());
       for (const auto& depth : depths)
         depths_.push_back(depth);
     }
-    std::vector<unsigned int> depths() const { return depths_; }
+    const std::vector<unsigned int>& depths() const { return depths_; }
     unsigned int depth(unsigned int iLayer) const { return depths_.at(iLayer); }
 
     void setTriggerLayers(const std::vector<unsigned int> triggerLayers) {
       triggerLayers_.clear();
+      triggerLayers_.reserve(triggerLayers.size());
       for (const auto& triggerLayer : triggerLayers)
         triggerLayers_.push_back(triggerLayer);
     }
-    std::vector<unsigned int> triggerLayers() const { return triggerLayers_; }
+    const std::vector<unsigned int>& triggerLayers() const { return triggerLayers_; }
     unsigned int triggerLayer(unsigned int iLayer) const { return triggerLayers_.at(iLayer); }
 
     void setLayerWeights_E(const std::vector<unsigned int> layerWeights_E) {
       layerWeights_E_.clear();
+      layerWeights_E_.reserve(layerWeights_E.size());
       for (const auto& weight : layerWeights_E)
         layerWeights_E_.push_back(weight);
     }
-    std::vector<unsigned int> layerWeights_E() const { return layerWeights_E_; }
+    const std::vector<unsigned int>& layerWeights_E() const { return layerWeights_E_; }
     unsigned int layerWeight_E(unsigned int iTriggerLayer) const { return layerWeights_E_.at(iTriggerLayer); }
 
     void setLayerWeights_E_EM(const std::vector<unsigned int> layerWeights_E_EM) {
       layerWeights_E_EM_.clear();
+      layerWeights_E_EM_.reserve(layerWeights_E_EM.size());
       for (const auto& weight : layerWeights_E_EM)
         layerWeights_E_EM_.push_back(weight);
     }
-    std::vector<unsigned int> layerWeights_E_EM() const { return layerWeights_E_EM_; }
+    const std::vector<unsigned int>& layerWeights_E_EM() const { return layerWeights_E_EM_; }
     unsigned int layerWeight_E_EM(unsigned int iTriggerLayer) const { return layerWeights_E_EM_.at(iTriggerLayer); }
 
     void setLayerWeights_E_EM_core(const std::vector<unsigned int> layerWeights_E_EM_core) {
       layerWeights_E_EM_core_.clear();
+      layerWeights_E_EM_core_.reserve(layerWeights_E_EM_core.size());
       for (const auto& weight : layerWeights_E_EM_core)
         layerWeights_E_EM_core_.push_back(weight);
     }
-    std::vector<unsigned int> layerWeights_E_EM_core() const { return layerWeights_E_EM_core_; }
+    const std::vector<unsigned int>& layerWeights_E_EM_core() const { return layerWeights_E_EM_core_; }
     unsigned int layerWeight_E_EM_core(unsigned int iTriggerLayer) const {
       return layerWeights_E_EM_core_.at(iTriggerLayer);
     }
 
     void setLayerWeights_E_H_early(const std::vector<unsigned int> layerWeights_E_H_early) {
       layerWeights_E_H_early_.clear();
+      layerWeights_E_H_early_.reserve(layerWeights_E_H_early.size());
       for (const auto& weight : layerWeights_E_H_early)
         layerWeights_E_H_early_.push_back(weight);
     }
-    std::vector<unsigned int> layerWeights_E_H_early() const { return layerWeights_E_H_early_; }
+    const std::vector<unsigned int>& layerWeights_E_H_early() const { return layerWeights_E_H_early_; }
     unsigned int layerWeight_E_H_early(unsigned int iTriggerLayer) const {
       return layerWeights_E_H_early_.at(iTriggerLayer);
     }
@@ -211,6 +220,9 @@ namespace l1thgcfirmware {
 
     void setSaturation(const unsigned saturation) { saturation_ = saturation; }
     unsigned int saturation() const { return saturation_; }
+
+    void setNTriggerLayers(const unsigned n) { nTriggerLayers_ = n; }
+    unsigned int nTriggerLayers() const { return nTriggerLayers_; }
 
     void initializeLUTs();
 
@@ -238,6 +250,9 @@ namespace l1thgcfirmware {
     float phiRange_;
     unsigned phiNValues_;
     float ptDigiFactor_;
+
+    // Selection on output clusters
+    float minClusterPtOut_;
 
     // Input link params
     unsigned int maxClustersPerLink_;
@@ -281,7 +296,7 @@ namespace l1thgcfirmware {
     unsigned int nRowsForClustering_;
     unsigned int clusterizerMagicTime_;
 
-    std::map<Step, unsigned int> stepLatency_;
+    std::vector<unsigned int> stepLatency_;
 
     // Parameters for triggerCellToCluster
     std::vector<unsigned int> depths_;
@@ -292,6 +307,9 @@ namespace l1thgcfirmware {
     std::vector<unsigned int> layerWeights_E_H_early_;
     unsigned int correction_;
     unsigned int saturation_;
+
+    // Trigger geometry info
+    unsigned int nTriggerLayers_;
 
     unsigned int sector_;
     int zSide_;

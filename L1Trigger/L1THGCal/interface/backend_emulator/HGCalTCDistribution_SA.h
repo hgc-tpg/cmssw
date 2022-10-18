@@ -11,7 +11,7 @@ namespace l1thgcfirmware {
 
   class HGCalTCDistribution {
   public:
-    HGCalTCDistribution(l1thgcfirmware::ClusterAlgoConfig& config);
+    HGCalTCDistribution(const l1thgcfirmware::ClusterAlgoConfig& config);
     ~HGCalTCDistribution() {}
 
     void runTriggerCellDistribution(const l1thgcfirmware::HGCalTriggerCellSAPtrCollections& triggerCellsIn,
@@ -55,7 +55,7 @@ namespace l1thgcfirmware {
                         unsigned int nInterleave,
                         bool setOutputGrid) const;
 
-    l1thgcfirmware::ClusterAlgoConfig& config_;
+    const l1thgcfirmware::ClusterAlgoConfig& config_;
   };
 }  // namespace l1thgcfirmware
 

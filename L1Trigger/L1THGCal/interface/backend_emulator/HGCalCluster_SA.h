@@ -35,46 +35,46 @@ namespace l1thgcfirmware {
           layerbits_(0),
           sat_tc_(false),
           shapeq_(1),
-          Sigma_E_Quotient_(0),
-          Sigma_E_Fraction_(0),
-          Mean_z_Quotient_(0),
-          Mean_z_Fraction_(0),
-          Mean_phi_Quotient_(0),
-          Mean_phi_Fraction_(0),
-          Mean_eta_Quotient_(0),
-          Mean_eta_Fraction_(0),
-          Mean_roz_Quotient_(0),
-          Mean_roz_Fraction_(0),
-          Sigma_z_Quotient_(0),
-          Sigma_z_Fraction_(0),
-          Sigma_phi_Quotient_(0),
-          Sigma_phi_Fraction_(0),
-          Sigma_eta_Quotient_(0),
-          Sigma_eta_Fraction_(0),
-          Sigma_roz_Quotient_(0),
-          Sigma_roz_Fraction_(0),
-          FirstLayer_(0),
-          LastLayer_(0),
-          ShowerLen_(0),
-          CoreShowerLen_(0),
-          E_EM_over_E_Quotient_(0),
-          E_EM_over_E_Fraction_(0),
-          E_EM_core_over_E_EM_Quotient_(0),
-          E_EM_core_over_E_EM_Fraction_(0),
-          E_H_early_over_E_Quotient_(0),
-          E_H_early_over_E_Fraction_(0) {}
+          sigma_e_quotient_(0),
+          sigma_e_fraction_(0),
+          mean_z_quotient_(0),
+          mean_z_fraction_(0),
+          mean_phi_quotient_(0),
+          mean_phi_fraction_(0),
+          mean_eta_quotient_(0),
+          mean_eta_fraction_(0),
+          mean_roz_quotient_(0),
+          mean_roz_fraction_(0),
+          sigma_z_quotient_(0),
+          sigma_z_fraction_(0),
+          sigma_phi_quotient_(0),
+          sigma_phi_fraction_(0),
+          sigma_eta_quotient_(0),
+          sigma_eta_fraction_(0),
+          sigma_roz_quotient_(0),
+          sigma_roz_fraction_(0),
+          first_layer_(0),
+          last_layer_(0),
+          shower_len_(0),
+          core_shower_len_(0),
+          e_em_over_e_quotient_(0),
+          e_em_over_e_fraction_(0),
+          e_em_core_over_e_em_quotient_(0),
+          e_em_core_over_e_em_fraction_(0),
+          e_h_early_over_e_quotient_(0),
+          e_h_early_over_e_fraction_(0) {}
 
     ~HGCalCluster() {}
 
-    std::pair<unsigned int, unsigned int> Sigma_Energy(unsigned int N_TC_W,
+    std::pair<unsigned int, unsigned int> sigma_energy(unsigned int N_TC_W,
                                                        unsigned long int Sum_W2,
                                                        unsigned int Sum_W);
-    std::pair<unsigned int, unsigned int> Mean_coordinate(unsigned int Sum_Wc, unsigned int Sum_W);
-    std::pair<unsigned int, unsigned int> Sigma_Coordinate(unsigned int Sum_W,
+    std::pair<unsigned int, unsigned int> mean_coordinate(unsigned int Sum_Wc, unsigned int Sum_W);
+    std::pair<unsigned int, unsigned int> sigma_coordinate(unsigned int Sum_W,
                                                            unsigned long int Sum_Wc2,
                                                            unsigned int Sum_Wc);
-    std::pair<unsigned int, unsigned int> Energy_ratio(unsigned int E_N, unsigned int E_D);
-    std::vector<int> ShowerLengthProperties(unsigned long int layerBits);
+    std::pair<unsigned int, unsigned int> energy_ratio(unsigned int E_N, unsigned int E_D);
+    std::vector<int> showerLengthProperties(unsigned long int layerBits);
 
     // Setters
     void setClock(const unsigned int clock) { clock_ = clock; }
@@ -101,45 +101,45 @@ namespace l1thgcfirmware {
     void set_sat_tc(bool sat_tc) { sat_tc_ = sat_tc; }
     void set_shapeq(unsigned int shapeq) { shapeq_ = shapeq; }
 
-    void set_Sigma_E_Quotient(unsigned long int Sigma_E_Quotient) { Sigma_E_Quotient_ = Sigma_E_Quotient; }
-    void set_Sigma_E_Fraction(unsigned long int Sigma_E_Fraction) { Sigma_E_Fraction_ = Sigma_E_Fraction; }
-    void set_Mean_z_Quotient(unsigned long int Mean_z_Quotient) { Mean_z_Quotient_ = Mean_z_Quotient; }
-    void set_Mean_z_Fraction(unsigned long int Mean_z_Fraction) { Mean_z_Fraction_ = Mean_z_Fraction; }
-    void set_Mean_phi_Quotient(unsigned long int Mean_phi_Quotient) { Mean_phi_Quotient_ = Mean_phi_Quotient; }
-    void set_Mean_phi_Fraction(unsigned long int Mean_phi_Fraction) { Mean_phi_Fraction_ = Mean_phi_Fraction; }
-    void set_Mean_eta_Quotient(unsigned long int Mean_eta_Quotient) { Mean_eta_Quotient_ = Mean_eta_Quotient; }
-    void set_Mean_eta_Fraction(unsigned long int Mean_eta_Fraction) { Mean_eta_Fraction_ = Mean_eta_Fraction; }
-    void set_Mean_roz_Quotient(unsigned long int Mean_roz_Quotient) { Mean_roz_Quotient_ = Mean_roz_Quotient; }
-    void set_Mean_roz_Fraction(unsigned long int Mean_roz_Fraction) { Mean_roz_Fraction_ = Mean_roz_Fraction; }
-    void set_Sigma_z_Quotient(unsigned long int Sigma_z_Quotient) { Sigma_z_Quotient_ = Sigma_z_Quotient; }
-    void set_Sigma_z_Fraction(unsigned long int Sigma_z_Fraction) { Sigma_z_Fraction_ = Sigma_z_Fraction; }
-    void set_Sigma_phi_Quotient(unsigned long int Sigma_phi_Quotient) { Sigma_phi_Quotient_ = Sigma_phi_Quotient; }
-    void set_Sigma_phi_Fraction(unsigned long int Sigma_phi_Fraction) { Sigma_phi_Fraction_ = Sigma_phi_Fraction; }
-    void set_Sigma_eta_Quotient(unsigned long int Sigma_eta_Quotient) { Sigma_eta_Quotient_ = Sigma_eta_Quotient; }
-    void set_Sigma_eta_Fraction(unsigned long int Sigma_eta_Fraction) { Sigma_eta_Fraction_ = Sigma_eta_Fraction; }
-    void set_Sigma_roz_Quotient(unsigned long int Sigma_roz_Quotient) { Sigma_roz_Quotient_ = Sigma_roz_Quotient; }
-    void set_Sigma_roz_Fraction(unsigned long int Sigma_roz_Fraction) { Sigma_roz_Fraction_ = Sigma_roz_Fraction; }
-    void set_FirstLayer(unsigned long int FirstLayer) { FirstLayer_ = FirstLayer; }
-    void set_LastLayer(unsigned long int LastLayer) { LastLayer_ = LastLayer; }
-    void set_ShowerLen(unsigned long int ShowerLen) { ShowerLen_ = ShowerLen; }
-    void set_CoreShowerLen(unsigned long int CoreShowerLen) { CoreShowerLen_ = CoreShowerLen; }
-    void set_E_EM_over_E_Quotient(unsigned long int E_EM_over_E_Quotient) {
-      E_EM_over_E_Quotient_ = E_EM_over_E_Quotient;
+    void set_sigma_e_quotient(unsigned long int sigma_e_quotient) { sigma_e_quotient_ = sigma_e_quotient; }
+    void set_sigma_e_fraction(unsigned long int sigma_e_fraction) { sigma_e_fraction_ = sigma_e_fraction; }
+    void set_mean_z_quotient(unsigned long int mean_z_quotient) { mean_z_quotient_ = mean_z_quotient; }
+    void set_mean_z_fraction(unsigned long int mean_z_fraction) { mean_z_fraction_ = mean_z_fraction; }
+    void set_mean_phi_quotient(unsigned long int mean_phi_quotient) { mean_phi_quotient_ = mean_phi_quotient; }
+    void set_mean_phi_fraction(unsigned long int mean_phi_fraction) { mean_phi_fraction_ = mean_phi_fraction; }
+    void set_mean_eta_quotient(unsigned long int mean_eta_quotient) { mean_eta_quotient_ = mean_eta_quotient; }
+    void set_mean_eta_fraction(unsigned long int mean_eta_fraction) { mean_eta_fraction_ = mean_eta_fraction; }
+    void set_mean_roz_quotient(unsigned long int mean_roz_quotient) { mean_roz_quotient_ = mean_roz_quotient; }
+    void set_mean_roz_fraction(unsigned long int mean_roz_fraction) { mean_roz_fraction_ = mean_roz_fraction; }
+    void set_sigma_z_quotient(unsigned long int sigma_z_quotient) { sigma_z_quotient_ = sigma_z_quotient; }
+    void set_sigma_z_fraction(unsigned long int sigma_z_fraction) { sigma_z_fraction_ = sigma_z_fraction; }
+    void set_sigma_phi_quotient(unsigned long int sigma_phi_quotient) { sigma_phi_quotient_ = sigma_phi_quotient; }
+    void set_sigma_phi_fraction(unsigned long int sigma_phi_fraction) { sigma_phi_fraction_ = sigma_phi_fraction; }
+    void set_sigma_eta_quotient(unsigned long int sigma_eta_quotient) { sigma_eta_quotient_ = sigma_eta_quotient; }
+    void set_sigma_eta_fraction(unsigned long int sigma_eta_fraction) { sigma_eta_fraction_ = sigma_eta_fraction; }
+    void set_sigma_roz_quotient(unsigned long int sigma_roz_quotient) { sigma_roz_quotient_ = sigma_roz_quotient; }
+    void set_sigma_roz_fraction(unsigned long int sigma_roz_fraction) { sigma_roz_fraction_ = sigma_roz_fraction; }
+    void set_firstLayer(unsigned long int FirstLayer) { first_layer_ = FirstLayer; }
+    void set_lastLayer(unsigned long int LastLayer) { last_layer_ = LastLayer; }
+    void set_showerLen(unsigned long int ShowerLen) { shower_len_ = ShowerLen; }
+    void set_coreShowerLen(unsigned long int CoreShowerLen) { core_shower_len_ = CoreShowerLen; }
+    void set_e_em_over_e_quotient(unsigned long int quotient) {
+      e_em_over_e_quotient_ = quotient;
     }
-    void set_E_EM_over_E_Fraction(unsigned long int E_EM_over_E_Fraction) {
-      E_EM_over_E_Fraction_ = E_EM_over_E_Fraction;
+    void set_e_em_over_e_fraction(unsigned long int fraction) {
+      e_em_over_e_fraction_ = fraction;
     }
-    void set_E_EM_core_over_E_EM_Quotient(unsigned long int E_EM_core_over_E_EM_Quotient) {
-      E_EM_core_over_E_EM_Quotient_ = E_EM_core_over_E_EM_Quotient;
+    void set_e_em_core_over_e_em_quotient(unsigned long int quotient) {
+      e_em_core_over_e_em_quotient_ = quotient;
     }
-    void set_E_EM_core_over_E_EM_Fraction(unsigned long int E_EM_core_over_E_EM_Fraction) {
-      E_EM_core_over_E_EM_Fraction_ = E_EM_core_over_E_EM_Fraction;
+    void set_e_em_core_over_e_em_fraction(unsigned long int fraction) {
+      e_em_core_over_e_em_fraction_ = fraction;
     }
-    void set_E_H_early_over_E_Quotient(unsigned long int E_H_early_over_E_Quotient) {
-      E_H_early_over_E_Quotient_ = E_H_early_over_E_Quotient;
+    void set_e_h_early_over_e_quotient(unsigned long int quotient) {
+      e_h_early_over_e_quotient_ = quotient;
     }
-    void set_E_H_early_over_E_Fraction(unsigned long int E_H_early_over_E_Fraction) {
-      E_H_early_over_E_Fraction_ = E_H_early_over_E_Fraction;
+    void set_e_h_early_over_e_fraction(unsigned long int fraction) {
+      e_h_early_over_e_fraction_ = fraction;
     }
 
     void add_constituent(HGCalTriggerCellSAShrPtr constituent) { constituents_.emplace_back(constituent); }
@@ -170,34 +170,34 @@ namespace l1thgcfirmware {
     bool sat_tc() const { return sat_tc_; }
     unsigned int shapeq() const { return shapeq_; }
 
-    unsigned long int Sigma_E_Quotient() const { return Sigma_E_Quotient_; }
-    unsigned long int Sigma_E_Fraction() const { return Sigma_E_Fraction_; }
-    unsigned long int Mean_z_Quotient() const { return Mean_z_Quotient_; }
-    unsigned long int Mean_z_Fraction() const { return Mean_z_Fraction_; }
-    unsigned long int Mean_phi_Quotient() const { return Mean_phi_Quotient_; }
-    unsigned long int Mean_phi_Fraction() const { return Mean_phi_Fraction_; }
-    unsigned long int Mean_eta_Quotient() const { return Mean_eta_Quotient_; }
-    unsigned long int Mean_eta_Fraction() const { return Mean_eta_Fraction_; }
-    unsigned long int Mean_roz_Quotient() const { return Mean_roz_Quotient_; }
-    unsigned long int Mean_roz_Fraction() const { return Mean_roz_Fraction_; }
-    unsigned long int Sigma_z_Quotient() const { return Sigma_z_Quotient_; }
-    unsigned long int Sigma_z_Fraction() const { return Sigma_z_Fraction_; }
-    unsigned long int Sigma_phi_Quotient() const { return Sigma_phi_Quotient_; }
-    unsigned long int Sigma_phi_Fraction() const { return Sigma_phi_Fraction_; }
-    unsigned long int Sigma_eta_Quotient() const { return Sigma_eta_Quotient_; }
-    unsigned long int Sigma_eta_Fraction() const { return Sigma_eta_Fraction_; }
-    unsigned long int Sigma_roz_Quotient() const { return Sigma_roz_Quotient_; }
-    unsigned long int Sigma_roz_Fraction() const { return Sigma_roz_Fraction_; }
-    unsigned long int FirstLayer() const { return FirstLayer_; }
-    unsigned long int LastLayer() const { return LastLayer_; }
-    unsigned long int ShowerLen() const { return ShowerLen_; }
-    unsigned long int CoreShowerLen() const { return CoreShowerLen_; }
-    unsigned long int E_EM_over_E_Quotient() const { return E_EM_over_E_Quotient_; }
-    unsigned long int E_EM_over_E_Fraction() const { return E_EM_over_E_Fraction_; }
-    unsigned long int E_EM_core_over_E_EM_Quotient() const { return E_EM_core_over_E_EM_Quotient_; }
-    unsigned long int E_EM_core_over_E_EM_Fraction() const { return E_EM_core_over_E_EM_Fraction_; }
-    unsigned long int E_H_early_over_E_Quotient() const { return E_H_early_over_E_Quotient_; }
-    unsigned long int E_H_early_over_E_Fraction() const { return E_H_early_over_E_Fraction_; }
+    unsigned long int sigma_e_quotient() const { return sigma_e_quotient_; }
+    unsigned long int sigma_e_fraction() const { return sigma_e_fraction_; }
+    unsigned long int mean_z_quotient() const { return mean_z_quotient_; }
+    unsigned long int mean_z_fraction() const { return mean_z_fraction_; }
+    unsigned long int mean_phi_quotient() const { return mean_phi_quotient_; }
+    unsigned long int mean_phi_fraction() const { return mean_phi_fraction_; }
+    unsigned long int mean_eta_quotient() const { return mean_eta_quotient_; }
+    unsigned long int mean_eta_fraction() const { return mean_eta_fraction_; }
+    unsigned long int mean_roz_quotient() const { return mean_roz_quotient_; }
+    unsigned long int mean_roz_fraction() const { return mean_roz_fraction_; }
+    unsigned long int sigma_z_quotient() const { return sigma_z_quotient_; }
+    unsigned long int sigma_z_fraction() const { return sigma_z_fraction_; }
+    unsigned long int sigma_phi_quotient() const { return sigma_phi_quotient_; }
+    unsigned long int sigma_phi_fraction() const { return sigma_phi_fraction_; }
+    unsigned long int sigma_eta_quotient() const { return sigma_eta_quotient_; }
+    unsigned long int sigma_eta_fraction() const { return sigma_eta_fraction_; }
+    unsigned long int sigma_roz_quotient() const { return sigma_roz_quotient_; }
+    unsigned long int sigma_roz_fraction() const { return sigma_roz_fraction_; }
+    unsigned long int firstLayer() const { return first_layer_; }
+    unsigned long int lastLayer() const { return last_layer_; }
+    unsigned long int showerLen() const { return shower_len_; }
+    unsigned long int coreShowerLen() const { return core_shower_len_; }
+    unsigned long int e_em_over_e_quotient() const { return e_em_over_e_quotient_; }
+    unsigned long int e_em_over_e_fraction() const { return e_em_over_e_fraction_; }
+    unsigned long int e_em_core_over_e_em_quotient() const { return e_em_core_over_e_em_quotient_; }
+    unsigned long int e_em_core_over_e_em_fraction() const { return e_em_core_over_e_em_fraction_; }
+    unsigned long int e_h_early_over_e_quotient() const { return e_h_early_over_e_quotient_; }
+    unsigned long int e_h_early_over_e_fraction() const { return e_h_early_over_e_fraction_; }
 
     HGCalTriggerCellSAShrPtrCollection& constituents() { return constituents_; }
 
@@ -230,34 +230,34 @@ namespace l1thgcfirmware {
     unsigned long int layerbits_;
     bool sat_tc_;
     unsigned int shapeq_;
-    unsigned long int Sigma_E_Quotient_;
-    unsigned long int Sigma_E_Fraction_;
-    unsigned long int Mean_z_Quotient_;
-    unsigned long int Mean_z_Fraction_;
-    unsigned long int Mean_phi_Quotient_;
-    unsigned long int Mean_phi_Fraction_;
-    unsigned long int Mean_eta_Quotient_;
-    unsigned long int Mean_eta_Fraction_;
-    unsigned long int Mean_roz_Quotient_;
-    unsigned long int Mean_roz_Fraction_;
-    unsigned long int Sigma_z_Quotient_;
-    unsigned long int Sigma_z_Fraction_;
-    unsigned long int Sigma_phi_Quotient_;
-    unsigned long int Sigma_phi_Fraction_;
-    unsigned long int Sigma_eta_Quotient_;
-    unsigned long int Sigma_eta_Fraction_;
-    unsigned long int Sigma_roz_Quotient_;
-    unsigned long int Sigma_roz_Fraction_;
-    unsigned long int FirstLayer_;
-    unsigned long int LastLayer_;
-    unsigned long int ShowerLen_;
-    unsigned long int CoreShowerLen_;
-    unsigned long int E_EM_over_E_Quotient_;
-    unsigned long int E_EM_over_E_Fraction_;
-    unsigned long int E_EM_core_over_E_EM_Quotient_;
-    unsigned long int E_EM_core_over_E_EM_Fraction_;
-    unsigned long int E_H_early_over_E_Quotient_;
-    unsigned long int E_H_early_over_E_Fraction_;
+    unsigned long int sigma_e_quotient_;
+    unsigned long int sigma_e_fraction_;
+    unsigned long int mean_z_quotient_;
+    unsigned long int mean_z_fraction_;
+    unsigned long int mean_phi_quotient_;
+    unsigned long int mean_phi_fraction_;
+    unsigned long int mean_eta_quotient_;
+    unsigned long int mean_eta_fraction_;
+    unsigned long int mean_roz_quotient_;
+    unsigned long int mean_roz_fraction_;
+    unsigned long int sigma_z_quotient_;
+    unsigned long int sigma_z_fraction_;
+    unsigned long int sigma_phi_quotient_;
+    unsigned long int sigma_phi_fraction_;
+    unsigned long int sigma_eta_quotient_;
+    unsigned long int sigma_eta_fraction_;
+    unsigned long int sigma_roz_quotient_;
+    unsigned long int sigma_roz_fraction_;
+    unsigned long int first_layer_;
+    unsigned long int last_layer_;
+    unsigned long int shower_len_;
+    unsigned long int core_shower_len_;
+    unsigned long int e_em_over_e_quotient_;
+    unsigned long int e_em_over_e_fraction_;
+    unsigned long int e_em_core_over_e_em_quotient_;
+    unsigned long int e_em_core_over_e_em_fraction_;
+    unsigned long int e_h_early_over_e_quotient_;
+    unsigned long int e_h_early_over_e_fraction_;
 
     // Extra variables, not available in firmware
     // Perhaps move to separate "extra" class?

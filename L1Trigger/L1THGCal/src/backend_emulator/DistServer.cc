@@ -7,8 +7,8 @@ using namespace std;
 using namespace l1thgcfirmware;
 
 DistServer::DistServer(unsigned int nInputs, unsigned int nOutputs, unsigned int nInterleaving)
-    : nInputs_(nInputs), nOutputs_(nOutputs), nInterleaving_(nInterleaving), inputs_(nInputs_) {
-  for (unsigned int iInput = 0; iInput < this->nInputs(); ++iInput) {
+    : nOutputs_(nOutputs), nInterleaving_(nInterleaving), inputs_(nInputs) {
+  for (unsigned int iInput = 0; iInput < inputs_.size(); ++iInput) {
     addr_.emplace_back(this->nInterleaving(), 0);
     for (unsigned int iInterleave = 0; iInterleave < this->nInterleaving(); ++iInterleave) {
       addr_[iInput][iInterleave] = iInterleave;
@@ -20,39 +20,37 @@ DistServer::DistServer(unsigned int nInputs, unsigned int nOutputs, unsigned int
 // Not enough documentation on distribution server vhdl to give meaningful comments
 // Other than stating it's very complicated
 HGCalTriggerCellSAShrPtrCollection DistServer::clock(HGCalTriggerCellSAShrPtrCollection& data) {
-  for (unsigned int iInput = 0; iInput < nInputs(); ++iInput) {
+  for (unsigned int iInput = 0; iInput < inputs_.size(); ++iInput) {
     if (data[iInput]->dataValid()) {
-      inputs()[iInput].push_back(data[iInput]);
+      inputs_[iInput].push_back(data[iInput]);
     }
   }
 
-  vector<vector<bool> > lMap(nInputs(), vector<bool>(nOutputs()));
+  vector<vector<bool> > lMap(inputs_.size(), vector<bool>(nOutputs()));
 
-  HGCalTriggerCellSAShrPtrCollection lInputs(nInputs(), std::make_shared<HGCalTriggerCell>());
+  HGCalTriggerCellSAShrPtrCollection lInputs(inputs_.size(), std::make_shared<HGCalTriggerCell>());
 
-  std::vector<std::vector<unsigned int> >& addr = this->addr();
-
-  for (unsigned int iInput = 0; iInput < nInputs(); ++iInput) {
-    unsigned int lAddr = addr[iInput][0];
-    if (lAddr < inputs()[iInput].size()) {
-      lInputs[iInput] = inputs()[iInput][lAddr];
+  for (unsigned int iInput = 0; iInput < inputs_.size(); ++iInput) {
+    unsigned int lAddr = addr_[iInput][0];
+    if (lAddr < inputs_[iInput].size()) {
+      lInputs[iInput] = inputs_[iInput][lAddr];
       lMap[iInput][lInputs[iInput]->sortKey()] = true;
     }
   }
 
-  for (unsigned int iInput = 0; iInput < nInputs(); ++iInput) {
-    vector<unsigned int>& toRotate = addr[iInput];
-    rotate(toRotate.begin(), toRotate.begin() + 1, toRotate.end());
+  for (unsigned int iInput = 0; iInput < inputs_.size(); ++iInput) {
+    vector<unsigned int>& toRotate = addr_[iInput];
+    std::rotate(toRotate.begin(), toRotate.begin() + 1, toRotate.end());
   }
 
   HGCalTriggerCellSAShrPtrCollection lOutputs(nOutputs(), std::make_shared<HGCalTriggerCell>());
 
   unsigned int nOutputs = 0;
   for (unsigned int iOutput = 0; iOutput < lOutputs.size(); ++iOutput) {
-    for (unsigned int iInput = 0; iInput < nInputs(); ++iInput) {
+    for (unsigned int iInput = 0; iInput < inputs_.size(); ++iInput) {
       if (lMap[iInput][iOutput]) {
         lOutputs[iOutput] = lInputs[iInput];
-        addr[iInput].back() += this->nInterleaving();
+        addr_[iInput].back() += this->nInterleaving();
         nOutputs++;
         break;
       }

@@ -10,7 +10,7 @@ namespace l1thgcfirmware {
 
   class HGCalHistoClusterProperties {
   public:
-    HGCalHistoClusterProperties(l1thgcfirmware::ClusterAlgoConfig& config);
+    HGCalHistoClusterProperties(const l1thgcfirmware::ClusterAlgoConfig& config);
     ~HGCalHistoClusterProperties() {}
 
     void runClusterProperties(const l1thgcfirmware::HGCalClusterSAPtrCollection& protoClustersIn,
@@ -26,17 +26,17 @@ namespace l1thgcfirmware {
     void clusterProperties(l1thgcfirmware::HGCalClusterSAPtrCollection& clusterSums) const;
 
     // Helper functions
-    std::pair<unsigned int, unsigned int> sigma_Energy(unsigned int N_TC_W,
+    std::pair<unsigned int, unsigned int> sigma_energy(unsigned int N_TC_W,
                                                        unsigned long int Sum_W2,
                                                        unsigned int Sum_W) const;
     std::pair<unsigned int, unsigned int> mean_coordinate(unsigned int Sum_Wc, unsigned int Sum_W) const;
-    std::pair<unsigned int, unsigned int> sigma_Coordinate(unsigned int Sum_W,
+    std::pair<unsigned int, unsigned int> sigma_coordinate(unsigned int Sum_W,
                                                            unsigned long int Sum_Wc2,
                                                            unsigned int Sum_Wc) const;
     std::pair<unsigned int, unsigned int> energy_ratio(unsigned int E_N, unsigned int E_D) const;
     std::vector<int> showerLengthProperties(unsigned long int layerBits) const;
 
-    l1thgcfirmware::ClusterAlgoConfig& config_;
+    const l1thgcfirmware::ClusterAlgoConfig& config_;
   };
 }  // namespace l1thgcfirmware
 
