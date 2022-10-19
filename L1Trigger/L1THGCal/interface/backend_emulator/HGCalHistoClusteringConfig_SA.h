@@ -17,7 +17,7 @@ namespace l1thgcfirmware {
     Dist5,
     TcToHc,
     Hist,
-    Smearing1D ,
+    Smearing1D,
     NormArea,
     Smearing2D,
     Maxima1D,  // Not actually used currently

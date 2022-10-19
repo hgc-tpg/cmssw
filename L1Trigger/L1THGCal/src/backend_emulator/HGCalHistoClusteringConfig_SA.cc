@@ -27,14 +27,13 @@ ClusterAlgoConfig::ClusterAlgoConfig()
       layerWeights_E_EM_core_(),
       layerWeights_E_H_early_(),
       correction_(),
-      saturation_()
-{}
+      saturation_() {}
 
 void ClusterAlgoConfig::setStepLatencies(const std::vector<unsigned int>& latencies) {
   stepLatency_.clear();
   stepLatency_.reserve(latencies.size());
   for (unsigned int iStep = 0; iStep < latencies.size(); ++iStep) {
-    stepLatency_.push_back( latencies.at(iStep) );
+    stepLatency_.push_back(latencies.at(iStep));
   }
 }
 
@@ -56,13 +55,13 @@ void ClusterAlgoConfig::initializeSmearingKernelConstants(unsigned int bins, uns
   const unsigned int lTarget = int((maxBinsSmearing1D_ + 0.5) * lWidth0 - 0.5);
   for (unsigned int iBin = 0; iBin < bins; ++iBin) {
     unsigned int lCentre = lWidth0 + (height * iBin);
-    const unsigned int lBins = int(round( float(lTarget) / lCentre));
+    const unsigned int lBins = int(round(float(lTarget) / lCentre));
 
     kernelWidths_.push_back(lBins);
 
     lCentre *= lBins;
 
-    const unsigned int lRatio = int(round( float(lTarget) / lCentre * (0x1<<nBitsAreaNormLUT_)));
+    const unsigned int lRatio = int(round(float(lTarget) / lCentre * (0x1 << nBitsAreaNormLUT_)));
 
     areaNormalizations_.push_back(lRatio);
   }
@@ -77,8 +76,7 @@ void ClusterAlgoConfig::initializeThresholdMaximaConstants(unsigned int bins, un
 
 void ClusterAlgoConfig::initializeCosLUT() {
   for (unsigned int iBin = 0; iBin < nBinsCosLUT_ + 1; ++iBin) {
-    unsigned int cosBin = round((0x1<<nBitsCosLUT_) * (1 - cos(iBin * M_PI / phiNValues_)));
+    unsigned int cosBin = round((0x1 << nBitsCosLUT_) * (1 - cos(iBin * M_PI / phiNValues_)));
     cosLUT_.push_back(cosBin);
   }
 }
-

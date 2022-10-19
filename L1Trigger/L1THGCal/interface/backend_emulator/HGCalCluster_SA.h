@@ -123,24 +123,12 @@ namespace l1thgcfirmware {
     void set_lastLayer(unsigned long int LastLayer) { last_layer_ = LastLayer; }
     void set_showerLen(unsigned long int ShowerLen) { shower_len_ = ShowerLen; }
     void set_coreShowerLen(unsigned long int CoreShowerLen) { core_shower_len_ = CoreShowerLen; }
-    void set_e_em_over_e_quotient(unsigned long int quotient) {
-      e_em_over_e_quotient_ = quotient;
-    }
-    void set_e_em_over_e_fraction(unsigned long int fraction) {
-      e_em_over_e_fraction_ = fraction;
-    }
-    void set_e_em_core_over_e_em_quotient(unsigned long int quotient) {
-      e_em_core_over_e_em_quotient_ = quotient;
-    }
-    void set_e_em_core_over_e_em_fraction(unsigned long int fraction) {
-      e_em_core_over_e_em_fraction_ = fraction;
-    }
-    void set_e_h_early_over_e_quotient(unsigned long int quotient) {
-      e_h_early_over_e_quotient_ = quotient;
-    }
-    void set_e_h_early_over_e_fraction(unsigned long int fraction) {
-      e_h_early_over_e_fraction_ = fraction;
-    }
+    void set_e_em_over_e_quotient(unsigned long int quotient) { e_em_over_e_quotient_ = quotient; }
+    void set_e_em_over_e_fraction(unsigned long int fraction) { e_em_over_e_fraction_ = fraction; }
+    void set_e_em_core_over_e_em_quotient(unsigned long int quotient) { e_em_core_over_e_em_quotient_ = quotient; }
+    void set_e_em_core_over_e_em_fraction(unsigned long int fraction) { e_em_core_over_e_em_fraction_ = fraction; }
+    void set_e_h_early_over_e_quotient(unsigned long int quotient) { e_h_early_over_e_quotient_ = quotient; }
+    void set_e_h_early_over_e_fraction(unsigned long int fraction) { e_h_early_over_e_fraction_ = fraction; }
 
     void add_constituent(HGCalTriggerCellSAShrPtr constituent) { constituents_.emplace_back(constituent); }
 

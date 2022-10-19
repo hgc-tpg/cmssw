@@ -110,8 +110,7 @@ HGCalTriggerNtupleHGCMulticlusters::HGCalTriggerNtupleHGCMulticlusters(const edm
     : HGCalTriggerNtupleBase(conf),
       fill_layer_info_(conf.getParameter<bool>("FillLayerInfo")),
       fill_interpretation_info_(conf.getParameter<bool>("FillInterpretationInfo")),
-      fill_hw_cluster_properties_(conf.getParameter<bool>("FillHWClusterProperties"))
-      {
+      fill_hw_cluster_properties_(conf.getParameter<bool>("FillHWClusterProperties")) {
   accessEventSetup_ = false;
 }
 
@@ -188,7 +187,7 @@ void HGCalTriggerNtupleHGCMulticlusters::initialize(TTree& tree,
     tree.Branch(withPrefix("ipt"), &cl3d_ipt_);
     tree.Branch(withPrefix("ienergy"), &cl3d_ienergy_);
   }
-  if ( fill_hw_cluster_properties_ ) {
+  if (fill_hw_cluster_properties_) {
     tree.Branch(withPrefix("meanZquotient"), &cl3d_Mean_z_quotient_);
     tree.Branch(withPrefix("meanZfraction"), &cl3d_Mean_z_fraction_);
     tree.Branch(withPrefix("meanPhiquotient"), &cl3d_Mean_phi_quotient_);
@@ -303,7 +302,7 @@ void HGCalTriggerNtupleHGCMulticlusters::fill(const edm::Event& e, const HGCalTr
                    cl3d_clusters_id_.back().begin(),
                    [](const std::pair<uint32_t, edm::Ptr<l1t::HGCalCluster>>& id_cl) { return id_cl.second->detId(); });
 
-    if ( fill_hw_cluster_properties_ ) {
+    if (fill_hw_cluster_properties_) {
       cl3d_sigma_e_quotient_.emplace_back(cl3d_itr->hw_sigma_e_quotient());
       cl3d_sigma_e_fraction_.emplace_back(cl3d_itr->hw_sigma_e_fraction());
       cl3d_Mean_z_quotient_.emplace_back(cl3d_itr->hw_mean_z_quotient());

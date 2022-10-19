@@ -53,10 +53,7 @@ void HGCalHistoClusterProperties::clusterSum(const HGCalClusterSAPtrCollection& 
 
     if (sums.find(flag->clock()) == sums.end()) {
       const unsigned stepLatency = 7;
-      auto sum = make_unique<HGCalCluster>(flag->clock() + stepLatency,
-                                           0,
-                                           true,
-                                           true);
+      auto sum = make_unique<HGCalCluster>(flag->clock() + stepLatency, 0, true, true);
       sums[flag->clock()] = move(sum);
     }
 
@@ -125,25 +122,24 @@ void HGCalHistoClusterProperties::clusterProperties(HGCalClusterSAPtrCollection&
 std::pair<unsigned int, unsigned int> HGCalHistoClusterProperties::sigma_energy(unsigned int N_TC_W,
                                                                                 unsigned long int Sum_W2,
                                                                                 unsigned int Sum_W) const {
-
   unsigned long int N = N_TC_W * Sum_W2 - pow(Sum_W, 2);
   unsigned long int D = pow(N_TC_W, 2);
-  if ( D == 0 ) {
-    return {0,0};
+  if (D == 0) {
+    return {0, 0};
   }
   double intpart;
-  const unsigned shift = 2 ; // Shift by one bit, pow(2,1)
+  const unsigned shift = 2;  // Shift by one bit, pow(2,1)
   double frac = modf(sqrt(N / D), &intpart) * shift;
   return {(unsigned int)intpart, (unsigned int)frac};
 }
 
 std::pair<unsigned int, unsigned int> HGCalHistoClusterProperties::mean_coordinate(unsigned int Sum_Wc,
                                                                                    unsigned int Sum_W) const {
-  if ( Sum_W == 0 ) {
-    return {0,0};
+  if (Sum_W == 0) {
+    return {0, 0};
   }
   double intpart;
-  const unsigned shift = 4 ; // Shift by one bit, pow(2,2)
+  const unsigned shift = 4;  // Shift by one bit, pow(2,2)
   double frac = modf((double)Sum_Wc / Sum_W, &intpart) * shift;
   return {(unsigned int)intpart, (unsigned int)frac};
 }
@@ -151,13 +147,13 @@ std::pair<unsigned int, unsigned int> HGCalHistoClusterProperties::mean_coordina
 std::pair<unsigned int, unsigned int> HGCalHistoClusterProperties::sigma_coordinate(unsigned int Sum_W,
                                                                                     unsigned long int Sum_Wc2,
                                                                                     unsigned int Sum_Wc) const {
-    unsigned long int N = Sum_W * Sum_Wc2 - pow(Sum_Wc, 2);
-    unsigned long int D = pow(Sum_W, 2);
-  if ( D == 0 ) {
-    return {0,0};
+  unsigned long int N = Sum_W * Sum_Wc2 - pow(Sum_Wc, 2);
+  unsigned long int D = pow(Sum_W, 2);
+  if (D == 0) {
+    return {0, 0};
   }
   double intpart;
-  const unsigned shift = 2 ; // Shift by one bit, pow(2,1)
+  const unsigned shift = 2;  // Shift by one bit, pow(2,1)
   double frac = modf((double)sqrt(N / D), &intpart) * shift;
   return {(unsigned int)intpart, (unsigned int)frac};
 }
@@ -168,7 +164,7 @@ std::pair<unsigned int, unsigned int> HGCalHistoClusterProperties::energy_ratio(
     return {0, 0};
   } else {
     double intpart;
-  const unsigned shift = 256 ; // Shift by eight bit, pow(2,8)
+    const unsigned shift = 256;  // Shift by eight bit, pow(2,8)
     double frac = modf((double)e_N / e_D, &intpart) * shift;
     return {(unsigned int)intpart, (unsigned int)frac};
   }

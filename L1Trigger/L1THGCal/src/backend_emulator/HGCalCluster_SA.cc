@@ -28,9 +28,8 @@ const HGCalCluster& HGCalCluster::operator+=(HGCalCluster& c) {
   this->set_sat_tc(this->sat_tc() | c.sat_tc());
   this->set_shapeq(this->shapeq() | c.shapeq());
 
-  const unsigned clusterWeightSat80 = (pow(2,16) - 1)*0.8; // 52428
-  if (w_ <= clusterWeightSat80 && original.shapeq() == 1 &&
-      c.shapeq() == 1) {
+  const unsigned clusterWeightSat80 = (pow(2, 16) - 1) * 0.8;  // 52428
+  if (w_ <= clusterWeightSat80 && original.shapeq() == 1 && c.shapeq() == 1) {
     this->set_shapeq(1);
   } else {
     this->set_shapeq(0);

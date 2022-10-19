@@ -123,7 +123,7 @@ void HGCalHistoSeeding::normalizeArea(HGCalHistogramCellSAPtrCollection& histogr
   for (unsigned int iBin = 0; iBin < histogram.size(); ++iBin) {
     HGCalHistogramCell& hc = *histogram.at(iBin);
     hc.addLatency(stepLatency);
-    hc.setS(int( float(hc.S()) * config_.areaNormalization(hc.sortKey()) / (0x1<<(config_.nBitsAreaNormLUT()+1))));
+    hc.setS(int(float(hc.S()) * config_.areaNormalization(hc.sortKey()) / (0x1 << (config_.nBitsAreaNormLUT() + 1))));
   }
 }
 
@@ -220,7 +220,7 @@ void HGCalHistoSeeding::calculateAveragePosition(HGCalHistogramCellSAPtrCollecti
     hc->addLatency(stepLatency);
     const unsigned nBits = 17;
     if (hc->N() > 0) {
-      unsigned int inv_N = int(round( float(0x1<<nBits) / hc->N()));
+      unsigned int inv_N = int(round(float(0x1 << nBits) / hc->N()));
       hc->setX((hc->X() * inv_N) >> nBits);
       hc->setY((hc->Y() * inv_N) >> nBits);
     }

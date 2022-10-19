@@ -8,7 +8,6 @@ HGCalHistoClusteringImplSA::HGCalHistoClusteringImplSA(const ClusterAlgoConfig& 
 void HGCalHistoClusteringImplSA::runAlgorithm(const HGCalTriggerCellSAPtrCollections& inputs,
                                               HGCalTriggerCellSAShrPtrCollection& clusteredTCs,
                                               HGCalClusterSAPtrCollection& clusterSums) const {
-
   // TC distribution
   HGCalTriggerCellSAPtrCollection distributedTCs;
   tcDistribution_.runTriggerCellDistribution(inputs, distributedTCs);

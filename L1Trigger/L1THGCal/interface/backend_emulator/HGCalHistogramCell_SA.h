@@ -62,10 +62,12 @@ namespace l1thgcfirmware {
   private:
     unsigned int clock_;
     unsigned int index_;
-    unsigned int S_; // Sum of cell contents i.e. total p_T in histogram bin
-    unsigned int X_; // Average X coordinate of trigger cells in a cell.  Will contain sum of X coordinates whilst trigger cells are being added to this cell
-    unsigned int Y_; // Average X coordinate of trigger cells in a cell.  Will contain sum of Y coordinates whilst trigger cells are being added to this cell
-    unsigned int N_; // Number of entries (trigger cells) in a cell
+    unsigned int S_;  // Sum of cell contents i.e. total p_T in histogram bin
+    unsigned int
+        X_;  // Average X coordinate of trigger cells in a cell.  Will contain sum of X coordinates whilst trigger cells are being added to this cell
+    unsigned int
+        Y_;  // Average X coordinate of trigger cells in a cell.  Will contain sum of Y coordinates whilst trigger cells are being added to this cell
+    unsigned int N_;  // Number of entries (trigger cells) in a cell
     unsigned int sortKey_;
     bool frameValid_;
     bool dataValid_;

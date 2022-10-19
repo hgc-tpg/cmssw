@@ -150,7 +150,7 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
         for (unsigned int iCol = a->column() - config_.nColumnsForClustering();
              iCol < a->column() + config_.nColumnsForClustering() + 1;
              ++iCol) {
-              const unsigned stepLatency = 8;
+          const unsigned stepLatency = 8;
           clock[iCol] += stepLatency;
           for (int k = -1 * config_.nRowsForClustering(); k < int(config_.nRowsForClustering()) + 1; ++k) {
             int row = a->row() + k;
@@ -172,10 +172,9 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
               unsigned int dR2 = dR * dR;
               unsigned int cosTerm = (absDPhi > config_.nBinsCosLUT()) ? 2047 : config_.cosLUT(absDPhi);
 
-              const unsigned a = 128; // 2^7
-              const unsigned b = 1024; // 2^10
-              dR2 += int(r1 * r2 / a) * cosTerm /
-                     b;
+              const unsigned a = 128;   // 2^7
+              const unsigned b = 1024;  // 2^10
+              dR2 += int(r1 * r2 / a) * cosTerm / b;
               tc->setClock(clock[iCol] + 1);
               if (clock[iCol] > T)
                 T = clock[iCol];
@@ -215,8 +214,7 @@ void HGCalHistoClustering::clusterizer(const HGCalTriggerCellSAPtrCollection& tr
 
           CentroidHelperPtr readoutFlag = make_unique<CentroidHelper>(T - 2, iCol, true);
           const unsigned stepLatency = 14;
-          if (readoutFlag->clock() ==
-              config_.clusterizerMagicTime() + stepLatency) {
+          if (readoutFlag->clock() == config_.clusterizerMagicTime() + stepLatency) {
             readoutFlag->setClock(readoutFlag->clock() + 1);
           }
 
@@ -280,12 +278,14 @@ void HGCalHistoClustering::triggerCellToCluster(const HGCalTriggerCellSAShrPtrCo
     unsigned int triggerLayer = config_.triggerLayer(tc->layer());
     const unsigned nBitsESums = 18;  // Need to double check this is correct description of constant
     unsigned int s_E_EM =
-        ((((unsigned long int)tc->energy() * config_.layerWeight_E_EM(triggerLayer)) + config_.correction()) >> nBitsESums);
+        ((((unsigned long int)tc->energy() * config_.layerWeight_E_EM(triggerLayer)) + config_.correction()) >>
+         nBitsESums);
     if (s_E_EM > config_.saturation())
       s_E_EM = config_.saturation();
 
     unsigned int s_E_EM_core =
-        (((unsigned long int)tc->energy() * config_.layerWeight_E_EM_core(triggerLayer) + config_.correction()) >> nBitsESums);
+        (((unsigned long int)tc->energy() * config_.layerWeight_E_EM_core(triggerLayer) + config_.correction()) >>
+         nBitsESums);
     if (s_E_EM_core > config_.saturation())
       s_E_EM_core = config_.saturation();
 
@@ -312,7 +312,7 @@ void HGCalHistoClustering::triggerCellToCluster(const HGCalTriggerCellSAShrPtrCo
     cluster->set_wphi2(s_TC_W * tc->phi() * tc->phi());
     cluster->set_wroz2(s_TC_W * tc->rOverZ() * tc->rOverZ());
 
-    const unsigned nTriggerLayers = 36; // Should get from config/elsewhere in CMSSW
+    const unsigned nTriggerLayers = 36;  // Should get from config/elsewhere in CMSSW
     cluster->set_layerbits(cluster->layerbits() | (((unsigned long int)1) << (nTriggerLayers - triggerLayer)));
     cluster->set_sat_tc(cluster->e() == config_.saturation() || cluster->e_em() == config_.saturation());
     cluster->set_shapeq(1);

@@ -14,7 +14,7 @@ const HGCalHistogramCell& HGCalHistogramCell::operator+=(const HGCalHistogramCel
 const HGCalHistogramCell HGCalHistogramCell::operator/(const unsigned int factor) const {
   HGCalHistogramCell hc(*this);
 
-  if ( factor != 0 ) {
+  if (factor != 0) {
     hc.S_ /= factor;
     hc.X_ = 0;
     hc.Y_ = 0;
