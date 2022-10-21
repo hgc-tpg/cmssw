@@ -265,6 +265,7 @@ void HGCalHistoClusteringWrapper::configure(
   setGeometry(std::get<0>(configuration));
 
   theConfiguration_.setNTriggerLayers(std::get<0>(configuration)->lastTriggerLayer());
+  theConfiguration_.setTriggerLayers(std::get<0>(configuration)->triggerLayers());
 
   theConfiguration_.setSector(std::get<2>(configuration));
   theConfiguration_.setZSide(std::get<3>(configuration));
@@ -285,7 +286,6 @@ void HGCalHistoClusteringWrapper::configure(
   theConfiguration_.setROverZHistOffset(pset.getParameter<unsigned int>("rOverZHistOffset"));
   theConfiguration_.setROverZBinSize(pset.getParameter<unsigned int>("rOverZBinSize"));
   theConfiguration_.setDepths(pset.getParameter<std::vector<unsigned int>>("depths"));
-  theConfiguration_.setTriggerLayers(pset.getParameter<std::vector<unsigned int>>("triggerLayers"));
   theConfiguration_.setLayerWeights_E(pset.getParameter<std::vector<unsigned int>>("layerWeights_E"));
   theConfiguration_.setLayerWeights_E_EM(pset.getParameter<std::vector<unsigned int>>("layerWeights_E_EM"));
   theConfiguration_.setLayerWeights_E_EM_core(pset.getParameter<std::vector<unsigned int>>("layerWeights_E_EM_core"));

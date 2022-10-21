@@ -166,12 +166,7 @@ namespace l1thgcfirmware {
     const std::vector<unsigned int>& depths() const { return depths_; }
     unsigned int depth(unsigned int iLayer) const { return depths_.at(iLayer); }
 
-    void setTriggerLayers(const std::vector<unsigned int> triggerLayers) {
-      triggerLayers_.clear();
-      triggerLayers_.reserve(triggerLayers.size());
-      for (const auto& triggerLayer : triggerLayers)
-        triggerLayers_.push_back(triggerLayer);
-    }
+    void setTriggerLayers(const std::vector<unsigned int> triggerLayers) { triggerLayers_ = triggerLayers; }
     const std::vector<unsigned int>& triggerLayers() const { return triggerLayers_; }
     unsigned int triggerLayer(unsigned int iLayer) const { return triggerLayers_.at(iLayer); }
 
