@@ -226,19 +226,3 @@ void HGCalHistoSeeding::calculateAveragePosition(HGCalHistogramCellSAPtrCollecti
     }
   }
 }
-
-// Useful debugging function for printing histogram contents
-void HGCalHistoSeeding::printHistogram(const HGCalHistogramCellSAPtrCollection& histogram) const {
-  std::string histogramString = "";
-  for (unsigned int iRow = 0; iRow < config_.cRows(); ++iRow) {
-    for (unsigned int iCol = 0; iCol < config_.cColumns(); ++iCol) {
-      unsigned binIndex = config_.cColumns() * iRow + iCol;
-      // std::cout << histogram.at(binIndex)->S() << " ";
-      histogramString += histogram.at(binIndex)->S();
-      histogramString += " ";
-    }
-    histogramString += "\n";
-  }
-  edm::LogInfo("HGCalHistoSeeding") << "Histogram :";
-  edm::LogInfo("HGCalHistoSeeding") << histogramString;
-}

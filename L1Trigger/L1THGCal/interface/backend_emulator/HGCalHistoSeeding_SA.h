@@ -4,7 +4,6 @@
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalTriggerCell_SA.h"
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalHistogramCell_SA.h"
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalHistoClusteringConfig_SA.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 namespace l1thgcfirmware {
 
@@ -32,9 +31,6 @@ namespace l1thgcfirmware {
     void thresholdMaximaFinder(l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
     void localMaximaFinder(l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
     void calculateAveragePosition(l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
-
-    // For debugging
-    void printHistogram(const l1thgcfirmware::HGCalHistogramCellSAPtrCollection& histogram) const;
 
     const l1thgcfirmware::ClusterAlgoConfig& config_;
   };
