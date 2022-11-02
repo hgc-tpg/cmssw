@@ -34,7 +34,8 @@
 
   <class name="l1t::HGCalClusterT<l1t::io_v1::HGCalTriggerCell>" />
   <class name="l1t::HGCalClusterT<l1t::HGCalTriggerSums>" />
-  <class name="l1t::io_v1::HGCalCluster" ClassVersion="3">
+  <class name="l1t::io_v1::HGCalCluster" ClassVersion="4">
+   <version ClassVersion="4" checksum="1449206327"/>
    <version ClassVersion="3" checksum="3522432005"/>
   </class>
   <class name="std::vector<l1t::io_v1::HGCalCluster>" />
@@ -43,7 +44,8 @@
 
   <class name="l1t::HGCalClusterT<l1t::io_v1::HGCalCluster>" />
 
-  <class name="l1t::io_v1::HGCalMulticluster" ClassVersion="3">
+  <class name="l1t::io_v1::HGCalMulticluster" ClassVersion="4">
+   <version ClassVersion="4" checksum="3242132641"/>
    <version ClassVersion="3" checksum="303960767"/>
   </class>
   <class name="std::vector<l1t::io_v1::HGCalMulticluster>" />
