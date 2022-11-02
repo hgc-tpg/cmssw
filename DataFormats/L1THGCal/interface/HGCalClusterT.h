@@ -219,6 +219,69 @@ namespace l1t {
     void ebm1(int ebm1) { ebm1_ = ebm1; }
     void hbm(int hbm) { hbm_ = hbm; }
 
+    // Firmware-specific cluster properties
+    unsigned long int hw_sigma_e_quotient() const { return hw_sigma_e_quotient_; }
+    unsigned long int hw_sigma_e_fraction() const { return hw_sigma_e_fraction_; }
+    unsigned long int hw_mean_z_quotient() const { return hw_mean_z_quotient_; }
+    unsigned long int hw_mean_z_fraction() const { return hw_mean_z_fraction_; }
+    unsigned long int hw_mean_phi_quotient() const { return hw_mean_phi_quotient_; }
+    unsigned long int hw_mean_phi_fraction() const { return hw_mean_phi_fraction_; }
+    unsigned long int hw_mean_eta_quotient() const { return hw_mean_eta_quotient_; }
+    unsigned long int hw_mean_eta_fraction() const { return hw_mean_eta_fraction_; }
+    unsigned long int hw_mean_roz_quotient() const { return hw_mean_roz_quotient_; }
+    unsigned long int hw_mean_roz_fraction() const { return hw_mean_roz_fraction_; }
+    unsigned long int hw_sigma_z_quotient() const { return hw_sigma_z_quotient_; }
+    unsigned long int hw_sigma_z_fraction() const { return hw_sigma_z_fraction_; }
+    unsigned long int hw_sigma_phi_quotient() const { return hw_sigma_phi_quotient_; }
+    unsigned long int hw_sigma_phi_fraction() const { return hw_sigma_phi_fraction_; }
+    unsigned long int hw_sigma_eta_quotient() const { return hw_sigma_eta_quotient_; }
+    unsigned long int hw_sigma_eta_fraction() const { return hw_sigma_eta_fraction_; }
+    unsigned long int hw_sigma_roz_quotient() const { return hw_sigma_roz_quotient_; }
+    unsigned long int hw_sigma_roz_fraction() const { return hw_sigma_roz_fraction_; }
+    unsigned long int hw_e_em_over_e_quotient() const { return hw_e_em_over_e_quotient_; }
+    unsigned long int hw_e_em_over_e_fraction() const { return hw_e_em_over_e_fraction_; }
+    unsigned long int hw_e_em_core_over_e_em_quotient() const { return hw_e_em_core_over_e_em_quotient_; }
+    unsigned long int hw_e_em_core_over_e_em_fraction() const { return hw_e_em_core_over_e_em_fraction_; }
+    unsigned long int hw_e_h_early_over_e_quotient() const { return hw_e_h_early_over_e_quotient_; }
+    unsigned long int hw_e_h_early_over_e_fraction() const { return hw_e_h_early_over_e_fraction_; }
+
+    void hw_sigma_e_quotient(unsigned long int sigma_e_quotient) { hw_sigma_e_quotient_ = sigma_e_quotient; }
+    void hw_sigma_e_fraction(unsigned long int sigma_e_fraction) { hw_sigma_e_fraction_ = sigma_e_fraction; }
+    void hw_mean_z_quotient(unsigned long int mean_z_quotient) { hw_mean_z_quotient_ = mean_z_quotient; }
+    void hw_mean_z_fraction(unsigned long int mean_z_fraction) { hw_mean_z_fraction_ = mean_z_fraction; }
+    void hw_mean_phi_quotient(unsigned long int mean_phi_quotient) { hw_mean_phi_quotient_ = mean_phi_quotient; }
+    void hw_mean_phi_fraction(unsigned long int mean_phi_fraction) { hw_mean_phi_fraction_ = mean_phi_fraction; }
+    void hw_mean_eta_quotient(unsigned long int mean_eta_quotient) { hw_mean_eta_quotient_ = mean_eta_quotient; }
+    void hw_mean_eta_fraction(unsigned long int mean_eta_fraction) { hw_mean_eta_fraction_ = mean_eta_fraction; }
+    void hw_mean_roz_quotient(unsigned long int mean_roz_quotient) { hw_mean_roz_quotient_ = mean_roz_quotient; }
+    void hw_mean_roz_fraction(unsigned long int mean_roz_fraction) { hw_mean_roz_fraction_ = mean_roz_fraction; }
+    void hw_sigma_z_quotient(unsigned long int sigma_z_quotient) { hw_sigma_z_quotient_ = sigma_z_quotient; }
+    void hw_sigma_z_fraction(unsigned long int sigma_z_fraction) { hw_sigma_z_fraction_ = sigma_z_fraction; }
+    void hw_sigma_phi_quotient(unsigned long int sigma_phi_quotient) { hw_sigma_phi_quotient_ = sigma_phi_quotient; }
+    void hw_sigma_phi_fraction(unsigned long int sigma_phi_fraction) { hw_sigma_phi_fraction_ = sigma_phi_fraction; }
+    void hw_sigma_eta_quotient(unsigned long int sigma_eta_quotient) { hw_sigma_eta_quotient_ = sigma_eta_quotient; }
+    void hw_sigma_eta_fraction(unsigned long int sigma_eta_fraction) { hw_sigma_eta_fraction_ = sigma_eta_fraction; }
+    void hw_sigma_roz_quotient(unsigned long int sigma_roz_quotient) { hw_sigma_roz_quotient_ = sigma_roz_quotient; }
+    void hw_sigma_roz_fraction(unsigned long int sigma_roz_fraction) { hw_sigma_roz_fraction_ = sigma_roz_fraction; }
+    void hw_e_em_over_e_quotient(unsigned long int e_em_over_e_quotient) {
+      hw_e_em_over_e_quotient_ = e_em_over_e_quotient;
+    }
+    void hw_e_em_over_e_fraction(unsigned long int e_em_over_e_fraction) {
+      hw_e_em_over_e_fraction_ = e_em_over_e_fraction;
+    }
+    void hw_e_em_core_over_e_em_quotient(unsigned long int e_em_core_over_e_em_quotient) {
+      hw_e_em_core_over_e_em_quotient_ = e_em_core_over_e_em_quotient;
+    }
+    void hw_e_em_core_over_e_em_fraction(unsigned long int e_em_core_over_e_em_fraction) {
+      hw_e_em_core_over_e_em_fraction_ = e_em_core_over_e_em_fraction;
+    }
+    void hw_e_h_early_over_e_quotient(unsigned long int e_h_early_over_e_quotient) {
+      hw_e_h_early_over_e_quotient_ = e_h_early_over_e_quotient;
+    }
+    void hw_e_h_early_over_e_fraction(unsigned long int e_h_early_over_e_fraction) {
+      hw_e_h_early_over_e_fraction_ = e_h_early_over_e_fraction;
+    }
+
     /* operators */
     bool operator<(const HGCalClusterT<C>& cl) const { return mipPt() < cl.mipPt(); }
     bool operator>(const HGCalClusterT<C>& cl) const { return cl < *this; }
@@ -280,6 +343,32 @@ namespace l1t {
     int ebm0_ = 0;
     int ebm1_ = 0;
     int hbm_ = 0;
+
+    // firmware-specific cluster properties
+    unsigned long int hw_sigma_e_quotient_ = 0;
+    unsigned long int hw_sigma_e_fraction_ = 0;
+    unsigned long int hw_mean_z_quotient_ = 0;
+    unsigned long int hw_mean_z_fraction_ = 0;
+    unsigned long int hw_mean_phi_quotient_ = 0;
+    unsigned long int hw_mean_phi_fraction_ = 0;
+    unsigned long int hw_mean_eta_quotient_ = 0;
+    unsigned long int hw_mean_eta_fraction_ = 0;
+    unsigned long int hw_mean_roz_quotient_ = 0;
+    unsigned long int hw_mean_roz_fraction_ = 0;
+    unsigned long int hw_sigma_z_quotient_ = 0;
+    unsigned long int hw_sigma_z_fraction_ = 0;
+    unsigned long int hw_sigma_phi_quotient_ = 0;
+    unsigned long int hw_sigma_phi_fraction_ = 0;
+    unsigned long int hw_sigma_eta_quotient_ = 0;
+    unsigned long int hw_sigma_eta_fraction_ = 0;
+    unsigned long int hw_sigma_roz_quotient_ = 0;
+    unsigned long int hw_sigma_roz_fraction_ = 0;
+    unsigned long int hw_e_em_over_e_quotient_ = 0;
+    unsigned long int hw_e_em_over_e_fraction_ = 0;
+    unsigned long int hw_e_em_core_over_e_em_quotient_ = 0;
+    unsigned long int hw_e_em_core_over_e_em_fraction_ = 0;
+    unsigned long int hw_e_h_early_over_e_quotient_ = 0;
+    unsigned long int hw_e_h_early_over_e_fraction_ = 0;
 
     void updateP4AndPosition(const edm::Ptr<C>& c, bool updateCentre = true, float fraction = 1.) {
       double cMipt = c->mipPt() * fraction;
