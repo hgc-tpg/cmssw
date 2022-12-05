@@ -1,8 +1,6 @@
 #include "L1Trigger/L1THGCal/interface/backend/HGCalStage1TruncationImpl_SA.h"
 #include <cmath>
 
-HGCalStage1TruncationImplSA::HGCalStage1TruncationImplSA() {}
-
 unsigned HGCalStage1TruncationImplSA::run(const l1thgcfirmwareDUMMY::HGCalTriggerCellSACollection& tcs_in,
                                           const l1thgcfirmwareDUMMY::Stage1TruncationConfig& theConf,
                                           l1thgcfirmwareDUMMY::HGCalTriggerCellSACollection& tcs_out) const {
@@ -59,7 +57,7 @@ unsigned HGCalStage1TruncationImplSA::run(const l1thgcfirmwareDUMMY::HGCalTrigge
   return 0;
 }
 
-uint32_t HGCalStage1TruncationImplSA::packBin(unsigned roverzbin, unsigned phibin) const {
+unsigned HGCalStage1TruncationImplSA::packBin(unsigned roverzbin, unsigned phibin) const {
   unsigned packed_bin = 0;
   packed_bin |= ((roverzbin & mask_roz_) << offset_roz_);
   packed_bin |= (phibin & mask_phi_);

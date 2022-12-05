@@ -54,8 +54,9 @@ unsigned HGCalStage1TruncationImplSA::run(const l1thgcfirmware::HGCalTriggerCell
       if (tcid < bin_tcs.second.size()) {
         tcs_out.push_back(bin_tcs.second.at(tcid));
       } else {  // Create and push a dummy TC with 0 energy and identifiable address
-        l1thgcfirmware::HGCalTriggerCell dummytc(false, false, roverzbin, phibin, 0, 0, 63);
-        dummytc.setIndex(255);  // set moduleID as done in firmware
+        l1thgcfirmware::HGCalTriggerCell dummytc(false, false, roverzbin, phibin, 0, 0);
+        dummytc.setIndex(255);                         // set moduleID as done in firmware
+        dummytc.setCmsswIndex(std::make_pair(0, 63));  // set TC ID as done in firmware
         tcs_out.push_back(dummytc);
       }
     }

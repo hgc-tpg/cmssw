@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 #include <iostream>
-
 namespace l1thgcfirmware {
 
   class HGCalTriggerCell {
