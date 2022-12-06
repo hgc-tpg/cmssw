@@ -107,6 +107,7 @@ process.onlineSaver = cms.EDAnalyzer("DQMFileSaverOnline",
     tag = cms.untracked.string('new'),
 )
 
+
 process.o = cms.EndPath(process.onlineSaver)
 process.schedule = cms.Schedule(process.hgcl1tpg_step, process.hgcalValidationTPG_step, process.o)
 # END NEW added 
