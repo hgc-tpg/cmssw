@@ -5,21 +5,19 @@
 #include <memory>
 #include <cstdint>  // unsigned
 
-typedef std::vector<unsigned> datain_t;       // elements to sort
-typedef std::vector<unsigned> datasorter_t;   // elements to process in sorter
-typedef std::vector<unsigned> datamergera_t;  // elements to process in merger a
-typedef std::vector<unsigned> datamergerb_t;  // elements to process in merger b
-typedef std::vector<unsigned> dataout_t;      // elements selected
+typedef std::vector<unsigned> datain_t;        // elements to sort
+typedef std::vector<unsigned> datasorter_t;    // elements to process in sorter
+typedef std::vector<unsigned> datamerger_t;    // elements to process in merger
+typedef std::vector<unsigned> dataout_t;       // elements selected
 
-typedef std::vector<unsigned> adressin_t;       //elements addresses to sort
-typedef std::vector<unsigned> adresssorter_t;   //elements addresses to process in sorter
-typedef std::vector<unsigned> adressmergera_t;  //elements addresses to process in merger a
-typedef std::vector<unsigned> adressmergerb_t;  //elements addresses to process in merger b
-typedef std::vector<unsigned> adressout_t;      //elements addresses selected
+typedef std::vector<unsigned> adressin_t;      // elements addresses to sort
+typedef std::vector<unsigned> adresssorter_t;  // elements addresses to process in sorter
+typedef std::vector<unsigned> adressmerger_t;  // elements addresses to process in merger
+typedef std::vector<unsigned> adressout_t;     // elements addresses selected
 
-typedef std::vector<unsigned> data_to_sort_t;   //Data Pointer for sorter function
-typedef std::vector<unsigned> data_to_merge_t;  //Data Pointer for merger function
-typedef std::vector<unsigned> adress_t;         //Address Pointer for sorter & merger functions
+typedef std::vector<unsigned> data_to_sort_t;  // Data Pointer for sorter function
+typedef std::vector<unsigned> data_to_merge_t; // Data Pointer for merger function
+typedef std::vector<unsigned> adress_t;        // Address Pointer for sorter & merger functions
 
 namespace l1thgcfirmware {
 
@@ -39,7 +37,7 @@ namespace l1thgcfirmware {
     ~HGCalStage1SortingAlg_SA() {}
 
     //Generates the sorting network
-    void sorting(datain_t& arr_input, dataout_t& arr_output, adressout_t& arr_adresses) const;
+    void sorting(const datain_t& arr_input, dataout_t& arr_output, adressout_t& arr_adresses) const;
 
     void setNS(const unsigned NSval) { NS = NSval; }
     void setNMA(const unsigned NMAval) { NMA = NMAval; }
@@ -48,14 +46,9 @@ namespace l1thgcfirmware {
   private:
     //Sorter algorithm
     void sorter(data_to_sort_t& list_sorter, adress_t& list_adresses) const;
-    //Merger algorithm A
-    void mergerA(data_to_merge_t& list_merger, adress_t& list_adresses) const;
-    //Merger algorithm B
-    void mergerB(data_to_merge_t& list_merger, adress_t& list_adresses) const;
+    //Merger algorithm
+    void merger(const unsigned& NM, data_to_merge_t& list_merger, adress_t& list_adresses) const;
     //Calculate base 2 logarithm , and round to next integer
-    unsigned loop_bound_for_mergera(void) const;
-    unsigned loop_bound_for_mergerb(void) const;
-    unsigned loop_bound_for_sorter(void) const;
     unsigned log2_rounded(unsigned i) const;
 
     const unsigned N;  // number of total elements to sort

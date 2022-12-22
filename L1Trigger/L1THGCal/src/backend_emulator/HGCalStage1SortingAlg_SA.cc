@@ -23,14 +23,14 @@ using namespace l1thgcfirmware;
 // @param arr_adresses - list of adresses of elements selected (output). Address goes from 0 to N
 //
 //-------------------------------------------------------------------------------------------------/
-void HGCalStage1SortingAlg_SA::sorting(datain_t& arr_input, dataout_t& arr_output, adressout_t& arr_adresses) const {
+void HGCalStage1SortingAlg_SA::sorting(const datain_t& arr_input, dataout_t& arr_output, adressout_t& arr_adresses) const {
   //Variables declaration
   datasorter_t arr_tmp(NS);
-  datamergera_t arr_tmp_so(NMA), arr_tmp_so1(NMA), arr_tmp_so2(NMA);
-  datamergerb_t arr_tmp_mo(NMB);
+  datamerger_t arr_tmp_so(NMA), arr_tmp_so1(NMA), arr_tmp_so2(NMA);
+  datamerger_t arr_tmp_mo(NMB);
   adresssorter_t arr_tmp_adresses(NS);
-  adressmergera_t arr_tmp_so_adresses(NMA), arr_tmp_so1_adresses(NMA), arr_tmp_so2_adresses(NMA);
-  adressmergerb_t arr_tmp_mo_adresses(NMB);
+  adressmerger_t arr_tmp_so_adresses(NMA), arr_tmp_so1_adresses(NMA), arr_tmp_so2_adresses(NMA);
+  adressmerger_t arr_tmp_mo_adresses(NMB);
 
   unsigned cs;  //counter for sorter blocks
   unsigned cm;  //counter for merger blocks
@@ -79,7 +79,7 @@ void HGCalStage1SortingAlg_SA::sorting(datain_t& arr_input, dataout_t& arr_outpu
     }
 
     //Call to function that merges NMA inputs
-    mergerA(arr_tmp_so, arr_tmp_so_adresses);
+    merger(NMA, arr_tmp_so, arr_tmp_so_adresses);
 
     //Arrange 2 sorted lists in 1 array of NMB elements
     if (cm == 0) {
@@ -98,7 +98,7 @@ void HGCalStage1SortingAlg_SA::sorting(datain_t& arr_input, dataout_t& arr_outpu
 
   //Generates 1 "merger block" of NMB inputs ----------------------------------------------------
   //Call to function to merge
-  mergerB(arr_tmp_mo, arr_tmp_mo_adresses);
+  merger(NMB, arr_tmp_mo, arr_tmp_mo_adresses);
 
   //Replica of output array. Important for a correct HW synthesis
   for (i = 0; i < M; i++) {
@@ -128,7 +128,7 @@ void HGCalStage1SortingAlg_SA::sorter(data_to_sort_t& list_sorter, adress_t& lis
   }
 
   //Calculate bound for loop, which is 2^[log2(NS)]
-  constant_bound = loop_bound_for_sorter();
+  constant_bound = log2_rounded(NS);
 
   //Performed for p=2^(n-1), 2^(n-2), ... , 1
   for (p = constant_bound, q = constant_bound, r = 0, d = p; p >= 1; p = p / 2, q = constant_bound, r = 0, d = p) {
@@ -165,27 +165,27 @@ void HGCalStage1SortingAlg_SA::sorter(data_to_sort_t& list_sorter, adress_t& lis
 }
 
 //-------------------------------------------------------------------------------------------------/
-// Merger algorithm of NMA inputs
+// Merger algorithm of NM inputs
 // Based on odd-even Batcher algorithm
 // For more details, see:
 // The Art Of Computer Programming, D. Knuth - Sorting and Searching (2nd edition Volume 3), 1998, page 111
 //
 //-------------------------------------------------------------------------------------------------/
-void HGCalStage1SortingAlg_SA::mergerA(data_to_merge_t& list_merger, adress_t& list_adresses) const {
+void HGCalStage1SortingAlg_SA::merger(const unsigned& NM, data_to_merge_t& list_merger, adress_t& list_adresses) const {
   unsigned tmp, tmp_adress;
   unsigned i, p, q, r, d;
-  datamergera_t list_merger_tmp(NMA);
-  adressmergera_t list_adresses_tmp(NMA);
+  datamerger_t list_merger_tmp(NM);
+  adressmerger_t list_adresses_tmp(NM);
 
   //Replica of entry array. Important for correct HW synthesis
-  for (i = 0; i < NMA; i++) {
+  for (i = 0; i < NM; i++) {
     list_merger_tmp[i] = list_merger[i];
     list_adresses_tmp[i] = list_adresses[i];
   }
 
   //Variables initialization for nested loops
   p = 1;
-  q = loop_bound_for_mergera();
+  q = log2_rounded(NM);
   r = 0;
   d = p;
 
@@ -194,7 +194,7 @@ void HGCalStage1SortingAlg_SA::mergerA(data_to_merge_t& list_merger, adress_t& l
     //counter_levels++;
 
     //Parcour the list_sorter of elements to do exchanges
-    for (i = 0; i < (NMA - d); i++) {
+    for (i = 0; i < (NM - d); i++) {
       if ((i & p) == r) {
         //counter_comparators++;
 
@@ -214,142 +214,12 @@ void HGCalStage1SortingAlg_SA::mergerA(data_to_merge_t& list_merger, adress_t& l
   }    //Label1
 
   //Replica of output array. Important for correct HW synthesis
-  for (i = 0; i < NMA; i++) {
+  for (i = 0; i < NM; i++) {
     list_merger[i] = list_merger_tmp[i];
     list_adresses[i] = list_adresses_tmp[i];
   }
 }
 
-//-------------------------------------------------------------------------------------------------/
-// Merger algorithm of NMB inputs
-// Based on odd-even Batcher algorithm
-// For more details, see:
-// The Art Of Computer Programming, D. Knuth - Sorting and Searching (2nd edition Volume 3), 1998, page 111
-//
-//-------------------------------------------------------------------------------------------------/
-void HGCalStage1SortingAlg_SA::mergerB(data_to_merge_t& list_merger, adress_t& list_adresses) const {
-  unsigned tmp, tmp_adress;
-  unsigned i, p, q, r, d;
-  datamergerb_t list_merger_tmp(NMB);
-  adressmergerb_t list_adresses_tmp(NMB);
-
-  //Replica of entry array. Important for correct HW synthesis
-  for (i = 0; i < NMB; i++) {
-    list_merger_tmp[i] = list_merger[i];
-    list_adresses_tmp[i] = list_adresses[i];
-  }
-
-  //Variables initialization for nested loops
-  p = 1;
-  q = loop_bound_for_mergerb();
-  r = 0;
-  d = p;
-
-  //Performed for q=2^(n-1), 2^(n-2), ... , p
-  for (; q >= p; d = q - p, r = p, q = q / 2) {
-    //counter_levels++;
-
-    //Parcour the list_sorter of elements to do exchanges
-    for (i = 0; i < (NMB - d); i++) {
-      if ((i & p) == r) {
-        //counter_comparators++;
-
-        //Compare & Exchange
-        if (list_merger_tmp[i] < list_merger_tmp[i + d]) {
-          tmp = list_merger_tmp[i];
-          list_merger_tmp[i] = list_merger_tmp[i + d];
-          list_merger_tmp[i + d] = tmp;
-
-          tmp_adress = list_adresses_tmp[i];
-          list_adresses_tmp[i] = list_adresses_tmp[i + d];
-          list_adresses_tmp[i + d] = tmp_adress;
-        }
-      }
-
-    }  //Label2
-  }    //Label1
-
-  //Replica of output array. Important for correct HW synthesis
-  for (i = 0; i < NMB; i++) {
-    list_merger[i] = list_merger_tmp[i];
-    list_adresses[i] = list_adresses_tmp[i];
-  }
-}
-
-//-------------------------------------------------------------------------------------------------/
-//  Calculate 2^[ceil(log2(NS))-1], which is a loop bound for the sorter algorithm
-//
-//-------------------------------------------------------------------------------------------------/
-unsigned HGCalStage1SortingAlg_SA::loop_bound_for_sorter() const {
-  unsigned res = 0;
-  unsigned ns_modified = NS;
-
-  if (NS == 1)
-    return (unsigned)1;  //for some reason this is needed in CMSSW
-
-  //calculate log2(NS): shift to right until NS == 1 for searching position of MSB
-  while (ns_modified >>= 1) {
-    ++res;
-  }
-
-  //If 2^[log2(NS)] < NS, round to next integer
-  if ((unsigned)1 << res < NS) {
-    res++;
-  }
-
-  //return 2^(res-1)
-  return (unsigned)1 << (res - 1);
-}
-
-//-------------------------------------------------------------------------------------------------/
-//  Calculate 2^[ceil(log2(NM))-1], which is a loop bound for the merger algorithm
-//
-//-------------------------------------------------------------------------------------------------/
-unsigned HGCalStage1SortingAlg_SA::loop_bound_for_mergera() const {
-  unsigned res = 0;
-  unsigned nm_modified = NMA;
-
-  if (NMA == 1)
-    return (unsigned)1;  //for some reason this is needed in CMSSW
-
-  //calculate log2(NM): shift to right until NS == 1 for searching position of MSB
-  while (nm_modified >>= 1) {
-    ++res;
-  }
-
-  //If 2^[log2(NM)] < NM, round to next integer
-  if ((unsigned)1 << res < NMA) {
-    res++;
-  }
-
-  //return 2^(res-1)
-  return (unsigned)1 << (res - 1);
-}
-
-//-------------------------------------------------------------------------------------------------/
-//  Calculate 2^[ceil(log2(NM))-1], which is a loop bound for the merger algorithm
-//
-//-------------------------------------------------------------------------------------------------/
-unsigned HGCalStage1SortingAlg_SA::loop_bound_for_mergerb() const {
-  unsigned res = 0;
-  unsigned nm_modified = NMB;
-
-  if (NMB == 1)
-    return (unsigned)1;  //for some reason this is needed in CMSSW
-
-  //calculate log2(NM): shift to right until NS == 1 for searching position of MSB
-  while (nm_modified >>= 1) {
-    ++res;
-  }
-
-  //If 2^[log2(NM)] < NM, round to next integer
-  if ((unsigned)1 << res < NMB) {
-    res++;
-  }
-
-  //return 2^(res-1)
-  return (unsigned)1 << (res - 1);
-}
 //-------------------------------------------------------------------------------------------------/
 //  Calculate log base 2 of i and round the result to next integer
 //  Equivalent to res=ceil(log(i)/log(2))
