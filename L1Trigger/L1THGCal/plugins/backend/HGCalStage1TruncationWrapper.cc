@@ -65,7 +65,7 @@ void HGCalStage1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr
     unsigned int digi_energy = (tc->mipPt()) * FWfactor_;
     fpga_tcs_SA.emplace_back(
         true, true, digi_rOverZ, digi_phi, triggerTools_.layerWithOffset(tc->detId()), digi_energy);
-    fpga_tcs_SA.back().setCmsswIndex(std::make_pair(0, itc));
+    fpga_tcs_SA.back().setCmsswIndex(std::make_pair(itc, 0));
     ++itc;
   }
 }
@@ -75,8 +75,9 @@ void HGCalStage1TruncationWrapper::convertAlgorithmOutputs(
     const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_original,
     std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_trunc) const {
   for (auto& tc : fpga_tcs_out) {
-    unsigned tc_cmssw_id = tc.cmsswIndex().second;
-    fpga_tcs_trunc.push_back(fpga_tcs_original[tc_cmssw_id]);
+    unsigned tc_cmssw_id = tc.cmsswIndex().first;
+    if (tc_cmssw_id < fpga_tcs_original.size())
+      fpga_tcs_trunc.emplace_back(fpga_tcs_original[tc_cmssw_id]);
   }
 }
 
