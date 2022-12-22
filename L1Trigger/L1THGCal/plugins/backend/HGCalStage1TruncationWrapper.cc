@@ -33,6 +33,9 @@ private:
   HGCalTriggerTools triggerTools_;
   l1thgcfirmware::HGCalStage1TruncationImplSA theAlgo_;
   l1thgcfirmware::Stage1TruncationConfig theConfiguration_;
+
+  // Scale factor for quantities sent to emulator to keep floating point precision. Value is arbitrary and could be set to relevant value.
+  const unsigned int FWfactor_ = 10000;
 };
 
 HGCalStage1TruncationWrapper::HGCalStage1TruncationWrapper(const edm::ParameterSet& conf)
@@ -55,11 +58,11 @@ void HGCalStage1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr
     double x = position.x();
     double y = position.y();
     double z = position.z();
-    unsigned int digi_rOverZ = (std::sqrt(x * x + y * y) / std::abs(z)) * 10000;  // Magic numbers
+    unsigned int digi_rOverZ = (std::sqrt(x * x + y * y) / std::abs(z)) * FWfactor_;
     double phi = rotatedphi(tc->phi(), theConfiguration_.phiSector());
     phi += (phi < 0) ? M_PI : 0;
-    unsigned int digi_phi = phi * 10000 /* * 1944 / M_PI*/;  // Magic numbers
-    unsigned int digi_energy = (tc->mipPt()) * 10000;        // Magic numbers
+    unsigned int digi_phi = phi * FWfactor_;
+    unsigned int digi_energy = (tc->mipPt()) * FWfactor_;
     fpga_tcs_SA.emplace_back(
         true, true, digi_rOverZ, digi_phi, triggerTools_.layerWithOffset(tc->detId()), digi_energy);
     fpga_tcs_SA.back().setCmsswIndex(std::make_pair(0, itc));

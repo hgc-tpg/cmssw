@@ -5,19 +5,19 @@
 #include <memory>
 #include <cstdint>  // unsigned
 
-typedef std::vector<unsigned> datain_t;        // elements to sort
-typedef std::vector<unsigned> datasorter_t;    // elements to process in sorter
-typedef std::vector<unsigned> datamerger_t;    // elements to process in merger
-typedef std::vector<unsigned> dataout_t;       // elements selected
+typedef std::vector<unsigned> datain_t;      // elements to sort
+typedef std::vector<unsigned> datasorter_t;  // elements to process in sorter
+typedef std::vector<unsigned> datamerger_t;  // elements to process in merger
+typedef std::vector<unsigned> dataout_t;     // elements selected
 
 typedef std::vector<unsigned> adressin_t;      // elements addresses to sort
 typedef std::vector<unsigned> adresssorter_t;  // elements addresses to process in sorter
 typedef std::vector<unsigned> adressmerger_t;  // elements addresses to process in merger
 typedef std::vector<unsigned> adressout_t;     // elements addresses selected
 
-typedef std::vector<unsigned> data_to_sort_t;  // Data Pointer for sorter function
-typedef std::vector<unsigned> data_to_merge_t; // Data Pointer for merger function
-typedef std::vector<unsigned> adress_t;        // Address Pointer for sorter & merger functions
+typedef std::vector<unsigned> data_to_sort_t;   // Data Pointer for sorter function
+typedef std::vector<unsigned> data_to_merge_t;  // Data Pointer for merger function
+typedef std::vector<unsigned> adress_t;         // Address Pointer for sorter & merger functions
 
 namespace l1thgcfirmware {
 
