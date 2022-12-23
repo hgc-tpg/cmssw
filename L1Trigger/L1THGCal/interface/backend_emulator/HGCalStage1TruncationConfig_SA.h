@@ -4,10 +4,12 @@
 #include <vector>
 #include <cstdint>  // uint32_t
 
-namespace l1thgcfirmwareDUMMY {
+namespace l1thgcfirmware {
 
   class Stage1TruncationConfig {
   public:
+    Stage1TruncationConfig() {}
+
     Stage1TruncationConfig(const bool do_truncate,
                            const double roz_min,
                            const double roz_max,
@@ -67,6 +69,6 @@ namespace l1thgcfirmwareDUMMY {
     uint32_t fpga_id_;
   };
 
-}  // namespace l1thgcfirmwareDUMMY
+}  // namespace l1thgcfirmware
 
 #endif
