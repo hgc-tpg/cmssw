@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace l1thgcfirmware {
+namespace l1thgcfirmwareDUMMY {
 
   class HGCalTriggerCell {
   public:
@@ -58,6 +58,6 @@ namespace l1thgcfirmware {
 
   typedef std::vector<HGCalTriggerCell> HGCalTriggerCellSACollection;
 
-}  // namespace l1thgcfirmware
+}  // namespace l1thgcfirmwareDUMMY
 
 #endif
