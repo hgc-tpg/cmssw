@@ -1,9 +1,9 @@
 #include "L1Trigger/L1THGCal/interface/HGCalAlgoWrapperBase.h"
 
 #include "DataFormats/L1THGCal/interface/HGCalTriggerCell.h"
-#include "L1Trigger/L1THGCal/interface/backend/HGCalTriggerCell_SA.h"
-#include "L1Trigger/L1THGCal/interface/backend/HGCalStage1TruncationImpl_SA.h"
-#include "L1Trigger/L1THGCal/interface/backend/HGCalStage1TruncationConfig_SA.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalTriggerCell_SA.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalStage1TruncationImpl_SA.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalStage1TruncationConfig_SA.h"
 
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerTools.h"
 
@@ -28,9 +28,14 @@ private:
 
   void setGeometry(const HGCalTriggerGeometryBase* const geom) { triggerTools_.setGeometry(geom); }
 
+  double rotatedphi(double phi, unsigned sector) const;
+
   HGCalTriggerTools triggerTools_;
-  HGCalStage1TruncationImplSA theAlgo_;
+  l1thgcfirmware::HGCalStage1TruncationImplSA theAlgo_;
   l1thgcfirmware::Stage1TruncationConfig theConfiguration_;
+
+  // Scale factor for quantities sent to emulator to keep floating point precision. Value is arbitrary and could be set to relevant value.
+  const unsigned int FWfactor_ = 10000;
 };
 
 HGCalStage1TruncationWrapper::HGCalStage1TruncationWrapper(const edm::ParameterSet& conf)
@@ -49,16 +54,18 @@ void HGCalStage1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr
   fpga_tcs_SA.reserve(fpga_tcs.size());
   unsigned int itc = 0;
   for (auto& tc : fpga_tcs) {
-    fpga_tcs_SA.emplace_back(tc->position().x(),
-                             tc->position().y(),
-                             tc->position().z(),
-                             triggerTools_.zside(tc->detId()),
-                             triggerTools_.layerWithOffset(tc->detId()),
-                             tc->eta(),
-                             tc->phi(),
-                             tc->pt(),
-                             tc->mipPt(),
-                             itc);
+    const GlobalPoint& position = tc->position();
+    double x = position.x();
+    double y = position.y();
+    double z = position.z();
+    unsigned int digi_rOverZ = (std::sqrt(x * x + y * y) / std::abs(z)) * FWfactor_;
+    double phi = rotatedphi(tc->phi(), theConfiguration_.phiSector());
+    phi += (phi < 0) ? M_PI : 0;
+    unsigned int digi_phi = phi * FWfactor_;
+    unsigned int digi_energy = (tc->mipPt()) * FWfactor_;
+    fpga_tcs_SA.emplace_back(
+        true, true, digi_rOverZ, digi_phi, triggerTools_.layerWithOffset(tc->detId()), digi_energy);
+    fpga_tcs_SA.back().setCmsswIndex(std::make_pair(itc, 0));
     ++itc;
   }
 }
@@ -68,8 +75,9 @@ void HGCalStage1TruncationWrapper::convertAlgorithmOutputs(
     const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_original,
     std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_trunc) const {
   for (auto& tc : fpga_tcs_out) {
-    unsigned tc_cmssw_id = tc.index_cmssw();
-    fpga_tcs_trunc.push_back(fpga_tcs_original[tc_cmssw_id]);
+    unsigned tc_cmssw_id = tc.cmsswIndex().first;
+    if (tc_cmssw_id < fpga_tcs_original.size())
+      fpga_tcs_trunc.emplace_back(fpga_tcs_original[tc_cmssw_id]);
   }
 }
 
@@ -94,6 +102,18 @@ void HGCalStage1TruncationWrapper::configure(
   theConfiguration_.setSector120(std::get<1>(configuration));
   theConfiguration_.setFPGAID(std::get<2>(configuration));
 };
+
+double HGCalStage1TruncationWrapper::rotatedphi(double phi, unsigned sector) const {
+  if (sector == 1) {
+    if (phi < M_PI and phi > 0)
+      phi = phi - (2. * M_PI / 3.);
+    else
+      phi = phi + (4. * M_PI / 3.);
+  } else if (sector == 2) {
+    phi = phi + (2. * M_PI / 3.);
+  }
+  return phi;
+}
 
 DEFINE_EDM_PLUGIN(HGCalStage1TruncationWrapperBaseFactory,
                   HGCalStage1TruncationWrapper,
