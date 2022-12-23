@@ -994,8 +994,8 @@ void HGCalTriggerGeomTesterV9Imp3::fillTriggerGeometry()
       triggerCellIPhi_ = id_sc.iphi();
       triggerCellWaferU_ = 0;
       triggerCellWaferV_ = 0;
-	  triggerCellWaferPart_ = -1;
-	  triggerCellWaferOrient_ = -1;
+      triggerCellWaferPart_ = -1;
+      triggerCellWaferOrient_ = -1;
       triggerCellU_ = 0;
       triggerCellV_ = 0;
     } else if (HFNoseTriggerDetId(triggercell_cells.first).det() == DetId::HGCalTrigger &&
@@ -1008,8 +1008,8 @@ void HGCalTriggerGeomTesterV9Imp3::fillTriggerGeometry()
       triggerCellIPhi_ = 0;
       triggerCellWaferU_ = id_nose_trig.waferU();
       triggerCellWaferV_ = id_nose_trig.waferV();
-	  triggerCellWaferPart_ = -1;
-	  triggerCellWaferOrient_ = -1;
+      triggerCellWaferPart_ = -1;
+      triggerCellWaferOrient_ = -1;
       triggerCellU_ = id_nose_trig.triggerCellU();
       triggerCellV_ = id_nose_trig.triggerCellV();
     } else {
@@ -1024,24 +1024,21 @@ void HGCalTriggerGeomTesterV9Imp3::fillTriggerGeometry()
       triggerCellU_ = id_si_trig.triggerCellU();
       triggerCellV_ = id_si_trig.triggerCellV();
 
-	  if(triggercell_cells.second.begin() == triggercell_cells.second.end()) {
-		throw cms::Exception("BadGeometry") << "HGCalTriggerGeometry: No cells!";
-	  }
-	  const HGCSiliconDetId& firstCellId(*triggercell_cells.second.begin());
-	  if(firstCellId.det() == DetId::HGCalEE) {
-		wafertype = triggerGeometry_->eeTopology().dddConstants().waferType(firstCellId, true);
-	  }
-	  else if(firstCellId.det() == DetId::HGCalHSi) {
-		wafertype = triggerGeometry_->hsiTopology().dddConstants().waferType(firstCellId, true);
-	  }
-	  else {
-		throw cms::Exception("BadGeometry")
-              << "HGCalTriggerGeometry: Found inconsistency in cell <-> trigger cell type mapping";
-	  }
-	  triggerCellWaferPart_ = std::get<1>(wafertype);
-	  triggerCellWaferOrient_ = std::get<2>(wafertype);
-	  
-	}
+      if (triggercell_cells.second.begin() == triggercell_cells.second.end()) {
+        throw cms::Exception("BadGeometry") << "HGCalTriggerGeometry: No cells!";
+      }
+      const HGCSiliconDetId& firstCellId(*triggercell_cells.second.begin());
+      if (firstCellId.det() == DetId::HGCalEE) {
+        wafertype = triggerGeometry_->eeTopology().dddConstants().waferType(firstCellId, true);
+      } else if (firstCellId.det() == DetId::HGCalHSi) {
+        wafertype = triggerGeometry_->hsiTopology().dddConstants().waferType(firstCellId, true);
+      } else {
+        throw cms::Exception("BadGeometry")
+            << "HGCalTriggerGeometry: Found inconsistency in cell <-> trigger cell type mapping";
+      }
+      triggerCellWaferPart_ = std::get<1>(wafertype);
+      triggerCellWaferOrient_ = std::get<2>(wafertype);
+    }
     triggerCellX_ = position.x();
     triggerCellY_ = position.y();
     triggerCellZ_ = position.z();
