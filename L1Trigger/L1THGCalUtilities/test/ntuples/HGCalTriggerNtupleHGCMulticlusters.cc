@@ -18,6 +18,7 @@ private:
 
   bool fill_layer_info_;
   bool fill_interpretation_info_;
+  bool fill_hw_cluster_properties_;
 
   std::unique_ptr<HGCalTriggerClusterIdentificationBase> id_;
 
@@ -43,18 +44,64 @@ private:
   std::vector<float> cl3d_srrtot_;
   std::vector<float> cl3d_srrmax_;
   std::vector<float> cl3d_srrmean_;
+  std::vector<float> cl3d_varrr_;
+  std::vector<float> cl3d_varzz_;
+  std::vector<float> cl3d_varee_;
+  std::vector<float> cl3d_varpp_;
   std::vector<float> cl3d_emaxe_;
   std::vector<float> cl3d_hoe_;
   std::vector<float> cl3d_meanz_;
   std::vector<float> cl3d_layer10_;
   std::vector<float> cl3d_layer50_;
   std::vector<float> cl3d_layer90_;
+  std::vector<float> cl3d_first1layers_;
+  std::vector<float> cl3d_first3layers_;
+  std::vector<float> cl3d_first5layers_;
+  std::vector<float> cl3d_firstHcal1layers_;
+  std::vector<float> cl3d_firstHcal3layers_;
+  std::vector<float> cl3d_firstHcal5layers_;
+  std::vector<float> cl3d_last1layers_;
+  std::vector<float> cl3d_last3layers_;
+  std::vector<float> cl3d_last5layers_;
+  std::vector<float> cl3d_emax1layers_;
+  std::vector<float> cl3d_emax3layers_;
+  std::vector<float> cl3d_emax5layers_;
+  std::vector<float> cl3d_eot_;
+  std::vector<int> cl3d_ebm0_;
+  std::vector<int> cl3d_ebm1_;
+  std::vector<int> cl3d_hbm_;
   std::vector<float> cl3d_ntc67_;
   std::vector<float> cl3d_ntc90_;
   std::vector<float> cl3d_bdteg_;
   std::vector<int> cl3d_quality_;
   std::vector<std::vector<float>> cl3d_ipt_;
   std::vector<std::vector<float>> cl3d_ienergy_;
+
+  // Hardware cluster properties
+  std::vector<unsigned long int> cl3d_sigma_e_quotient_;
+  std::vector<unsigned long int> cl3d_sigma_e_fraction_;
+  std::vector<unsigned long int> cl3d_Mean_z_quotient_;
+  std::vector<unsigned long int> cl3d_Mean_z_fraction_;
+  std::vector<unsigned long int> cl3d_Mean_phi_quotient_;
+  std::vector<unsigned long int> cl3d_Mean_phi_fraction_;
+  std::vector<unsigned long int> cl3d_Mean_eta_quotient_;
+  std::vector<unsigned long int> cl3d_Mean_eta_fraction_;
+  std::vector<unsigned long int> cl3d_Mean_roz_quotient_;
+  std::vector<unsigned long int> cl3d_Mean_roz_fraction_;
+  std::vector<unsigned long int> cl3d_sigma_z_quotient_;
+  std::vector<unsigned long int> cl3d_sigma_z_fraction_;
+  std::vector<unsigned long int> cl3d_sigma_phi_quotient_;
+  std::vector<unsigned long int> cl3d_sigma_phi_fraction_;
+  std::vector<unsigned long int> cl3d_sigma_eta_quotient_;
+  std::vector<unsigned long int> cl3d_sigma_eta_fraction_;
+  std::vector<unsigned long int> cl3d_sigma_roz_quotient_;
+  std::vector<unsigned long int> cl3d_sigma_roz_fraction_;
+  std::vector<unsigned long int> cl3d_e_em_over_e_quotient_;
+  std::vector<unsigned long int> cl3d_e_em_over_e_fraction_;
+  std::vector<unsigned long int> cl3d_e_em_core_over_e_em_quotient_;
+  std::vector<unsigned long int> cl3d_e_em_core_over_e_em_fraction_;
+  std::vector<unsigned long int> cl3d_e_h_early_over_e_quotient_;
+  std::vector<unsigned long int> cl3d_e_h_early_over_e_fraction_;
 };
 
 DEFINE_EDM_PLUGIN(HGCalTriggerNtupleFactory, HGCalTriggerNtupleHGCMulticlusters, "HGCalTriggerNtupleHGCMulticlusters");
@@ -62,7 +109,8 @@ DEFINE_EDM_PLUGIN(HGCalTriggerNtupleFactory, HGCalTriggerNtupleHGCMulticlusters,
 HGCalTriggerNtupleHGCMulticlusters::HGCalTriggerNtupleHGCMulticlusters(const edm::ParameterSet& conf)
     : HGCalTriggerNtupleBase(conf),
       fill_layer_info_(conf.getParameter<bool>("FillLayerInfo")),
-      fill_interpretation_info_(conf.getParameter<bool>("FillInterpretationInfo")) {
+      fill_interpretation_info_(conf.getParameter<bool>("FillInterpretationInfo")),
+      fill_hw_cluster_properties_(conf.getParameter<bool>("FillHWClusterProperties")) {
   accessEventSetup_ = false;
 }
 
@@ -105,12 +153,32 @@ void HGCalTriggerNtupleHGCMulticlusters::initialize(TTree& tree,
   tree.Branch(withPrefix("srrtot"), &cl3d_srrtot_);
   tree.Branch(withPrefix("srrmax"), &cl3d_srrmax_);
   tree.Branch(withPrefix("srrmean"), &cl3d_srrmean_);
+  tree.Branch(withPrefix("varrr"), &cl3d_varrr_);
+  tree.Branch(withPrefix("varzz"), &cl3d_varzz_);
+  tree.Branch(withPrefix("varee"), &cl3d_varee_);
+  tree.Branch(withPrefix("varpp"), &cl3d_varpp_);
   tree.Branch(withPrefix("emaxe"), &cl3d_emaxe_);
   tree.Branch(withPrefix("hoe"), &cl3d_hoe_);
   tree.Branch(withPrefix("meanz"), &cl3d_meanz_);
   tree.Branch(withPrefix("layer10"), &cl3d_layer10_);
   tree.Branch(withPrefix("layer50"), &cl3d_layer50_);
   tree.Branch(withPrefix("layer90"), &cl3d_layer90_);
+  tree.Branch(withPrefix("first1layers"), &cl3d_first1layers_);
+  tree.Branch(withPrefix("first3layers"), &cl3d_first3layers_);
+  tree.Branch(withPrefix("first5layers"), &cl3d_first5layers_);
+  tree.Branch(withPrefix("firstHcal1layers"), &cl3d_firstHcal1layers_);
+  tree.Branch(withPrefix("firstHcal3layers"), &cl3d_firstHcal3layers_);
+  tree.Branch(withPrefix("firstHcal5layers"), &cl3d_firstHcal5layers_);
+  tree.Branch(withPrefix("last1layers"), &cl3d_last1layers_);
+  tree.Branch(withPrefix("last3layers"), &cl3d_last3layers_);
+  tree.Branch(withPrefix("last5layers"), &cl3d_last5layers_);
+  tree.Branch(withPrefix("emax1layers"), &cl3d_emax1layers_);
+  tree.Branch(withPrefix("emax3layers"), &cl3d_emax3layers_);
+  tree.Branch(withPrefix("emax5layers"), &cl3d_emax5layers_);
+  tree.Branch(withPrefix("eot"), &cl3d_eot_);
+  tree.Branch(withPrefix("ebm0"), &cl3d_ebm0_);
+  tree.Branch(withPrefix("ebm1"), &cl3d_ebm1_);
+  tree.Branch(withPrefix("hbm"), &cl3d_hbm_);
   tree.Branch(withPrefix("ntc67"), &cl3d_ntc67_);
   tree.Branch(withPrefix("ntc90"), &cl3d_ntc90_);
   tree.Branch(withPrefix("bdteg"), &cl3d_bdteg_);
@@ -118,6 +186,32 @@ void HGCalTriggerNtupleHGCMulticlusters::initialize(TTree& tree,
   if (fill_interpretation_info_) {
     tree.Branch(withPrefix("ipt"), &cl3d_ipt_);
     tree.Branch(withPrefix("ienergy"), &cl3d_ienergy_);
+  }
+  if (fill_hw_cluster_properties_) {
+    tree.Branch(withPrefix("meanZquotient"), &cl3d_Mean_z_quotient_);
+    tree.Branch(withPrefix("meanZfraction"), &cl3d_Mean_z_fraction_);
+    tree.Branch(withPrefix("meanPhiquotient"), &cl3d_Mean_phi_quotient_);
+    tree.Branch(withPrefix("meanPhifraction"), &cl3d_Mean_phi_fraction_);
+    tree.Branch(withPrefix("meanEtaquotient"), &cl3d_Mean_eta_quotient_);
+    tree.Branch(withPrefix("meanEtafraction"), &cl3d_Mean_eta_fraction_);
+    tree.Branch(withPrefix("meanRoZquotient"), &cl3d_Mean_roz_quotient_);
+    tree.Branch(withPrefix("meanRoZfraction"), &cl3d_Mean_roz_fraction_);
+    tree.Branch(withPrefix("sigmaEquotient"), &cl3d_sigma_e_quotient_);
+    tree.Branch(withPrefix("sigmaEfraction"), &cl3d_sigma_e_fraction_);
+    tree.Branch(withPrefix("sigmaZquotient"), &cl3d_sigma_z_quotient_);
+    tree.Branch(withPrefix("sigmaZfraction"), &cl3d_sigma_z_fraction_);
+    tree.Branch(withPrefix("sigmaPhiquotient"), &cl3d_sigma_phi_quotient_);
+    tree.Branch(withPrefix("sigmaPhifraction"), &cl3d_sigma_phi_fraction_);
+    tree.Branch(withPrefix("sigmaEtaquotient"), &cl3d_sigma_eta_quotient_);
+    tree.Branch(withPrefix("sigmaEtafraction"), &cl3d_sigma_eta_fraction_);
+    tree.Branch(withPrefix("sigmaRoZquotient"), &cl3d_sigma_roz_quotient_);
+    tree.Branch(withPrefix("sigmaRoZfraction"), &cl3d_sigma_roz_fraction_);
+    tree.Branch(withPrefix("energyEMOverEnergyquotient"), &cl3d_e_em_over_e_quotient_);
+    tree.Branch(withPrefix("energyEMOverEnergyfraction"), &cl3d_e_em_over_e_fraction_);
+    tree.Branch(withPrefix("energyEMCoreOverEnergyEMquotient"), &cl3d_e_em_core_over_e_em_quotient_);
+    tree.Branch(withPrefix("energyEMCoreOverEnergyEMfraction"), &cl3d_e_em_core_over_e_em_fraction_);
+    tree.Branch(withPrefix("energyHEarlyOverEnergyquotient"), &cl3d_e_h_early_over_e_quotient_);
+    tree.Branch(withPrefix("energyHEarlyOverEnergyfraction"), &cl3d_e_h_early_over_e_fraction_);
   }
 }
 
@@ -149,12 +243,32 @@ void HGCalTriggerNtupleHGCMulticlusters::fill(const edm::Event& e, const HGCalTr
     cl3d_srrtot_.emplace_back(cl3d_itr->sigmaRRTot());
     cl3d_srrmax_.emplace_back(cl3d_itr->sigmaRRMax());
     cl3d_srrmean_.emplace_back(cl3d_itr->sigmaRRMean());
+    cl3d_varrr_.emplace_back(cl3d_itr->varRR());
+    cl3d_varzz_.emplace_back(cl3d_itr->varZZ());
+    cl3d_varee_.emplace_back(cl3d_itr->varEtaEta());
+    cl3d_varpp_.emplace_back(cl3d_itr->varPhiPhi());
     cl3d_emaxe_.emplace_back(cl3d_itr->eMax() / cl3d_itr->energy());
     cl3d_hoe_.emplace_back(cl3d_itr->hOverE());
     cl3d_meanz_.emplace_back(std::abs(cl3d_itr->zBarycenter()));
     cl3d_layer10_.emplace_back(cl3d_itr->layer10percent());
     cl3d_layer50_.emplace_back(cl3d_itr->layer50percent());
     cl3d_layer90_.emplace_back(cl3d_itr->layer90percent());
+    cl3d_first1layers_.emplace_back(cl3d_itr->first1layers());
+    cl3d_first3layers_.emplace_back(cl3d_itr->first3layers());
+    cl3d_first5layers_.emplace_back(cl3d_itr->first5layers());
+    cl3d_firstHcal1layers_.emplace_back(cl3d_itr->firstHcal1layers());
+    cl3d_firstHcal3layers_.emplace_back(cl3d_itr->firstHcal3layers());
+    cl3d_firstHcal5layers_.emplace_back(cl3d_itr->firstHcal5layers());
+    cl3d_last1layers_.emplace_back(cl3d_itr->last1layers());
+    cl3d_last3layers_.emplace_back(cl3d_itr->last3layers());
+    cl3d_last5layers_.emplace_back(cl3d_itr->last5layers());
+    cl3d_emax1layers_.emplace_back(cl3d_itr->emax1layers());
+    cl3d_emax3layers_.emplace_back(cl3d_itr->emax3layers());
+    cl3d_emax5layers_.emplace_back(cl3d_itr->emax5layers());
+    cl3d_eot_.emplace_back(cl3d_itr->eot());
+    cl3d_ebm0_.emplace_back(cl3d_itr->ebm0());
+    cl3d_ebm1_.emplace_back(cl3d_itr->ebm1());
+    cl3d_hbm_.emplace_back(cl3d_itr->hbm());
     cl3d_ntc67_.emplace_back(cl3d_itr->triggerCells67percent());
     cl3d_ntc90_.emplace_back(cl3d_itr->triggerCells90percent());
     cl3d_bdteg_.emplace_back(id_->value(*cl3d_itr));
@@ -187,6 +301,33 @@ void HGCalTriggerNtupleHGCMulticlusters::fill(const edm::Event& e, const HGCalTr
                    cl3d_itr->constituents_end(),
                    cl3d_clusters_id_.back().begin(),
                    [](const std::pair<uint32_t, edm::Ptr<l1t::HGCalCluster>>& id_cl) { return id_cl.second->detId(); });
+
+    if (fill_hw_cluster_properties_) {
+      cl3d_sigma_e_quotient_.emplace_back(cl3d_itr->hw_sigma_e_quotient());
+      cl3d_sigma_e_fraction_.emplace_back(cl3d_itr->hw_sigma_e_fraction());
+      cl3d_Mean_z_quotient_.emplace_back(cl3d_itr->hw_mean_z_quotient());
+      cl3d_Mean_z_fraction_.emplace_back(cl3d_itr->hw_mean_z_fraction());
+      cl3d_Mean_phi_quotient_.emplace_back(cl3d_itr->hw_mean_phi_quotient());
+      cl3d_Mean_phi_fraction_.emplace_back(cl3d_itr->hw_mean_phi_fraction());
+      cl3d_Mean_eta_quotient_.emplace_back(cl3d_itr->hw_mean_eta_quotient());
+      cl3d_Mean_eta_fraction_.emplace_back(cl3d_itr->hw_mean_eta_fraction());
+      cl3d_Mean_roz_quotient_.emplace_back(cl3d_itr->hw_mean_roz_quotient());
+      cl3d_Mean_roz_fraction_.emplace_back(cl3d_itr->hw_mean_roz_fraction());
+      cl3d_sigma_z_quotient_.emplace_back(cl3d_itr->hw_sigma_z_quotient());
+      cl3d_sigma_z_fraction_.emplace_back(cl3d_itr->hw_sigma_z_fraction());
+      cl3d_sigma_phi_quotient_.emplace_back(cl3d_itr->hw_sigma_phi_quotient());
+      cl3d_sigma_phi_fraction_.emplace_back(cl3d_itr->hw_sigma_phi_fraction());
+      cl3d_sigma_eta_quotient_.emplace_back(cl3d_itr->hw_sigma_eta_quotient());
+      cl3d_sigma_eta_fraction_.emplace_back(cl3d_itr->hw_sigma_eta_fraction());
+      cl3d_sigma_roz_quotient_.emplace_back(cl3d_itr->hw_sigma_roz_quotient());
+      cl3d_sigma_roz_fraction_.emplace_back(cl3d_itr->hw_sigma_roz_fraction());
+      cl3d_e_em_over_e_quotient_.emplace_back(cl3d_itr->hw_e_em_over_e_quotient());
+      cl3d_e_em_over_e_fraction_.emplace_back(cl3d_itr->hw_e_em_over_e_fraction());
+      cl3d_e_em_core_over_e_em_quotient_.emplace_back(cl3d_itr->hw_e_em_core_over_e_em_quotient());
+      cl3d_e_em_core_over_e_em_fraction_.emplace_back(cl3d_itr->hw_e_em_core_over_e_em_fraction());
+      cl3d_e_h_early_over_e_quotient_.emplace_back(cl3d_itr->hw_e_h_early_over_e_quotient());
+      cl3d_e_h_early_over_e_fraction_.emplace_back(cl3d_itr->hw_e_h_early_over_e_fraction());
+    }
   }
 }
 
@@ -212,16 +353,60 @@ void HGCalTriggerNtupleHGCMulticlusters::clear() {
   cl3d_srrtot_.clear();
   cl3d_srrmax_.clear();
   cl3d_srrmean_.clear();
+  cl3d_varrr_.clear();
+  cl3d_varzz_.clear();
+  cl3d_varee_.clear();
+  cl3d_varpp_.clear();
   cl3d_emaxe_.clear();
   cl3d_hoe_.clear();
   cl3d_meanz_.clear();
   cl3d_layer10_.clear();
   cl3d_layer50_.clear();
   cl3d_layer90_.clear();
+  cl3d_first1layers_.clear();
+  cl3d_first3layers_.clear();
+  cl3d_first5layers_.clear();
+  cl3d_firstHcal1layers_.clear();
+  cl3d_firstHcal3layers_.clear();
+  cl3d_firstHcal5layers_.clear();
+  cl3d_last1layers_.clear();
+  cl3d_last3layers_.clear();
+  cl3d_last5layers_.clear();
+  cl3d_emax1layers_.clear();
+  cl3d_emax3layers_.clear();
+  cl3d_emax5layers_.clear();
+  cl3d_eot_.clear();
+  cl3d_ebm0_.clear();
+  cl3d_ebm1_.clear();
+  cl3d_hbm_.clear();
   cl3d_ntc67_.clear();
   cl3d_ntc90_.clear();
   cl3d_bdteg_.clear();
   cl3d_quality_.clear();
   cl3d_ipt_.clear();
   cl3d_ienergy_.clear();
+  cl3d_sigma_e_quotient_.clear();
+  cl3d_sigma_e_fraction_.clear();
+  cl3d_Mean_z_quotient_.clear();
+  cl3d_Mean_z_fraction_.clear();
+  cl3d_Mean_phi_quotient_.clear();
+  cl3d_Mean_phi_fraction_.clear();
+  cl3d_Mean_eta_quotient_.clear();
+  cl3d_Mean_eta_fraction_.clear();
+  cl3d_Mean_roz_quotient_.clear();
+  cl3d_Mean_roz_fraction_.clear();
+  cl3d_sigma_z_quotient_.clear();
+  cl3d_sigma_z_fraction_.clear();
+  cl3d_sigma_phi_quotient_.clear();
+  cl3d_sigma_phi_fraction_.clear();
+  cl3d_sigma_eta_quotient_.clear();
+  cl3d_sigma_eta_fraction_.clear();
+  cl3d_sigma_roz_quotient_.clear();
+  cl3d_sigma_roz_fraction_.clear();
+  cl3d_e_em_over_e_quotient_.clear();
+  cl3d_e_em_over_e_fraction_.clear();
+  cl3d_e_em_core_over_e_em_quotient_.clear();
+  cl3d_e_em_core_over_e_em_fraction_.clear();
+  cl3d_e_h_early_over_e_quotient_.clear();
+  cl3d_e_h_early_over_e_fraction_.clear();
 }
