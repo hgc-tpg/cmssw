@@ -29,6 +29,7 @@ private:
   void setGeometry(const HGCalTriggerGeometryBase* const geom) { triggerTools_.setGeometry(geom); }
 
   double rotatedphi(double phi, unsigned sector) const;
+  unsigned rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const;
 
   HGCalTriggerTools triggerTools_;
   l1thgcfirmware::HGCalStage1TruncationImplSA theAlgo_;
@@ -58,13 +59,17 @@ void HGCalStage1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr
     double x = position.x();
     double y = position.y();
     double z = position.z();
-    unsigned int digi_rOverZ = (std::sqrt(x * x + y * y) / std::abs(z)) * FWfactor_;
+    double roverz = (std::sqrt(x * x + y * y) / std::abs(z));
+    unsigned int rOverZbin =
+        rozBin(roverz,
+               theConfiguration_.rozMin(),
+               theConfiguration_.rozMax(),
+               theConfiguration_.rozBins());  //(std::sqrt(x * x + y * y) / std::abs(z)) * FWfactor_;
     double phi = rotatedphi(tc->phi(), theConfiguration_.phiSector());
     phi += (phi < 0) ? M_PI : 0;
     unsigned int digi_phi = phi * FWfactor_;
     unsigned int digi_energy = (tc->mipPt()) * FWfactor_;
-    fpga_tcs_SA.emplace_back(
-        true, true, digi_rOverZ, digi_phi, triggerTools_.layerWithOffset(tc->detId()), digi_energy);
+    fpga_tcs_SA.emplace_back(true, true, rOverZbin, digi_phi, triggerTools_.layerWithOffset(tc->detId()), digi_energy);
     fpga_tcs_SA.back().setCmsswIndex(std::make_pair(itc, 0));
     ++itc;
   }
@@ -113,6 +118,18 @@ double HGCalStage1TruncationWrapper::rotatedphi(double phi, unsigned sector) con
     phi = phi + (2. * M_PI / 3.);
   }
   return phi;
+}
+
+unsigned HGCalStage1TruncationWrapper::rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const {
+  constexpr double margin = 1.001;
+  double roz_bin_size = (rozbins > 0 ? (rozmax - rozmin) * margin / double(rozbins) : 0.);
+  unsigned roverzbin = 0;
+  if (roz_bin_size > 0.) {
+    roverz -= rozmin;
+    roverz = std::clamp(roverz, 0., rozmax - rozmin);
+    roverzbin = unsigned(roverz / roz_bin_size);
+  }
+  return roverzbin;
 }
 
 DEFINE_EDM_PLUGIN(HGCalStage1TruncationWrapperBaseFactory,
