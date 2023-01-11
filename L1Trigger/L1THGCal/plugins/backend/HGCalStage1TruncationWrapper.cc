@@ -61,10 +61,7 @@ void HGCalStage1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr
     double z = position.z();
     double roverz = (std::sqrt(x * x + y * y) / std::abs(z));
     unsigned int rOverZbin =
-        rozBin(roverz,
-               theConfiguration_.rozMin(),
-               theConfiguration_.rozMax(),
-               theConfiguration_.rozBins());
+        rozBin(roverz, theConfiguration_.rozMin(), theConfiguration_.rozMax(), theConfiguration_.rozBins());
     double phi = rotatedphi(tc->phi(), theConfiguration_.phiSector());
     phi += (phi < 0) ? M_PI : 0;
     unsigned int digi_phi = phi * FWfactor_;
