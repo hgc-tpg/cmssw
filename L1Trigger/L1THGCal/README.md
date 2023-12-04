@@ -11,8 +11,35 @@ Introductory, user-oriented documentation and installation recipes can be found 
 
 ## Steps of the HGCAL TPG simulation
 ### Front-end: trigger path in the HGCROC
+The simulation of the trigger path in the HGCROC (called also `VFE` in the code, for very-front-end) performs the following tasks:
+- Linearisation of the input digitized charges (putting the ADC and TOT values to the same linear scale), taken from the HGCAL `digis`
+- Forming trigger cells (sums of 4 or 9 sensor cells) from linearized input charges
+- Compression of the trigger cell energies on a floating point format
+
+These steps are called from [`plugins/veryfrontend/HGCalVFEProcessorSums.cc`](plugins/veryfrontend/HGCalVFEProcessorSums.cc), and configured with [`python/l1tHGCalVFEProducer_cfi.py`](python/l1tHGCalVFEProducer_cfi.py). This configuration can be customized with customization functions available in [`python/customVFE.py`](python/customVFE.py). The actual implementations of the processing steps are stored in [`src/veryfrontend`](src/veryfrontend).
+
+:warning: To be noted that at the moment the calibration of the trigger cell charges to energies in GeV is called from there while in reality it will be done in the ECON-T.
 
 ### Front-end: ECON-T
+The ECON-T simulation implements several data reduction strategies applied on the trigger cells sent from the HGCROC trigger path. The data reduction strategies available are the following:
+- `Threshold`: Selecting a variable subset of trigger cells passing a threshold on their transverse energy. This is the one used as default.
+- `BestChoice`, `BC`: Selecting a fixed number of trigger cells per detector module. The trigger cells with the highest transverse energies are retained. 
+- `SuperTriggerCell`, `STC`: Aggregating further trigger cells into coarser objects called Super Trigger Cells. Several flavours of Super Trigger Cells are available and configurable.
+- `AutoEncoder`: Applying trigger cell data compression with an auto-encoder neural network.
+
+Different data reduction strategies can be configured in the different sub-detectors (CE-E, CE-H-Si, CE-H-Sc), and in particular `BestChoice` can be used in the CE-E with `SuperTriggerCell` in the CE-H (which corresponds to the so called `BC+STC` algorithm).
+
+The ECON-T simulation also builds module sums (called `trigger sums` in the code), which are energy sums over entire detector modules. All trigger cells, or only those not selected by the selection algorithms described above, can be summed in module sums.
+
+These steps are called from [`plugins/concentrator/HGCalConcentratorProcessorSelection.cc`](plugins/concentrator/HGCalConcentratorProcessorSelection.cc), and configured with [`python/l1tHGCalConcentratorProducer_cfi.py`](python/l1tHGCalConcentratorProducer_cfi.py). This configuration can be customized with customization functions available in [`python/customTriggerCellSelect.py`](python/customTriggerCellSelect.py) and [`python/customTriggerSums.py`](python/customTriggerSums.py):
+```python
+from L1Trigger.L1THGCal.customTriggerCellSelect import custom_....
+from L1Trigger.L1THGCal.customTriggerSums import custom_....
+process = custom_....(process)
+```
+The actual implementations of the algorithms are stored in [`src/concentrator`](src/concentrator).
+
+:warning: To be noted that the calibration step from charges to energies in GeV is currently called from the HGCROC trigger path simulation, while it is in reality done in the ECON-T.
 
 ### Back-end: Clustering
 #### Stage 1
