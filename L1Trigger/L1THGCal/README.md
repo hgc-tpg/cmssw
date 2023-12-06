@@ -133,3 +133,6 @@ Link mappings accessed by the trigger geometry are provided as JSON files (`hgca
 
 
 ### Trigger tools
+Functions used in different places of the HGCAL TPG simulation are implemented in the utility class [`src/HGCalTriggerTools.cc`](src/HGCalTriggerTools.cc). It implements in particular:
+- Queries of various `DetId` properties, hiding to the user the underlying variety of the detector ids used in HGCAL
+- Functions to get access to information on positions, based on the trigger geometry
