@@ -42,10 +42,61 @@ The actual implementations of the algorithms are stored in [`src/concentrator`](
 :warning: To be noted that the calibration step from charges to energies in GeV is currently called from the HGCROC trigger path simulation, while it is in reality done in the ECON-T.
 
 ### Back-end: Clustering
+Selected trigger cells and STCs are taken as input of the back-end clustering algorithms. Trigger cell objects are created from STCs beforehand so that they are transparently processed in the back-end simulation in an uniform way.
+Trigger cells go through two consecutive modules, one for the Stage 1 simulation (also called `Layer1` in the code) and one for the Stage 2 simulation (also called `Layer2` in the code), out of which clusters of trigger cells are produced.
+
 #### Stage 1
-#### Stage 2
+As default, the Stage 1 simulation is just a pass-through. A bit-level emulation of the 2022 version of the Stage 1 firmware is also available, which packs input trigger cells into `r/z` bins, sorts them by transverse energy and selects the highest-energetic trigger cells in each `r/z` bin.
+Deprecated Stage 1 algorithms,  which are layer-by-layer 2D clustering algorithms are also implemented, but they are not foreseen to be used anymore in the TPG system.  
+
+The different Stage 1 processing versions are implemented in:
+- [`plugins/backend/HGCalBackendLayer1Processor2DClustering.cc`](plugins/backend/HGCalBackendLayer1Processor2DClustering.cc): original implementations of the 2D layer clusterings and pass-through
+- [`plugins/backend/HGCalBackendLayer1Processor.cc`](plugins/backend/HGCalBackendLayer1Processor.cc): first implementation of Stage 1 trigger cell truncation
+- [`plugins/backend/HGCalBackendStage1Processor.cc`](plugins/backend/HGCalBackendStage1Processor.cc): latest Stage 1 processor calling the 2022 Stage 1 emulator
+
+And actual implementations of the algorithms are stored in [`src/backend`](src/backend). These processors are configured from [`python/l1tHGCalBackEndLayer1Producer_cfi.py`](python/l1tHGCalBackEndLayer1Producer_cfi.py). Customization functions are available in
+- [`python/customClustering.py`](python/customClustering.py): old 2D layer clustering customization
+- [`python/customNewProcessors.py`](python/customNewProcessors.py): contains Stage 1 truncation and emulator customization
+
+#### Stage 2 clustering
+The Stage 2 is responsible of building the final 3D clusters, initially from 2D layer clusters and now directly from trigger cells. The default Stage 2 clustering algorithm is the so-called `HistoMax`, which refers to the way the cluster building is seeded. 
+The `HistoMax` 3D clustering is divided in several steps:
+- Histogramming: trigger cell transverse energies are projected into a 2D histogram in the $(r/z, \phi)$ space
+- Smoothing: smoothing kernels are applied on the 2D histogram in both $r/z$ and $\phi$ dimensions
+- Seeding: local maxima in the 2D histogram, passing a given transverse energy threshold, are selected as seeds
+- Clustering: trigger cells are clustered to seeds based on a distance in the $(x/z, y/z)$ space
+- Cluster building: cluster properties (energy, position, cluster shapes) are computed from the clustered trigger cells
+
+By default the `HistoMax` clustering algorithm used is the original simulation based on floating point calculation. A bit-level emulation of the 2022 version of the Stage 2 firmware (based on the same algorithm described above) is also available.
+
+The different Stage 2 processing versions are implemented in:
+- [`plugins/backend/HGCalBackendLayer2Processor3DClustering.cc`](plugins/backend/HGCalBackendLayer2Processor3DClustering.cc): original floating-point simulation of different clustering algorithms (including the `HistoMax` algorithm) 
+- [`plugins/backend/HGCalBackendLayer2Processor3DClustering_SA.cc`](plugins/backend/HGCalBackendLayer2Processor3DClustering_SA.cc): bit-level Stage 2 clustering emulator
+
+And actual implementations of the algorithms are stored in [`src/backend`](src/backend) and [`src/backend_emulator`](src/backend_emulator) for the bit-level emulator. These processors are configured from [`python/l1tHGCalBackEndLayer2Producer_cfi.py`](python/l1tHGCalBackEndLayer2Producer_cfi.py), and [`python/hgcalBackendLayer2_fwClustering_cfi.py`](python/hgcalBackendLayer2_fwClustering_cfi.py) for the bit-level emulator. Customization functions are available in
+- [`python/customClustering.py`](python/customClustering.py): clustering algorithms based on floating-point calculation
+- [`python/customNewProcessors.py`](python/customNewProcessors.py): customization of the bit-level emulator
+
+#### Cluster properties
+Cluster properties computed after the cluster include cluster shape variable meant to encode the longitudinal and lateral development of the reconstructed showers. These cluster shape variables can primarily be used for shower identification (e.g. electromagnetic vs hadronic showers). A set of cluster shape variables is computed in a dedicated class [`src/backend/HGCalShowerShape.cc`](src/backend/HGCalShowerShape.cc) and filled in the cluster objects.
+
+In addition to cluster shape variables, cluster properties can include different energy interpretations in addition to the default energy value of the cluster. These energy interpretations are defined as plugins in [`plugins/backend`](plugins/backend), deriving from [`interface/backend/HGCalTriggerClusterInterpreterBase.h`](interface/backend/HGCalTriggerClusterInterpreterBase.h). One such interpretation plugin is currently implemented:
+- [`plugins/backend/HGCalTriggerClusterInterpretationEM.cc`](plugins/backend/HGCalTriggerClusterInterpretationEM.cc): energy interpretation to be used for electrons and photons 
+
 
 ### Back-end: Tower building
+In parallel with the reconstruction of clusters, a traditional map of fixed towers is also reconstructed in the $(\eta,\phi)$ plane similar in size as existing Phase 1 trigger towers. These towers can be built from module sum transverse energies, from trigger cell transverse energies or from a combination of the two. There are also different ways in which these input objects can be mapped to towers, in particular:
+- Input objects can be mapped to towers according to their $(\eta,\phi)$ position, similar to how histogram are typically filled
+- Input energies can be shared between several neighbor towers according to the intersection areas of the input objects with the towers
+
+The default tower building is based on module sums only and module sums are mapped to towers simply based on their $(\eta,\phi)$ position, without sharing of their energy.
+
+The tower building is done is two steps, which at the moment still inherit from the old TPG architecture:
+- [`plugins/backend/HGCalTowerMapProcessor.cc`](plugins/backend/HGCalTowerMapProcessor.cc): creates a set of tower maps, one for each detector layer
+- [`plugins/backend/HGCalTowerProcessor.cc`](plugins/backend/HGCalTowerProcessor.cc): sums the previously built towers maps into the final tower objects 
+
+These processors are configured from [`python/l1tHGCalTowerMapProducer_cfi.py`](python/l1tHGCalTowerMapProducer_cfi.py) and [`python/l1tHGCalTowerProducer_cfi.py`](python/l1tHGCalTowerProducer_cfi.py). Customization functions are available in [`python/customTowers.py`](python/customTowers.py).
+
 
 
 ## Utilities
