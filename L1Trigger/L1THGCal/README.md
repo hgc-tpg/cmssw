@@ -10,6 +10,34 @@ Introductory, user-oriented documentation and installation recipes can be found 
 ### Standalone Emulators and Wrapping architecture
 
 ## Steps of the HGCAL TPG simulation
+```mermaid
+flowchart TB
+    digi[("`From HGCAL
+    digi`")]
+    hgcroc["`HGCROC
+    *Producer*`"]
+    econ["`ECON-T
+    *Producer*`"]
+    stage1["`BE Layer 1
+    *Producer*`"]
+    stage2["`BE Layer 2
+    *Producer*`"]
+    towermap["`BE TowerMap
+    *Producer*`"]
+    tower["`BE Tower
+    *Producer*`"]
+    l1t[(To L1T)]
+    digi -- digis --> hgcroc
+    hgcroc -- TriggerCells --> econ
+    econ -- TriggerCells & Sums--> stage1
+    stage1 -- Clusters --> stage2
+    econ -- TriggerCells & Sums --> towermap
+    towermap -- TowerMaps --> tower
+    stage2 -- MultiClusters --> l1t
+    tower -- Towers --> l1t
+```
+
+
 ### Front-end: trigger path in the HGCROC
 The simulation of the trigger path in the HGCROC (called also `VFE` in the code, for very-front-end) performs the following tasks:
 - Linearisation of the input digitized charges (putting the ADC and TOT values to the same linear scale), taken from the HGCAL `digis`
