@@ -5,31 +5,31 @@ Introductory, user-oriented documentation and installation recipes can be found 
 ## Code architecture
 ### Data Formats
 
-### Producers, Processors and Implementations
+### HGCAL TPG simulation stages
 
-### Standalone Emulators and Wrapping architecture
+<details>
+<summary>Click to view simplified flow chart</summary>
 
-## Steps of the HGCAL TPG simulation
 ```mermaid
 flowchart TB
-    digi[("`From HGCAL
-    digi`")]
-    hgcroc["`HGCROC
-    *Producer*`"]
-    econ["`ECON-T
-    *Producer*`"]
-    stage1["`BE Layer 1
-    *Producer*`"]
-    stage2["`BE Layer 2
-    *Producer*`"]
-    towermap["`BE TowerMap
-    *Producer*`"]
-    tower["`BE Tower
-    *Producer*`"]
+    digi[("From HGCAL
+    digi")]
+    hgcroc["HGCROC (VFE)
+    Producer"]
+    econ["Concentrator
+    Producer"]
+    stage1["BE Layer 1
+    Producer"]
+    stage2["BE Layer 2
+    Producer"]
+    towermap["BE TowerMap
+    Producer"]
+    tower["BE Tower
+    Producer"]
     l1t[(To L1T)]
     digi -- digis --> hgcroc
     hgcroc -- TriggerCells --> econ
-    econ -- TriggerCells & Sums--> stage1
+    econ -- TriggerCells & Sums --> stage1
     stage1 -- Clusters --> stage2
     econ -- TriggerCells & Sums --> towermap
     towermap -- TowerMaps --> tower
@@ -37,6 +37,65 @@ flowchart TB
     tower -- Towers --> l1t
 ```
 
+</details>
+
+
+### Producers, Processors and Implementations
+
+<details>
+<summary>Click to view simplified class diagram</summary>
+
+```mermaid
+classDiagram
+    Producer *-- ProcessorBase : owns
+    ProcessorBase <|-- Processor : inherits
+    ProcessorBase --> GeometryBase : uses
+    Processor *-- Algo1Impl : owns
+    Processor *-- Algo2Impl : owns
+    GeometryBase <|-- GeometryImpl : inherits
+    class ProcessorBase {
+        <<interface>>
+    }
+    class Processor {
+        <<plugin>>
+    }
+    class GeometryBase {
+        <<interface>>
+    }
+    class GeometryImpl {
+        <<plugin>>
+    }
+```
+
+</details>
+
+### Standalone Emulators and Wrapping architecture
+
+<details>
+<summary>Click to view simplified class diagram</summary>
+    
+```mermaid
+classDiagram
+    Processor *-- Algo1Wrapper : owns
+    Processor *-- Algo2Wrapper : owns
+    Algo1Wrapper *-- Algo1Config : owns
+    Algo1Wrapper *-- Algo1Impl : owns
+    Algo2Wrapper *-- Algo2Config : owns
+    Algo2Wrapper *-- Algo2Impl : owns
+    class Processor {
+        <<plugin>>
+    }
+    class Algo1Wrapper {
+        <<plugin>>
+    }
+    class Algo2Wrapper {
+        <<plugin>>
+    }
+```
+
+</details>
+
+## Details on the HGCAL TPG simulation stages
 
 ### Front-end: trigger path in the HGCROC
 The simulation of the trigger path in the HGCROC (called also `VFE` in the code, for very-front-end) performs the following tasks:
