@@ -4,11 +4,31 @@ Introductory, user-oriented documentation and installation recipes can be found 
 
 ## Code architecture
 ### Data Formats
+Several data formats are defined in the [`DataFormats/L1THGCal`](../../DataFormats/L1THGCal) package:
+- `HGCalTriggerCell` (derives from `L1Candidate`): defines a trigger cell object. Super trigger cells are also converted to trigger cell objects so that they are processed in a transparent manner by the back-end algorithms.
+- `HGCalTriggerSums` (derives from `L1Candidate`): defines a module sum object.
+- `HGCalClusterT` (derives from `L1Candidate`): template class from which are derived `HGCalCluster` (for clusters of trigger cells) and `HGCalMulticluster` (for clusters of clusters)
+- `HGCalTower` (derives from `L1Candidate`): defines a tower object
+- `HGCalTowerMap`: defines a collection of towers from a given detector layer 
 
 ### HGCAL TPG simulation stages
+The HGCAL TPG simulation is split in a chain of producers:
+
+- Front-end producers
+    - `HGCalVFEProducer`: HGCROC trigger path simulation
+    - `HGCalConcentratorProducer`: ECON-T simulation
+- Back-end producers
+    - `HGCalBackendLayer1Producer` and `HGCalBackendStage1Producer`: trigger cell path in the back-end Stage 1, the `Stage1` version is the latest version meant to be used with emulators 
+    - `HGCalBackendLayer2Producer`: clustering in the back-end Stage 2
+    - `HGCalTowerMapProducer`: towers in the back-end Stage 1
+    - `HGCalTowerProducer`: towers in the back-end Stage 2
+     
+In addition to these `EDProducers` there is also an `ESProducer` responsible of the production of the HGCAL trigger geometry (`HGCalTriggerGeometryESProducer`), which is available for all the modules described above.
+
+The data flow to and from these producers is illustrated in the diagram below.
 
 <details>
-<summary>Click to view simplified flow chart</summary>
+<summary>Click to view the simplified flow chart</summary>
 
 ```mermaid
 flowchart TB
@@ -40,10 +60,18 @@ flowchart TB
 </details>
 
 
-### Producers, Processors and Implementations
+### Producers, Processors and Algorithms Implementations
+Each producer simply handles the inputs and produces the outputs. It delegates the processing to Processors, which are plugins. The choice of Processor for a given producer is configurable. The actual algorithms are implemented in dedicated implementation classes (`AlgoImpl`). Instances of different `AlgoImpl` implementation classes can be called within a Processor (e.g. the cell energy linearization, the trigger cell summation, and the trigger cell energy compression in the VFE) and a given implementation can be used in several Processors.
+In summary there are three main types of classes with specific roles:
+
+- A Producer defines the inputs and outputs to be read from and stored in the Event
+- A Processor defines a sequence of algorithmic blocks to be run. One Processor is meant to be the equivalent of a hardware processor in the TPG system (e.g. one FPGA). It therefore processes input data by blocks corresponding to the detector regions covered by the corresponding hardware processor.
+- The Implementations contain the actual algorithmic blocks ran within a given hardware processor. 
+  
+Each stage/module in the HGCAL TPG is composed of these three types of classes, with the structure illustrated in the diagram below.
 
 <details>
-<summary>Click to view simplified class diagram</summary>
+<summary>Click to view the simplified class diagram</summary>
 
 ```mermaid
 classDiagram
@@ -70,9 +98,15 @@ classDiagram
 </details>
 
 ### Standalone Emulators and Wrapping architecture
+Algorithm implementations emulating dedicating firmware blocks are written in such a way that they can be executed in a standalone fashion outside CMSSW, for cross-validation with their firmware counterpart.
+Therefore they are integrated within CMSSW by the mean of wrapper classes that are translating data and configurations between the CMSSW world and the standalone emulator world.
+
+Algorithm implementations are configured by the mean of dedicated configuration objects built in the wrapper class. The wrapper class also perform the conversion of the input data from CMSSW data formats to standalone data formats, and convert back the output data from standalone data formats to CMSSW data formats. 
+
+This wrapping structure is illustrated in the diagram below.
 
 <details>
-<summary>Click to view simplified class diagram</summary>
+<summary>Click to view the simplified class diagram</summary>
     
 ```mermaid
 classDiagram
@@ -80,6 +114,8 @@ classDiagram
     Processor *-- Algo2Wrapper : owns
     Algo1Wrapper *-- Algo1Config : owns
     Algo1Wrapper *-- Algo1Impl : owns
+    Algo1Config --> Algo1Impl : configures
+    Algo2Config --> Algo2Impl : configures
     Algo2Wrapper *-- Algo2Config : owns
     Algo2Wrapper *-- Algo2Impl : owns
     class Processor {
