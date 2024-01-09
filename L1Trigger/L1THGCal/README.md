@@ -55,6 +55,12 @@ flowchart TB
     towermap -- TowerMaps --> tower
     stage2 -- MultiClusters --> l1t
     tower -- Towers --> l1t
+    click hgcroc href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalVFEProducer.cc" "click to display Producer source"
+    click econ href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalConcentratorProducer.cc" "click to display Producer source"
+    click stage1 href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalBackendStage1Producer.cc" "click to display Producer source"
+    click stage2 href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalBackendLayer2Producer.cc" "click to display Producer source"
+    click towermap href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalTowerMapProducer.cc" "click to display Producer source"
+    click tower href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalTowerProducer.cc" "click to display Producer source"
 ```
 
 </details>
