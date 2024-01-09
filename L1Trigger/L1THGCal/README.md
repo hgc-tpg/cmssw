@@ -12,18 +12,18 @@ Several data formats are defined in the [`DataFormats/L1THGCal`](../../DataForma
 - `HGCalTowerMap`: defines a collection of towers from a given detector layer 
 
 ### HGCAL TPG simulation stages
-The HGCAL TPG simulation is split in a chain of producers:
+The HGCAL TPG simulation is split in a chain of producers, called from the [`hgcalTriggerPrimitives_cff.py`](python/hgcalTriggerPrimitives_cff.py) configuration file in the form of a Sequence. The different Tasks in the sequence are defined in [`hgcalVFE_cff.py`](python/hgcalVFE_cff.py), [`hgcalConcentrator_cff.py`](python/hgcalConcentrator_cff.py), [`hgcalBackEndLayer1_cff.py`](python/hgcalBackEndLayer1_cff.py) , [`hgcalBackEndLayer2_cff.py`](python/hgcalBackEndLayer2_cff.py) , [`hgcalTowerMap_cff.py`](python/hgcalTowerMap_cff.py) , [`hgcalTower_cff.py`](python/hgcalTower_cff.py). These `cff` files take the default configurations of the producers in the corresponding `cfi` files: 
 
 - Front-end producers
-    - `HGCalVFEProducer`: HGCROC trigger path simulation
-    - `HGCalConcentratorProducer`: ECON-T simulation
+    - `HGCalVFEProducer`: HGCROC trigger path simulation (defined in [`l1tHGCalVFEProducer_cfi.py`](python/l1tHGCalVFEProducer_cfi.py))
+    - `HGCalConcentratorProducer`: ECON-T simulation (defined in [`l1tHGCalConcentratorProducer_cfi.py`](python/l1tHGCalConcentratorProducer_cfi.py))
 - Back-end producers
-    - `HGCalBackendLayer1Producer` and `HGCalBackendStage1Producer`: trigger cell path in the back-end Stage 1, the `Stage1` version is the latest version meant to be used with emulators 
-    - `HGCalBackendLayer2Producer`: clustering in the back-end Stage 2
-    - `HGCalTowerMapProducer`: towers in the back-end Stage 1
-    - `HGCalTowerProducer`: towers in the back-end Stage 2
+    - `HGCalBackendLayer1Producer` and `HGCalBackendStage1Producer`: trigger cell path in the back-end Stage 1, the `Stage1` version is the latest version meant to be used with emulators (defined in [`l1tHGCalBackEndLayer1Producer_cfi.py`](python/l1tHGCalBackEndLayer1Producer_cfi.py)) 
+    - `HGCalBackendLayer2Producer`: clustering in the back-end Stage 2 (defined in [`l1tHGCalBackEndLayer2Producer_cfi.py`](python/l1tHGCalBackEndLayer2Producer_cfi.py))
+    - `HGCalTowerMapProducer`: towers in the back-end Stage 1 (defined in [`l1tHGCalTowerMapProducer_cfi.py`](python/l1tHGCalTowerMapProducer_cfi.py))
+    - `HGCalTowerProducer`: towers in the back-end Stage 2 (defined in [`l1tHGCalTowerProducer_cfi.py`](python/l1tHGCalTowerProducer_cfi.py))
      
-In addition to these `EDProducers` there is also an `ESProducer` responsible of the production of the HGCAL trigger geometry (`HGCalTriggerGeometryESProducer`), which is available for all the modules described above.
+In addition to these `EDProducers` there is also an `ESProducer` responsible of the production of the HGCAL trigger geometry (`HGCalTriggerGeometryESProducer`, defined in [`l1tHGCalTriggerGeometryESProducer_cfi.py`](python/l1tHGCalTriggerGeometryESProducer_cfi.py)), which is available for all the modules described above.
 
 The data flow to and from these producers is illustrated in the diagram below.
 
