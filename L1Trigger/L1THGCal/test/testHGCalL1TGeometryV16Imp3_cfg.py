@@ -108,8 +108,6 @@ process.test_step = cms.Path(process.L1THGCaltriggergeomtester)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.test_step,process.endjob_step)
-#  process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulation_step,process.digitisation_step,process.L1simulation_step,process.digi2raw_step,process.test_step,process.endjob_step,process.FEVTDEBUGoutput_step)
-#process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulation_step,process.digitisation_step,process.L1simulation_step,process.digi2raw_step,process.endjob_step,process.FEVTDEBUGoutput_step)
 # filter all path with the production filter sequence
 for path in process.paths:
     getattr(process,path)._seq = process.generator * getattr(process,path)._seq
