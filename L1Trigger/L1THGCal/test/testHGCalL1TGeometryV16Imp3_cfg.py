@@ -86,18 +86,10 @@ process.generator = cms.EDProducer("FlatRandomPtGunProducer",
     firstRun = cms.untracked.uint32(1)
 )
 
-process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 
 
 # Path and EndPath definitions
-process.generation_step = cms.Path(process.pgen)
-process.simulation_step = cms.Path(process.psim)
-process.genfiltersummary_step = cms.EndPath(process.genFilterSummary)
-process.digitisation_step = cms.Path(process.pdigi_valid)
-process.L1simulation_step = cms.Path(process.SimL1Emulator)
-process.digi2raw_step = cms.Path(process.DigiToRaw)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-process.FEVTDEBUGoutput_step = cms.EndPath(process.FEVTDEBUGoutput)
 
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 
@@ -108,10 +100,3 @@ process.test_step = cms.Path(process.L1THGCaltriggergeomtester)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.test_step,process.endjob_step)
-# filter all path with the production filter sequence
-for path in process.paths:
-    getattr(process,path)._seq = process.generator * getattr(process,path)._seq
-
-# Add early deletion of temporary data products to reduce peak memory need
-from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
-process = customiseEarlyDelete(process)
