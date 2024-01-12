@@ -42,22 +42,6 @@ process.configurationMetadata = cms.untracked.PSet(
 )
 
 # Output definition
-
-process.FEVTDEBUGoutput = cms.OutputModule("PoolOutputModule",
-    splitLevel = cms.untracked.int32(0),
-    eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
-    fileName = cms.untracked.string('file:junk.root'),
-    dataset = cms.untracked.PSet(
-        filterName = cms.untracked.string(''),
-        dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW')
-    ),
-    SelectEvents = cms.untracked.PSet(
-        SelectEvents = cms.vstring('generation_step')
-    )
-)
-
-# Additional output definition
 process.TFileService = cms.Service(
     "TFileService",
     fileName = cms.string("test_triggergeom.root")
@@ -66,30 +50,8 @@ process.TFileService = cms.Service(
 
 
 # Other statements
-process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T21', '')
-
-process.generator = cms.EDProducer("FlatRandomPtGunProducer",
-    PGunParameters = cms.PSet(
-        MaxPt = cms.double(10.01),
-        MinPt = cms.double(9.99),
-        PartID = cms.vint32(13),
-        MaxEta = cms.double(2.5),
-        MaxPhi = cms.double(3.14159265359),
-        MinEta = cms.double(-2.5),
-        MinPhi = cms.double(-3.14159265359)
-    ),
-    Verbosity = cms.untracked.int32(0),
-    psethack = cms.string('single electron pt 10'),
-    AddAntiParticle = cms.bool(True),
-    firstRun = cms.untracked.uint32(1)
-)
-
-
-
-# Path and EndPath definitions
-process.endjob_step = cms.EndPath(process.endOfProcess)
 
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 
@@ -97,6 +59,7 @@ process.L1THGCaltriggergeomtester = cms.EDAnalyzer(
     "HGCalTriggerGeomTesterV9Imp3"
     )
 process.test_step = cms.Path(process.L1THGCaltriggergeomtester)
+process.endjob_step = cms.EndPath(process.endOfProcess)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.test_step,process.endjob_step)
