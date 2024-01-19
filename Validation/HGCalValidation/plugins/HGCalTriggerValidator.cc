@@ -218,18 +218,30 @@ void HGCalTriggerValidator::bookHistograms(DQMStore::IBooker &iBooker,
   histograms.h_cl3d_layer10_ = iBooker.book1D("cl3d_layer10", "cl3duster3D layer10; layer10", 10, 0, 10);
   histograms.h_cl3d_layer50_ = iBooker.book1D("cl3d_layer50", "cl3duster3D layer50; layer50", 20, 0, 20);
   histograms.h_cl3d_layer90_ = iBooker.book1D("cl3d_layer90", "cl3duster3D layer90; layer90", 40, 0, 40);
-  histograms.h_cl3d_first1layers_ = iBooker.book1D("cl3d_first1layers", "cl3duster3D first1layers; first1layers", 100, 0, 1.01);
-  histograms.h_cl3d_first3layers_ = iBooker.book1D("cl3d_first3layers", "cl3duster3D first3layers; first3layers", 100, 0, 1.01);
-  histograms.h_cl3d_first5layers_ = iBooker.book1D("cl3d_first5layers", "cl3duster3D first5layers; first5layers", 100, 0, 1.01);
-  histograms.h_cl3d_firstHcal1layers_ = iBooker.book1D("cl3d_firstHcal1layers", "cl3duster3D firstHcal1layers; hcal1layers", 100, 0, 0.5);
-  histograms.h_cl3d_firstHcal3layers_ = iBooker.book1D("cl3d_firstHcal3layers", "cl3duster3D firstHcal3layers; hcal1layers", 100, 0, 0.5);
-  histograms.h_cl3d_firstHcal5layers_ = iBooker.book1D("cl3d_firstHcal5layers", "cl3duster3D firstHcal5layers; hcal1layers", 100, 0, 0.5);
-  histograms.h_cl3d_last1layers_ = iBooker.book1D("cl3d_last1layers", "cl3duster3D last1layers; last1layers", 100, 0, 0.1);
-  histograms.h_cl3d_last3layers_ = iBooker.book1D("cl3d_last3layers", "cl3duster3D last3layers; last3layers", 100, 0, 0.1);
-  histograms.h_cl3d_last5layers_ = iBooker.book1D("cl3d_last5layers", "cl3duster3D last5layers; last5layers", 100, 0, 0.1);
-  histograms.h_cl3d_emax1layers_ = iBooker.book1D("cl3d_emax1layers", "cl3duster3D emax1layers; emax1layers", 100, 0, 1.01);
-  histograms.h_cl3d_emax3layers_ = iBooker.book1D("cl3d_emax3layers", "cl3duster3D emax3layers; emax3layers", 100, 0, 1.01);
-  histograms.h_cl3d_emax5layers_ = iBooker.book1D("cl3d_emax5layers", "cl3duster3D emax5layers; emax5layers", 100, 0, 1.01);
+  histograms.h_cl3d_first1layers_ =
+      iBooker.book1D("cl3d_first1layers", "cl3duster3D first1layers; first1layers", 100, 0, 1.01);
+  histograms.h_cl3d_first3layers_ =
+      iBooker.book1D("cl3d_first3layers", "cl3duster3D first3layers; first3layers", 100, 0, 1.01);
+  histograms.h_cl3d_first5layers_ =
+      iBooker.book1D("cl3d_first5layers", "cl3duster3D first5layers; first5layers", 100, 0, 1.01);
+  histograms.h_cl3d_firstHcal1layers_ =
+      iBooker.book1D("cl3d_firstHcal1layers", "cl3duster3D firstHcal1layers; hcal1layers", 100, 0, 0.5);
+  histograms.h_cl3d_firstHcal3layers_ =
+      iBooker.book1D("cl3d_firstHcal3layers", "cl3duster3D firstHcal3layers; hcal1layers", 100, 0, 0.5);
+  histograms.h_cl3d_firstHcal5layers_ =
+      iBooker.book1D("cl3d_firstHcal5layers", "cl3duster3D firstHcal5layers; hcal1layers", 100, 0, 0.5);
+  histograms.h_cl3d_last1layers_ =
+      iBooker.book1D("cl3d_last1layers", "cl3duster3D last1layers; last1layers", 100, 0, 0.1);
+  histograms.h_cl3d_last3layers_ =
+      iBooker.book1D("cl3d_last3layers", "cl3duster3D last3layers; last3layers", 100, 0, 0.1);
+  histograms.h_cl3d_last5layers_ =
+      iBooker.book1D("cl3d_last5layers", "cl3duster3D last5layers; last5layers", 100, 0, 0.1);
+  histograms.h_cl3d_emax1layers_ =
+      iBooker.book1D("cl3d_emax1layers", "cl3duster3D emax1layers; emax1layers", 100, 0, 1.01);
+  histograms.h_cl3d_emax3layers_ =
+      iBooker.book1D("cl3d_emax3layers", "cl3duster3D emax3layers; emax3layers", 100, 0, 1.01);
+  histograms.h_cl3d_emax5layers_ =
+      iBooker.book1D("cl3d_emax5layers", "cl3duster3D emax5layers; emax5layers", 100, 0, 1.01);
   histograms.h_cl3d_eot_ = iBooker.book1D("cl3d_eot", "cl3duster3D eot; eot", 100, 0, 1.01);
   histograms.h_cl3d_ebm0_ = iBooker.book1D("cl3d_ebm0", "cl3duster3D ebm0; ebm0", 100, 0, 9000);
   histograms.h_cl3d_ebm1_ = iBooker.book1D("cl3d_ebm1", "cl3duster3D ebm1; ebm1", 100, 0, 9000);
