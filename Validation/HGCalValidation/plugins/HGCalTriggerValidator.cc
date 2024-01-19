@@ -146,61 +146,61 @@ void HGCalTriggerValidator::bookHistograms(DQMStore::IBooker &iBooker,
 
   //initiating histograms
   // trigger cells
-  histograms.h_tc_n_ = iBooker.book1D("tc_n", "trigger cell number; number", 400, 0, 400);
-  histograms.h_tc_mipPt_ = iBooker.book1D("tc_mipPt", "trigger cell mipPt; mipPt", 400, 0, 400);
-  histograms.h_tc_pt_ = iBooker.book1D("tc_pt", "trigger cell pt; pt [GeV]", 15, 0, 15);
-  histograms.h_tc_energy_ = iBooker.book1D("tc_energy", "trigger cell energy; energy [GeV]", 70, 0, 70);
-  histograms.h_tc_eta_ = iBooker.book1D("tc_eta", "trigger cell eta; eta", 60, -3.14, 3.14);
-  histograms.h_tc_phi_ = iBooker.book1D("tc_phi", "trigger cell phi; phi", 60, -3.14, 3.14);
+  histograms.h_tc_n_ = iBooker.book1D("tc_n", "trigger cell number; number", 100, 10000, 30000);
+  histograms.h_tc_mipPt_ = iBooker.book1D("tc_mipPt", "trigger cell mipPt; mipPt", 200, 0, 20);
+  histograms.h_tc_pt_ = iBooker.book1D("tc_pt", "trigger cell pt; pt [GeV]", 500, 0, 5);
+  histograms.h_tc_energy_ = iBooker.book1D("tc_energy", "trigger cell energy; energy [GeV]", 400, 0, 40);
+  histograms.h_tc_eta_ = iBooker.book1D("tc_eta", "trigger cell eta; eta", 640, -3.2, 3.2);
+  histograms.h_tc_phi_ = iBooker.book1D("tc_phi", "trigger cell phi; phi", 600, -M_PI, M_PI);
   histograms.h_tc_x_ = iBooker.book1D("tc_x", "trigger cell x; x [cm]", 500, -250, 250);
   histograms.h_tc_y_ = iBooker.book1D("tc_y", "trigger cell y; y [cm]", 500, -250, 250);
-  histograms.h_tc_z_ = iBooker.book1D("tc_z", "trigger cell z; z [cm]", 1100, -550, 550);
+  histograms.h_tc_z_ = iBooker.book1D("tc_z", "trigger cell z; z [cm]", 110, -550, 550);
   histograms.h_tc_layer_ = iBooker.book1D("tc_layer", "trigger cell layer; layer", 50, 0, 50);
 
   // cluster 2D histograms
-  histograms.h_cl_n_ = iBooker.book1D("cl_n", "cluster2D number; number", 80, 0, 80);
-  histograms.h_cl_mipPt_ = iBooker.book1D("cl_mipPt", "cluster2D mipPt; mipPt", 600, 0, 600);
-  histograms.h_cl_pt_ = iBooker.book1D("cl_pt", "cluster2D pt; pt [GeV]", 20, 0, 20);
-  histograms.h_cl_energy_ = iBooker.book1D("cl_energy", "cluster2D energy; energy [GeV]", 80, 0, 80);
-  histograms.h_cl_eta_ = iBooker.book1D("cl_eta", "cluster2D eta; eta", 60, -3.14, 3.14);
-  histograms.h_cl_phi_ = iBooker.book1D("cl_phi", "cluster2D phi; phi", 60, -3.14, 3.14);
-  histograms.h_cl_cells_n_ = iBooker.book1D("cl_cells_n", "cluster2D cells_n; cells_n", 16, 0, 16);
+  histograms.h_cl_n_ = iBooker.book1D("cl_n", "cluster2D number; number", 100, 10000, 30000);
+  histograms.h_cl_mipPt_ = iBooker.book1D("cl_mipPt", "cluster2D mipPt; mipPt", 200, 0, 20);
+  histograms.h_cl_pt_ = iBooker.book1D("cl_pt", "cluster2D pt; pt [GeV]", 500, 0, 5);
+  histograms.h_cl_energy_ = iBooker.book1D("cl_energy", "cluster2D energy; energy [GeV]", 400, 0, 40);
+  histograms.h_cl_eta_ = iBooker.book1D("cl_eta", "cluster2D eta; eta", 640, -3.2, 3.2);
+  histograms.h_cl_phi_ = iBooker.book1D("cl_phi", "cluster2D phi; phi", 600, -M_PI, M_PI);
+  histograms.h_cl_cells_n_ = iBooker.book1D("cl_cells_n", "cluster2D cells_n; cells_n", 20, 0, 20);
   histograms.h_cl_layer_ = iBooker.book1D("cl_layer", "cluster2D layer; layer", 50, 0, 50);
 
   // multiclusters
-  histograms.h_cl3d_n_ = iBooker.book1D("cl3d_n", "cl3duster3D number; number", 12, 0, 12);
+  histograms.h_cl3d_n_ = iBooker.book1D("cl3d_n", "cl3duster3D number; number", 300, 0, 300);
   histograms.h_cl3d_pt_ = iBooker.book1D("cl3d_pt", "cl3duster3D pt; pt [GeV]", 50, 0, 50);
-  histograms.h_cl3d_energy_ = iBooker.book1D("cl3d_energy", "cl3duster3D energy; energy [GeV]", 80, 0, 80);
-  histograms.h_cl3d_eta_ = iBooker.book1D("cl3d_eta", "cl3duster3D eta; eta", 60, -3.14, 3.14);
-  histograms.h_cl3d_phi_ = iBooker.book1D("cl3d_phi", "cl3duster3D phi; phi", 60, -3.14, 3.14);
-  histograms.h_cl3d_clusters_n_ = iBooker.book1D("cl3d_clusters_n", "cl3duster3D clusters_n; clusters_n", 30, 0, 30);
+  histograms.h_cl3d_energy_ = iBooker.book1D("cl3d_energy", "cl3duster3D energy; energy [GeV]", 100, 0, 200);
+  histograms.h_cl3d_eta_ = iBooker.book1D("cl3d_eta", "cl3duster3D eta; eta", 640, -3.2, 3.2);
+  histograms.h_cl3d_phi_ = iBooker.book1D("cl3d_phi", "cl3duster3D phi; phi", 600, -M_PI, M_PI);
+  histograms.h_cl3d_clusters_n_ = iBooker.book1D("cl3d_clusters_n", "cl3duster3D clusters_n; clusters_n", 200, 0, 200);
   // cluster shower shapes
   histograms.h_cl3d_showerlength_ =
       iBooker.book1D("cl3d_showerlength", "cl3duster3D showerlength; showerlength", 50, 0, 50);
   histograms.h_cl3d_coreshowerlength_ =
-      iBooker.book1D("cl3d_coreshowerlength", "cl3duster3D coreshowerlength; coreshowerlength", 16, 0, 16);
-  histograms.h_cl3d_firstlayer_ = iBooker.book1D("cl3d_firstlayer", "cl3duster3D firstlayer; firstlayer", 50, 0, 50);
+      iBooker.book1D("cl3d_coreshowerlength", "cl3duster3D coreshowerlength; coreshowerlength", 20, 0, 20);
+  histograms.h_cl3d_firstlayer_ = iBooker.book1D("cl3d_firstlayer", "cl3duster3D firstlayer; firstlayer", 10, 0, 10);
   histograms.h_cl3d_maxlayer_ = iBooker.book1D("cl3d_maxlayer", "cl3duster3D maxlayer; maxlayer", 50, 0, 50);
-  histograms.h_cl3d_seetot_ = iBooker.book1D("cl3d_seetot", "cl3duster3D seetot; seetot", 50, 0, 0.05);
-  histograms.h_cl3d_seemax_ = iBooker.book1D("cl3d_seemax", "cl3duster3D seemax; seemax", 40, 0, 0.04);
-  histograms.h_cl3d_spptot_ = iBooker.book1D("cl3d_spptot", "cl3duster3D spptot; spptot", 800, 0, 0.08);
-  histograms.h_cl3d_sppmax_ = iBooker.book1D("cl3d_sppmax", "cl3duster3D sppmax; sppmax", 800, 0, 0.08);
-  histograms.h_cl3d_szz_ = iBooker.book1D("cl3d_szz", "cl3duster3D szz; szz", 50, 0, 50);
-  histograms.h_cl3d_srrtot_ = iBooker.book1D("cl3d_srrtot", "cl3duster3D srrtot; srrtot", 800, 0, 0.008);
-  histograms.h_cl3d_srrmax_ = iBooker.book1D("cl3d_srrmax", "cl3duster3D srrmax; srrmax", 900, 0, 0.009);
-  histograms.h_cl3d_srrmean_ = iBooker.book1D("cl3d_srrmean", "cl3duster3D srrmean; srrmean", 800, 0, 0.008);
-  histograms.h_cl3d_emaxe_ = iBooker.book1D("cl3d_emaxe", "cl3duster3D emaxe; emaxe", 15, 0, 1.5);
-  histograms.h_cl3d_bdteg_ = iBooker.book1D("cl3d_bdteg", "cl3duster3D bdteg; bdteg", 30, -0.7, 0.4);
-  histograms.h_cl3d_quality_ = iBooker.book1D("cl3d_quality", "cl3duster3D quality; quality", 20, 0, 2);
+  histograms.h_cl3d_seetot_ = iBooker.book1D("cl3d_seetot", "cl3duster3D seetot; seetot", 100, 0, 0.1);
+  histograms.h_cl3d_seemax_ = iBooker.book1D("cl3d_seemax", "cl3duster3D seemax; seemax", 100, 0, 0.2);
+  histograms.h_cl3d_spptot_ = iBooker.book1D("cl3d_spptot", "cl3duster3D spptot; spptot", 100, 0, 0.1);
+  histograms.h_cl3d_sppmax_ = iBooker.book1D("cl3d_sppmax", "cl3duster3D sppmax; sppmax", 100, 0, 0.1);
+  histograms.h_cl3d_szz_ = iBooker.book1D("cl3d_szz", "cl3duster3D szz; szz", 100, 0, 80);
+  histograms.h_cl3d_srrtot_ = iBooker.book1D("cl3d_srrtot", "cl3duster3D srrtot; srrtot", 100, 0, 0.01);
+  histograms.h_cl3d_srrmax_ = iBooker.book1D("cl3d_srrmax", "cl3duster3D srrmax; srrmax", 100, 0, 0.014);
+  histograms.h_cl3d_srrmean_ = iBooker.book1D("cl3d_srrmean", "cl3duster3D srrmean; srrmean", 100, 0, 0.006);
+  histograms.h_cl3d_emaxe_ = iBooker.book1D("cl3d_emaxe", "cl3duster3D emaxe; emaxe", 100, 0, 1.01);
+  histograms.h_cl3d_bdteg_ = iBooker.book1D("cl3d_bdteg", "cl3duster3D bdteg; bdteg", 100, -1., 1.);
+  histograms.h_cl3d_quality_ = iBooker.book1D("cl3d_quality", "cl3duster3D quality; quality", 5, 0, 5);
 
   // towers
-  histograms.h_tower_n_ = iBooker.book1D("tower_n", "tower n; number", 400, 1200, 1600);
-  histograms.h_tower_pt_ = iBooker.book1D("tower_pt", "tower pt; pt [GeV]", 50, 0, 50);
-  histograms.h_tower_energy_ = iBooker.book1D("tower_energy", "tower energy; energy [GeV]", 200, 0, 200);
-  histograms.h_tower_eta_ = iBooker.book1D("tower_eta", "tower eta; eta", 60, -3.14, 3.14);
-  histograms.h_tower_phi_ = iBooker.book1D("tower_phi", "tower phi; phi", 60, -3.14, 3.14);
-  histograms.h_tower_etEm_ = iBooker.book1D("tower_etEm", "tower etEm; etEm", 50, 0, 50);
-  histograms.h_tower_etHad_ = iBooker.book1D("tower_etHad", "tower etHad; etHad", 30, 0, 0.3);
+  histograms.h_tower_n_ = iBooker.book1D("tower_n", "tower n; number", 100, 2000, 3000);
+  histograms.h_tower_pt_ = iBooker.book1D("tower_pt", "tower pt; pt [GeV]", 100, 0, 10);
+  histograms.h_tower_energy_ = iBooker.book1D("tower_energy", "tower energy; energy [GeV]", 100, 0, 100);
+  histograms.h_tower_eta_ = iBooker.book1D("tower_eta", "tower eta; eta", 640, -3.2, 3.2);
+  histograms.h_tower_phi_ = iBooker.book1D("tower_phi", "tower phi; phi", 600, -M_PI, M_PI);
+  histograms.h_tower_etEm_ = iBooker.book1D("tower_etEm", "tower etEm; etEm", 100, 0, 10);
+  histograms.h_tower_etHad_ = iBooker.book1D("tower_etHad", "tower etHad; etHad", 100, 0, 5);
   histograms.h_tower_iEta_ = iBooker.book1D("tower_iEta", "tower iEta; iEta", 20, 0, 20);
   histograms.h_tower_iPhi_ = iBooker.book1D("tower_iPhi", "tower iPhi; iPhi", 80, 0, 80);
 }
