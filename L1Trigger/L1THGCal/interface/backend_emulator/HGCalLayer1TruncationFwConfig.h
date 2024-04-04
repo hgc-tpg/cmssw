@@ -1,14 +1,16 @@
-#ifndef __L1Trigger_L1THGCal_HGCalStage1TruncationConfig_SA_h__
-#define __L1Trigger_L1THGCal_HGCalStage1TruncationConfig_SA_h__
+#ifndef __L1Trigger_L1THGCal_HGCalLayer1TruncationFwConfig_h__
+#define __L1Trigger_L1THGCal_HGCalLayer1TruncationFwConfig_h__
 
 #include <vector>
 #include <cstdint>  // uint32_t
 
-namespace l1thgcfirmwareDUMMY {
+namespace l1thgcfirmware {
 
-  class Stage1TruncationConfig {
+  class HGCalLayer1TruncationFwConfig {
   public:
-    Stage1TruncationConfig(const bool do_truncate,
+    HGCalLayer1TruncationFwConfig() {}
+
+    HGCalLayer1TruncationFwConfig(const bool do_truncate,
                            const double roz_min,
                            const double roz_max,
                            const unsigned roz_bins,
@@ -35,7 +37,7 @@ namespace l1thgcfirmwareDUMMY {
       phi_edges_ = phi_edges;
     }
 
-    void setParameters(const Stage1TruncationConfig& newConfig) {
+    void setParameters(const HGCalLayer1TruncationFwConfig& newConfig) {
       setParameters(newConfig.doTruncate(),
                     newConfig.rozMin(),
                     newConfig.rozMax(),
@@ -67,6 +69,6 @@ namespace l1thgcfirmwareDUMMY {
     uint32_t fpga_id_;
   };
 
-}  // namespace l1thgcfirmwareDUMMY
+}  // namespace l1thgcfirmware
 
 #endif

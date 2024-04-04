@@ -1,9 +1,9 @@
-#ifndef __L1Trigger_L1THGCal_HGCalStage1TruncationImpl_SA_h__
-#define __L1Trigger_L1THGCal_HGCalStage1TruncationImpl_SA_h__
+#ifndef __L1Trigger_L1THGCal_HGCalLayer1TruncationFwImpl_h__
+#define __L1Trigger_L1THGCal_HGCalLayer1TruncationFwImpl_h__
 
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalTriggerCell_SA.h"
-#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalStage1TruncationConfig_SA.h"
-#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalStage1SortingAlg_SA.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalLayer1TruncationFwConfig.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/BatcherSorter.h"
 
 #include <vector>
 #include <cstdint>        // uint32_t, unsigned
@@ -11,15 +11,15 @@
 
 namespace l1thgcfirmware {
 
-  class HGCalStage1TruncationImplSA {
+  class HGCalLayer1TruncationFwImpl {
   public:
-    HGCalStage1TruncationImplSA();
-    ~HGCalStage1TruncationImplSA() {}
+    HGCalLayer1TruncationFwImpl();
+    ~HGCalLayer1TruncationFwImpl() {}
 
     void runAlgorithm() const;
 
     unsigned run(const l1thgcfirmware::HGCalTriggerCellSACollection& tcs_in,
-                 const l1thgcfirmware::Stage1TruncationConfig& theConf,
+                 const l1thgcfirmware::HGCalLayer1TruncationFwConfig& theConf,
                  l1thgcfirmware::HGCalTriggerCellSACollection& tcs_out) const;
 
   private:

@@ -1,5 +1,5 @@
-#ifndef __L1Trigger_L1THGCal_HGCalStage1TruncationImpl_h__
-#define __L1Trigger_L1THGCal_HGCalStage1TruncationImpl_h__
+#ifndef __L1Trigger_L1THGCal_HGCalLayer1TruncationImpl_h__
+#define __L1Trigger_L1THGCal_HGCalLayer1TruncationImpl_h__
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/L1THGCal/interface/HGCalTriggerCell.h"
@@ -7,9 +7,9 @@
 
 #include <vector>
 
-class HGCalStage1TruncationImpl {
+class HGCalLayer1TruncationImpl {
 public:
-  HGCalStage1TruncationImpl(const edm::ParameterSet& conf);
+  HGCalLayer1TruncationImpl(const edm::ParameterSet& conf);
 
   void setGeometry(const HGCalTriggerGeometryBase* const geom) { triggerTools_.setGeometry(geom); }
 

@@ -76,7 +76,7 @@ truncation_params = cms.PSet(rozMin=cms.double(0.07587128),
         doTruncation=cms.bool(True)
         )
 
-truncation_paramsSA = cms.PSet(AlgoName=cms.string('HGCalStage1TruncationWrapper'),
+truncationfw_params = cms.PSet(AlgoName=cms.string('HGCalStage1TruncationWrapper'),
         rozMin=cms.double(0.07587128),
         rozMax=cms.double(0.55508006),
         rozBins=cms.uint32(42),
@@ -86,29 +86,25 @@ truncation_paramsSA = cms.PSet(AlgoName=cms.string('HGCalStage1TruncationWrapper
         )
 
 
-layer1truncation_proc = cms.PSet(ProcessorName  = cms.string('HGCalBackendLayer1Processor'),
-                   C2d_parameters = dummy_C2d_params.clone(),
-                   truncation_parameters = truncation_params.clone()
-                   )
-stage1truncation_proc = cms.PSet(ProcessorName  = cms.string('HGCalBackendStage1Processor'),
-                   truncation_parameters = truncation_paramsSA.clone()
+layer1truncation_proc = cms.PSet(ProcessorName  = cms.string('HGCalBackendLayer1ProcessorTruncation'),
+                   truncation_parameters = truncation_params.clone(),
+                   clustering_dummy_parameters = dummy_C2d_params.clone()
                    )
 
-be_proc = cms.PSet(ProcessorName  = cms.string('HGCalBackendLayer1Processor2DClustering'),
+layer1truncationfw_proc = cms.PSet(ProcessorName  = cms.string('HGCalBackendLayer1ProcessorTruncationFw'),
+                   truncation_parameters = truncationfw_params.clone(),
+                   clustering_dummy_parameters = dummy_C2d_params.clone()
+                   )
+
+clustering2d_proc = cms.PSet(ProcessorName  = cms.string('HGCalBackendLayer1Processor2DClustering'),
                    C2d_parameters = dummy_C2d_params.clone()
                    )
 
 l1tHGCalBackEndLayer1Producer = cms.EDProducer(
     "HGCalBackendLayer1Producer",
     InputTriggerCells = cms.InputTag('l1tHGCalConcentratorProducer:HGCalConcentratorProcessorSelection'),
-    ProcessorParameters = be_proc.clone()
-    )
-
-l1tHGCalBackEndStage1Producer = cms.EDProducer(
-    "HGCalBackendStage1Producer",
-    InputTriggerCells = cms.InputTag('l1tHGCalConcentratorProducer:HGCalConcentratorProcessorSelection'),
-    C2d_parameters = dummy_C2d_params.clone(),
-    ProcessorParameters = stage1truncation_proc.clone()
+    BypassBackendMapping = cms.bool(True),
+    ProcessorParameters = clustering2d_proc.clone()
     )
 
 l1tHGCalBackEndLayer1ProducerHFNose = l1tHGCalBackEndLayer1Producer.clone(
