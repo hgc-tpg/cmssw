@@ -22,7 +22,7 @@ typedef HGCalProcessorBaseT<edm::Handle<l1t::HGCalTriggerCellBxCollection>,
                                        l1t::HGCalConcentratorDataBxCollection>>
     HGCalConcentratorProcessorBase;
 typedef HGCalProcessorBaseT<std::pair<uint32_t, std::vector<edm::Ptr<l1t::HGCalTriggerCell>>>,
-        l1t::HGCalClusterBxCollection>
+                            l1t::HGCalClusterBxCollection>
     HGCalBackendLayer1ProcessorBase;
 typedef HGCalProcessorBaseT<edm::Handle<l1t::HGCalClusterBxCollection>,
                             std::pair<l1t::HGCalMulticlusterBxCollection, l1t::HGCalClusterBxCollection>>

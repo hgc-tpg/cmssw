@@ -69,8 +69,8 @@ void HGCalBackendLayer1Producer::produce(edm::Event& e, const edm::EventSetup& e
 
   for (unsigned i = 0; i < trigCellBxColl->size(); ++i) {
     edm::Ptr<l1t::HGCalTriggerCell> tc_ptr(trigCellBxColl, i);
-    uint32_t fpga = 0; // null detid
-    if(!bypass_be_mapping_) {
+    uint32_t fpga = 0;  // null detid
+    if (!bypass_be_mapping_) {
       uint32_t module = triggerGeometry_->getModuleFromTriggerCell(tc_ptr->detId());
       fpga = triggerGeometry_->getStage1FpgaFromModule(module);
     }
@@ -79,7 +79,7 @@ void HGCalBackendLayer1Producer::produce(edm::Event& e, const edm::EventSetup& e
   }
 
   for (auto& fpga_tcs : tcs_per_fpga) {
-    backendProcess_->run(fpga_tcs,  *be_cluster_output);
+    backendProcess_->run(fpga_tcs, *be_cluster_output);
   }
 
   e.put(std::move(be_cluster_output), backendProcess_->name());

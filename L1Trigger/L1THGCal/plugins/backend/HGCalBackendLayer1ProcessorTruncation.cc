@@ -1,6 +1,8 @@
 #include "L1Trigger/L1THGCal/interface/backend/HGCalBackendLayer1ProcessorTruncation.h"
 
-DEFINE_EDM_PLUGIN(HGCalBackendLayer1Factory, HGCalBackendLayer1ProcessorTruncation, "HGCalBackendLayer1ProcessorTruncation");
+DEFINE_EDM_PLUGIN(HGCalBackendLayer1Factory,
+                  HGCalBackendLayer1ProcessorTruncation,
+                  "HGCalBackendLayer1ProcessorTruncation");
 
 HGCalBackendLayer1ProcessorTruncation::HGCalBackendLayer1ProcessorTruncation(const edm::ParameterSet& conf)
     : HGCalBackendLayer1ProcessorBase(conf) {
@@ -10,7 +12,7 @@ HGCalBackendLayer1ProcessorTruncation::HGCalBackendLayer1ProcessorTruncation(con
 
 void HGCalBackendLayer1ProcessorTruncation::run(
     const std::pair<uint32_t, std::vector<edm::Ptr<l1t::HGCalTriggerCell>>>& fpga_id_tcs,
-                                      l1t::HGCalClusterBxCollection& clusters) {
+    l1t::HGCalClusterBxCollection& clusters) {
   if (clusteringDummy_)
     clusteringDummy_->setGeometry(geometry());
   if (truncation_)

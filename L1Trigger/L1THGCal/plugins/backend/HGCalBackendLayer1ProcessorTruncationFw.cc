@@ -1,7 +1,9 @@
 #include "L1Trigger/L1THGCal/interface/backend/HGCalBackendLayer1ProcessorTruncationFw.h"
 #include "DataFormats/ForwardDetId/interface/HGCalTriggerBackendDetId.h"
 
-DEFINE_EDM_PLUGIN(HGCalBackendLayer1Factory, HGCalBackendLayer1ProcessorTruncationFw, "HGCalBackendLayer1ProcessorTruncationFw");
+DEFINE_EDM_PLUGIN(HGCalBackendLayer1Factory,
+                  HGCalBackendLayer1ProcessorTruncationFw,
+                  "HGCalBackendLayer1ProcessorTruncationFw");
 
 HGCalBackendLayer1ProcessorTruncationFw::HGCalBackendLayer1ProcessorTruncationFw(const edm::ParameterSet& conf)
     : HGCalBackendLayer1ProcessorBase(conf), conf_(conf) {
@@ -15,7 +17,7 @@ HGCalBackendLayer1ProcessorTruncationFw::HGCalBackendLayer1ProcessorTruncationFw
 
 void HGCalBackendLayer1ProcessorTruncationFw::run(
     const std::pair<uint32_t, std::vector<edm::Ptr<l1t::HGCalTriggerCell>>>& fpga_id_tcs,
-                                      l1t::HGCalClusterBxCollection& clusters) {
+    l1t::HGCalClusterBxCollection& clusters) {
   const unsigned sector120 = HGCalTriggerBackendDetId(fpga_id_tcs.first).sector();
   const uint32_t fpga_id = fpga_id_tcs.first;
 

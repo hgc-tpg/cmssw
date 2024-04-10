@@ -23,9 +23,7 @@ using namespace l1thgcfirmware;
 // @param arr_adresses - list of adresses of elements selected (output). Address goes from 0 to N
 //
 //-------------------------------------------------------------------------------------------------/
-void BatcherSorter::sorting(const datain_t& arr_input,
-                                       dataout_t& arr_output,
-                                       adressout_t& arr_adresses) const {
+void BatcherSorter::sorting(const datain_t& arr_input, dataout_t& arr_output, adressout_t& arr_adresses) const {
   //Variables declaration
   datasorter_t arr_tmp(NS);
   datamerger_t arr_tmp_so(NMA), arr_tmp_so1(NMA), arr_tmp_so2(NMA);
