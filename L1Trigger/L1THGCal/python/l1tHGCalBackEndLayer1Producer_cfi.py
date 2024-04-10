@@ -76,7 +76,7 @@ truncation_params = cms.PSet(rozMin=cms.double(0.07587128),
         doTruncation=cms.bool(True)
         )
 
-truncationfw_params = cms.PSet(AlgoName=cms.string('HGCalStage1TruncationWrapper'),
+truncationfw_params = cms.PSet(AlgoName=cms.string('HGCalLayer1TruncationWrapper'),
         rozMin=cms.double(0.07587128),
         rozMax=cms.double(0.55508006),
         rozBins=cms.uint32(42),

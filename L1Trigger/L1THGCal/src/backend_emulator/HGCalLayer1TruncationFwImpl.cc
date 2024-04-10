@@ -1,6 +1,6 @@
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalLayer1TruncationFwImpl.h"
 #include <cmath>
-#include <iostream>
+#include <algorithm>
 
 using namespace l1thgcfirmware;
 
@@ -99,6 +99,26 @@ double HGCalLayer1TruncationFwImpl::rotatedphi(double phi, unsigned sector) cons
     phi = phi + (2. * M_PI / 3.);
   }
   return phi;
+}
+
+double HGCalLayer1TruncationFwImpl::rotatedphi(double x, double y, double z, unsigned sector) const {
+  if (z > 0)
+    x = -x;
+  double phi = std::atan2(y, x);
+  return this->rotatedphi(phi, sector);
+}
+
+unsigned HGCalLayer1TruncationFwImpl::rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const {
+  constexpr double margin = 1.001;
+  double roz_bin_size = (rozbins > 0 ? (rozmax - rozmin) * margin / double(rozbins) : 0.);
+  unsigned roverzbin = 0;
+  if (roz_bin_size > 0.) {
+    roverz -= rozmin;
+    roverz = std::clamp(roverz, 0., rozmax - rozmin);
+    roverzbin = unsigned(roverz / roz_bin_size);
+  }
+
+  return roverzbin;
 }
 
 unsigned HGCalLayer1TruncationFwImpl::smallerMultOfFourGreaterThan(unsigned N) const {
