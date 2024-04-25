@@ -1,13 +1,13 @@
-#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalStage1TruncationImpl_SA.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalLayer1TruncationFwImpl.h"
 #include <cmath>
-#include <iostream>
+#include <algorithm>
 
 using namespace l1thgcfirmware;
 
-HGCalStage1TruncationImplSA::HGCalStage1TruncationImplSA() {}
+HGCalLayer1TruncationFwImpl::HGCalLayer1TruncationFwImpl() {}
 
-unsigned HGCalStage1TruncationImplSA::run(const l1thgcfirmware::HGCalTriggerCellSACollection& tcs_in,
-                                          const l1thgcfirmware::Stage1TruncationConfig& theConf,
+unsigned HGCalLayer1TruncationFwImpl::run(const l1thgcfirmware::HGCalTriggerCellSACollection& tcs_in,
+                                          const l1thgcfirmware::HGCalLayer1TruncationFwConfig& theConf,
                                           l1thgcfirmware::HGCalTriggerCellSACollection& tcs_out) const {
   std::unordered_map<unsigned, std::vector<l1thgcfirmware::HGCalTriggerCell>> tcs_per_bin;
 
@@ -35,7 +35,7 @@ unsigned HGCalStage1TruncationImplSA::run(const l1thgcfirmware::HGCalTriggerCell
                                     smallerMultOfFourGreaterThan(maxtcsperbin[roverzbin]));
     const unsigned ntcout = (do_truncate ? maxtcsperbin[roverzbin] : bin_tcs.second.size());
 
-    l1thgcfirmware::HGCalStage1SortingAlg_SA tcSorter(ntcin, ntcout);
+    l1thgcfirmware::BatcherSorter tcSorter(ntcin, ntcout);
 
     std::vector<unsigned> theTCsIn_mipt(ntcin);
     std::vector<unsigned> theTCsOut_mipt(ntcout);
@@ -67,19 +67,19 @@ unsigned HGCalStage1TruncationImplSA::run(const l1thgcfirmware::HGCalTriggerCell
   return 0;
 }
 
-uint32_t HGCalStage1TruncationImplSA::packBin(unsigned roverzbin, unsigned phibin) const {
+uint32_t HGCalLayer1TruncationFwImpl::packBin(unsigned roverzbin, unsigned phibin) const {
   unsigned packed_bin = 0;
   packed_bin |= ((roverzbin & mask_roz_) << offset_roz_);
   packed_bin |= (phibin & mask_phi_);
   return packed_bin;
 }
 
-void HGCalStage1TruncationImplSA::unpackBin(unsigned packedbin, unsigned& roverzbin, unsigned& phibin) const {
+void HGCalLayer1TruncationFwImpl::unpackBin(unsigned packedbin, unsigned& roverzbin, unsigned& phibin) const {
   roverzbin = ((packedbin >> offset_roz_) & mask_roz_);
   phibin = (packedbin & mask_phi_);
 }
 
-int HGCalStage1TruncationImplSA::phiBin(unsigned roverzbin, double phi, const std::vector<double>& phiedges) const {
+int HGCalLayer1TruncationFwImpl::phiBin(unsigned roverzbin, double phi, const std::vector<double>& phiedges) const {
   unsigned phi_bin = 0;
   if (roverzbin >= phiedges.size())
     return -1;
@@ -89,7 +89,7 @@ int HGCalStage1TruncationImplSA::phiBin(unsigned roverzbin, double phi, const st
   return phi_bin;
 }
 
-double HGCalStage1TruncationImplSA::rotatedphi(double phi, unsigned sector) const {
+double HGCalLayer1TruncationFwImpl::rotatedphi(double phi, unsigned sector) const {
   if (sector == 1) {
     if (phi < M_PI and phi > 0)
       phi = phi - (2. * M_PI / 3.);
@@ -101,7 +101,27 @@ double HGCalStage1TruncationImplSA::rotatedphi(double phi, unsigned sector) cons
   return phi;
 }
 
-unsigned HGCalStage1TruncationImplSA::smallerMultOfFourGreaterThan(unsigned N) const {
+double HGCalLayer1TruncationFwImpl::rotatedphi(double x, double y, double z, unsigned sector) const {
+  if (z > 0)
+    x = -x;
+  double phi = std::atan2(y, x);
+  return this->rotatedphi(phi, sector);
+}
+
+unsigned HGCalLayer1TruncationFwImpl::rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const {
+  constexpr double margin = 1.001;
+  double roz_bin_size = (rozbins > 0 ? (rozmax - rozmin) * margin / double(rozbins) : 0.);
+  unsigned roverzbin = 0;
+  if (roz_bin_size > 0.) {
+    roverz -= rozmin;
+    roverz = std::clamp(roverz, 0., rozmax - rozmin);
+    roverzbin = unsigned(roverz / roz_bin_size);
+  }
+
+  return roverzbin;
+}
+
+unsigned HGCalLayer1TruncationFwImpl::smallerMultOfFourGreaterThan(unsigned N) const {
   unsigned remnant = (N + 4) % 4;
   if (remnant == 0)
     return N;

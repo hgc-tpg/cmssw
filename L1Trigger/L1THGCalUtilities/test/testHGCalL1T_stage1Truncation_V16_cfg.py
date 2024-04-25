@@ -57,12 +57,11 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T21', '')
 
 # load HGCAL TPG simulation
-#process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
-process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitivesNew_cff')
+process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 
 # Use new Stage 1 processor
-from L1Trigger.L1THGCal.customNewProcessors import custom_stage1_truncation
-process = custom_stage1_truncation(process)
+from L1Trigger.L1THGCal.customLayer1 import custom_layer1_truncationfw
+process = custom_layer1_truncationfw(process)
 
 # Switch to latest trigger geometry containing information on links mapping
 from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V11_Imp3
@@ -73,10 +72,8 @@ process.hgcl1tpg_step = cms.Path(process.L1THGCalTriggerPrimitives)
 
 # load ntuplizer and custom to use collections from Stag1 truncation processor
 process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
-from L1Trigger.L1THGCalUtilities.customNtuples import custom_ntuples_stage1_truncation
-from L1Trigger.L1THGCalUtilities.customNtuples import custom_ntuples_layer1_truncation
-process = custom_ntuples_stage1_truncation(process)
-#process = custom_ntuples_layer1_truncation(process)
+from L1Trigger.L1THGCalUtilities.customNtuples import custom_ntuples_layer1_truncationfw
+process = custom_ntuples_layer1_truncationfw(process)
 process.ntuple_step = cms.Path(process.L1THGCalTriggerNtuples)
 
 # Schedule definition

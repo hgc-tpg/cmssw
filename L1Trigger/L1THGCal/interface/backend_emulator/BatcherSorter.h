@@ -1,5 +1,5 @@
-#ifndef __L1Trigger_L1THGCal_HGCalStage1SortingAlg_SA_h__
-#define __L1Trigger_L1THGCal_HGCalStage1SortingAlg_SA_h__
+#ifndef __L1Trigger_L1THGCal_BatcherSorter_h__
+#define __L1Trigger_L1THGCal_BatcherSorter_h__
 
 #include <vector>
 #include <memory>
@@ -21,11 +21,11 @@ typedef std::vector<unsigned> adress_t;         // Address Pointer for sorter & 
 
 namespace l1thgcfirmware {
 
-  class HGCalStage1SortingAlg_SA {
+  class BatcherSorter {
   public:
-    HGCalStage1SortingAlg_SA();
+    BatcherSorter();
 
-    HGCalStage1SortingAlg_SA(const unsigned NTCin, const unsigned NTCout) : N(NTCin), M(NTCout) {
+    BatcherSorter(const unsigned NTCin, const unsigned NTCout) : N(NTCin), M(NTCout) {
       unsigned ns = NTCin / 4;
       unsigned nma = (NTCout < (NTCin / 4)) ? 2 * NTCout : NTCin / 2;
       unsigned nmb = (NTCout < nma) ? 2 * NTCout : 2 * nma;
@@ -34,7 +34,7 @@ namespace l1thgcfirmware {
       setNMB(nmb);
     }
 
-    ~HGCalStage1SortingAlg_SA() {}
+    ~BatcherSorter() {}
 
     //Generates the sorting network
     void sorting(const datain_t& arr_input, dataout_t& arr_output, adressout_t& arr_adresses) const;
