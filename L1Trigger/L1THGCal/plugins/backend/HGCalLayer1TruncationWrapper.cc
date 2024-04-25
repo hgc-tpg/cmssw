@@ -2,15 +2,15 @@
 
 #include "DataFormats/L1THGCal/interface/HGCalTriggerCell.h"
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalTriggerCell_SA.h"
-#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalStage1TruncationImpl_SA.h"
-#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalStage1TruncationConfig_SA.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalLayer1TruncationFwImpl.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalLayer1TruncationFwConfig.h"
 
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerTools.h"
 
-class HGCalStage1TruncationWrapper : public HGCalStage1TruncationWrapperBase {
+class HGCalLayer1TruncationWrapper : public HGCalLayer1TruncationWrapperBase {
 public:
-  HGCalStage1TruncationWrapper(const edm::ParameterSet& conf);
-  ~HGCalStage1TruncationWrapper() override = default;
+  HGCalLayer1TruncationWrapper(const edm::ParameterSet& conf);
+  ~HGCalLayer1TruncationWrapper() override = default;
 
   void configure(
       const std::tuple<const HGCalTriggerGeometryBase* const, const unsigned&, const uint32_t&>& configuration) override;
@@ -32,15 +32,15 @@ private:
   unsigned rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const;
 
   HGCalTriggerTools triggerTools_;
-  l1thgcfirmware::HGCalStage1TruncationImplSA theAlgo_;
-  l1thgcfirmware::Stage1TruncationConfig theConfiguration_;
+  l1thgcfirmware::HGCalLayer1TruncationFwImpl theAlgo_;
+  l1thgcfirmware::HGCalLayer1TruncationFwConfig theConfiguration_;
 
   // Scale factor for quantities sent to emulator to keep floating point precision. Value is arbitrary and could be set to relevant value.
   const unsigned int FWfactor_ = 10000;
 };
 
-HGCalStage1TruncationWrapper::HGCalStage1TruncationWrapper(const edm::ParameterSet& conf)
-    : HGCalStage1TruncationWrapperBase(conf),
+HGCalLayer1TruncationWrapper::HGCalLayer1TruncationWrapper(const edm::ParameterSet& conf)
+    : HGCalLayer1TruncationWrapperBase(conf),
       theAlgo_(),
       theConfiguration_(conf.getParameter<bool>("doTruncation"),
                         conf.getParameter<double>("rozMin"),
@@ -49,7 +49,7 @@ HGCalStage1TruncationWrapper::HGCalStage1TruncationWrapper(const edm::ParameterS
                         conf.getParameter<std::vector<unsigned>>("maxTcsPerBin"),
                         conf.getParameter<std::vector<double>>("phiSectorEdges")) {}
 
-void HGCalStage1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs,
+void HGCalLayer1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs,
                                                       l1thgcfirmware::HGCalTriggerCellSACollection& fpga_tcs_SA) const {
   fpga_tcs_SA.clear();
   fpga_tcs_SA.reserve(fpga_tcs.size());
@@ -72,7 +72,7 @@ void HGCalStage1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr
   }
 }
 
-void HGCalStage1TruncationWrapper::convertAlgorithmOutputs(
+void HGCalLayer1TruncationWrapper::convertAlgorithmOutputs(
     const l1thgcfirmware::HGCalTriggerCellSACollection& fpga_tcs_out,
     const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_original,
     std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_trunc) const {
@@ -83,7 +83,7 @@ void HGCalStage1TruncationWrapper::convertAlgorithmOutputs(
   }
 }
 
-void HGCalStage1TruncationWrapper::process(const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs,
+void HGCalLayer1TruncationWrapper::process(const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs,
                                            std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& tcs_out) const {
   l1thgcfirmware::HGCalTriggerCellSACollection fpga_tcs_SA;
   convertCMSSWInputs(fpga_tcs, fpga_tcs_SA);
@@ -92,12 +92,12 @@ void HGCalStage1TruncationWrapper::process(const std::vector<edm::Ptr<l1t::HGCal
   unsigned error_code = theAlgo_.run(fpga_tcs_SA, theConfiguration_, tcs_out_SA);
 
   if (error_code == 1)
-    throw cms::Exception("HGCalStage1TruncationImpl::OutOfRange") << "roverzbin index out of range";
+    throw cms::Exception("HGCalLayer1TruncationFwImpl::OutOfRange") << "roverzbin index out of range";
 
   convertAlgorithmOutputs(tcs_out_SA, fpga_tcs, tcs_out);
 }
 
-void HGCalStage1TruncationWrapper::configure(
+void HGCalLayer1TruncationWrapper::configure(
     const std::tuple<const HGCalTriggerGeometryBase* const, const unsigned&, const uint32_t&>& configuration) {
   setGeometry(std::get<0>(configuration));
 
@@ -105,7 +105,7 @@ void HGCalStage1TruncationWrapper::configure(
   theConfiguration_.setFPGAID(std::get<2>(configuration));
 };
 
-double HGCalStage1TruncationWrapper::rotatedphi(double phi, unsigned sector) const {
+double HGCalLayer1TruncationWrapper::rotatedphi(double phi, unsigned sector) const {
   if (sector == 1) {
     if (phi < M_PI and phi > 0)
       phi = phi - (2. * M_PI / 3.);
@@ -117,7 +117,7 @@ double HGCalStage1TruncationWrapper::rotatedphi(double phi, unsigned sector) con
   return phi;
 }
 
-unsigned HGCalStage1TruncationWrapper::rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const {
+unsigned HGCalLayer1TruncationWrapper::rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const {
   constexpr double margin = 1.001;
   double roz_bin_size = (rozbins > 0 ? (rozmax - rozmin) * margin / double(rozbins) : 0.);
   unsigned roverzbin = 0;
@@ -129,6 +129,6 @@ unsigned HGCalStage1TruncationWrapper::rozBin(double roverz, double rozmin, doub
   return roverzbin;
 }
 
-DEFINE_EDM_PLUGIN(HGCalStage1TruncationWrapperBaseFactory,
-                  HGCalStage1TruncationWrapper,
-                  "HGCalStage1TruncationWrapper");
+DEFINE_EDM_PLUGIN(HGCalLayer1TruncationWrapperBaseFactory,
+                  HGCalLayer1TruncationWrapper,
+                  "HGCalLayer1TruncationWrapper");

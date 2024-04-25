@@ -1,8 +1,8 @@
-#include "L1Trigger/L1THGCal/interface/backend/HGCalStage1TruncationImpl.h"
+#include "L1Trigger/L1THGCal/interface/backend/HGCalLayer1TruncationImpl.h"
 #include "DataFormats/ForwardDetId/interface/HGCalTriggerBackendDetId.h"
 #include <cmath>
 
-HGCalStage1TruncationImpl::HGCalStage1TruncationImpl(const edm::ParameterSet& conf)
+HGCalLayer1TruncationImpl::HGCalLayer1TruncationImpl(const edm::ParameterSet& conf)
     : do_truncate_(conf.getParameter<bool>("doTruncation")),
       roz_min_(conf.getParameter<double>("rozMin")),
       roz_max_(conf.getParameter<double>("rozMax")),
@@ -10,15 +10,15 @@ HGCalStage1TruncationImpl::HGCalStage1TruncationImpl(const edm::ParameterSet& co
       max_tcs_per_bin_(conf.getParameter<std::vector<unsigned>>("maxTcsPerBin")),
       phi_edges_(conf.getParameter<std::vector<double>>("phiSectorEdges")) {
   if (max_tcs_per_bin_.size() != roz_bins_)
-    throw cms::Exception("HGCalStage1TruncationImpl::BadConfig") << "Inconsistent sizes of maxTcsPerBin and rozBins";
+    throw cms::Exception("HGCalLayer1TruncationImpl::BadConfig") << "Inconsistent sizes of maxTcsPerBin and rozBins";
   if (phi_edges_.size() != roz_bins_)
-    throw cms::Exception("HGCalStage1TruncationImpl::BadConfig") << "Inconsistent sizes of phiSectorEdges and rozBins";
+    throw cms::Exception("HGCalLayer1TruncationImpl::BadConfig") << "Inconsistent sizes of phiSectorEdges and rozBins";
 
   constexpr double margin = 1.001;
   roz_bin_size_ = (roz_bins_ > 0 ? (roz_max_ - roz_min_) * margin / double(roz_bins_) : 0.);
 }
 
-void HGCalStage1TruncationImpl::run(uint32_t fpga_id,
+void HGCalLayer1TruncationImpl::run(uint32_t fpga_id,
                                     const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& tcs_in,
                                     std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& tcs_out) {
   unsigned sector120 = HGCalTriggerBackendDetId(fpga_id).sector();
@@ -54,7 +54,7 @@ void HGCalStage1TruncationImpl::run(uint32_t fpga_id,
     unsigned phibin = 0;
     unpackBin(bin_tcs.first, roverzbin, phibin);
     if (roverzbin >= max_tcs_per_bin_.size())
-      throw cms::Exception("HGCalStage1TruncationImpl::OutOfRange")
+      throw cms::Exception("HGCalLayer1TruncationImpl::OutOfRange")
           << "roverzbin index " << roverzbin << "out of range";
     unsigned max_tc = max_tcs_per_bin_[roverzbin];
     if (do_truncate_ && bin_tcs.second.size() > max_tc) {
@@ -66,29 +66,29 @@ void HGCalStage1TruncationImpl::run(uint32_t fpga_id,
   }
 }
 
-unsigned HGCalStage1TruncationImpl::packBin(unsigned roverzbin, unsigned phibin) const {
+unsigned HGCalLayer1TruncationImpl::packBin(unsigned roverzbin, unsigned phibin) const {
   unsigned packed_bin = 0;
   packed_bin |= ((roverzbin & mask_roz_) << offset_roz_);
   packed_bin |= (phibin & mask_phi_);
   return packed_bin;
 }
 
-void HGCalStage1TruncationImpl::unpackBin(unsigned packedbin, unsigned& roverzbin, unsigned& phibin) const {
+void HGCalLayer1TruncationImpl::unpackBin(unsigned packedbin, unsigned& roverzbin, unsigned& phibin) const {
   roverzbin = ((packedbin >> offset_roz_) & mask_roz_);
   phibin = (packedbin & mask_phi_);
 }
 
-unsigned HGCalStage1TruncationImpl::phiBin(unsigned roverzbin, double phi) const {
+unsigned HGCalLayer1TruncationImpl::phiBin(unsigned roverzbin, double phi) const {
   unsigned phi_bin = 0;
   if (roverzbin >= phi_edges_.size())
-    throw cms::Exception("HGCalStage1TruncationImpl::OutOfRange") << "roverzbin index " << roverzbin << "out of range";
+    throw cms::Exception("HGCalLayer1TruncationImpl::OutOfRange") << "roverzbin index " << roverzbin << "out of range";
   double phi_edge = phi_edges_[roverzbin];
   if (phi > phi_edge)
     phi_bin = 1;
   return phi_bin;
 }
 
-double HGCalStage1TruncationImpl::rotatedphi(double x, double y, double z, int sector) const {
+double HGCalLayer1TruncationImpl::rotatedphi(double x, double y, double z, int sector) const {
   if (z > 0)
     x = -x;
   double phi = std::atan2(y, x);

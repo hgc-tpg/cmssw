@@ -1,9 +1,9 @@
-#ifndef __L1Trigger_L1THGCal_HGCalStage1TruncationImpl_SA_h__
-#define __L1Trigger_L1THGCal_HGCalStage1TruncationImpl_SA_h__
+#ifndef __L1Trigger_L1THGCal_HGCalLayer1TruncationFwImpl_h__
+#define __L1Trigger_L1THGCal_HGCalLayer1TruncationFwImpl_h__
 
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalTriggerCell_SA.h"
-#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalStage1TruncationConfig_SA.h"
-#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalStage1SortingAlg_SA.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalLayer1TruncationFwConfig.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/BatcherSorter.h"
 
 #include <vector>
 #include <cstdint>        // uint32_t, unsigned
@@ -11,16 +11,20 @@
 
 namespace l1thgcfirmware {
 
-  class HGCalStage1TruncationImplSA {
+  class HGCalLayer1TruncationFwImpl {
   public:
-    HGCalStage1TruncationImplSA();
-    ~HGCalStage1TruncationImplSA() {}
+    HGCalLayer1TruncationFwImpl();
+    ~HGCalLayer1TruncationFwImpl() {}
 
     void runAlgorithm() const;
 
     unsigned run(const l1thgcfirmware::HGCalTriggerCellSACollection& tcs_in,
-                 const l1thgcfirmware::Stage1TruncationConfig& theConf,
+                 const l1thgcfirmware::HGCalLayer1TruncationFwConfig& theConf,
                  l1thgcfirmware::HGCalTriggerCellSACollection& tcs_out) const;
+
+    int phiBin(unsigned roverzbin, double phi, const std::vector<double>& phiedges) const;
+    double rotatedphi(double x, double y, double z, unsigned sector) const;
+    unsigned rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const;
 
   private:
     static constexpr unsigned offset_roz_ = 1;
@@ -36,8 +40,6 @@ namespace l1thgcfirmware {
 
     uint32_t packBin(unsigned roverzbin, unsigned phibin) const;
     void unpackBin(unsigned packedbin, unsigned& roverzbin, unsigned& phibin) const;
-    int phiBin(unsigned roverzbin, double phi, const std::vector<double>& phiedges) const;
-    double rotatedphi(double x, double y, double z, unsigned sector) const;
     double rotatedphi(double phi, unsigned sector) const;
 
     unsigned smallerMultOfFourGreaterThan(unsigned n) const;
