@@ -68,18 +68,3 @@ class CreateTruthDummy(object):
         return producer
 
 
-class RozBinTruncation(object):
-    def __init__(self,
-            maxTcsPerBin=truncation_params.maxTcsPerBin):
-        self.processor = layer1truncation_proc.clone(
-                truncation_parameters=truncation_params.clone(
-                    maxTcsPerBin=maxTcsPerBin
-                    )
-                )
-
-    def __call__(self, process, inputs):
-        producer = process.l1tHGCalBackEndLayer1Producer.clone(
-                InputTriggerCells = cms.InputTag(inputs),
-                ProcessorParameters = self.processor
-                )
-        return producer

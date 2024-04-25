@@ -64,6 +64,7 @@ from L1Trigger.L1THGCalUtilities.hgcalTriggerChains import HGCalTriggerChains
 import L1Trigger.L1THGCalUtilities.vfe as vfe
 import L1Trigger.L1THGCalUtilities.concentrator as concentrator
 import L1Trigger.L1THGCalUtilities.clustering2d as clustering2d
+import L1Trigger.L1THGCalUtilities.layer1 as layer1
 import L1Trigger.L1THGCalUtilities.clustering3d as clustering3d
 import L1Trigger.L1THGCalUtilities.selectors as selectors
 import L1Trigger.L1THGCalUtilities.customNtuples as ntuple
@@ -74,12 +75,11 @@ chains = HGCalTriggerChains()
 ## VFE
 chains.register_vfe("Floatingpoint", vfe.CreateVfe())
 ## ECON
-chains.register_concentrator("Supertriggercell", concentrator.CreateSuperTriggerCell())
 chains.register_concentrator("Threshold", concentrator.CreateThreshold())
-chains.register_concentrator("Bestchoice", concentrator.CreateBestChoice())
-chains.register_concentrator("AutoEncoder", concentrator.CreateAutoencoder())
+chains.register_concentrator("Bcstc", concentrator.CreateMixedFeOptions())
 ## BE1
 chains.register_backend1("Dummy", clustering2d.CreateDummy())
+chains.register_backend1("Truncationfw", layer1.RozBinTruncationFw())
 ## BE2
 chains.register_backend2("Histomax", clustering3d.CreateHistoMax())
 # Register selector
@@ -91,12 +91,12 @@ ntuple_list = ['event', 'gen', 'multiclusters']
 chains.register_ntuple("Genclustersntuple", ntuple.CreateNtuple(ntuple_list))
 
 # Register trigger chains
-concentrator_algos = ['Supertriggercell', 'Threshold', 'Bestchoice', 'AutoEncoder']
-backend_algos = ['Histomax']
+concentrator_algos = ['Threshold', 'Bcstc']
+layer1_algos = ['Dummy', 'Truncationfw']
 ## Make cross product fo ECON and BE algos
 import itertools
-for cc,be in itertools.product(concentrator_algos,backend_algos):
-    chains.register_chain('Floatingpoint', cc, 'Dummy', be, 'Genmatch', 'Genclustersntuple')
+for cc,s1 in itertools.product(concentrator_algos,layer1_algos):
+    chains.register_chain('Floatingpoint', cc, s1, 'Histomax', 'Genmatch', 'Genclustersntuple')
 
 process = chains.create_sequences(process)
 

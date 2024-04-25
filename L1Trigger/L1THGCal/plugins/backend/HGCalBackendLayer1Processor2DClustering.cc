@@ -28,19 +28,15 @@ public:
     }
   }
 
-  void run(const edm::Handle<l1t::HGCalTriggerCellBxCollection>& collHandle,
+  void run(const std::pair<uint32_t, std::vector<edm::Ptr<l1t::HGCalTriggerCell>>>& fpga_id_tcs,
            l1t::HGCalClusterBxCollection& collCluster2D) override {
     if (clustering_)
       clustering_->setGeometry(geometry());
     if (clusteringDummy_)
       clusteringDummy_->setGeometry(geometry());
 
-    /* create a persistent vector of pointers to the trigger-cells */
-    std::vector<edm::Ptr<l1t::HGCalTriggerCell>> triggerCellsPtrs;
-    for (unsigned i = 0; i < collHandle->size(); ++i) {
-      edm::Ptr<l1t::HGCalTriggerCell> ptr(collHandle, i);
-      triggerCellsPtrs.push_back(ptr);
-    }
+    // copy TC collection for sorting
+    std::vector<edm::Ptr<l1t::HGCalTriggerCell>> triggerCellsPtrs = fpga_id_tcs.second;
 
     std::sort(triggerCellsPtrs.begin(),
               triggerCellsPtrs.end(),
