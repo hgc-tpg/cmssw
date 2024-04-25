@@ -20,7 +20,7 @@
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerGeometryBase.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerTools.h"
 
-#include "L1Trigger/L1THGCal/interface/backend/HGCalStage1TruncationImpl_SA.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalLayer1TruncationFwImpl.h"
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::ordered_json;  // using ordered_json for readability
@@ -47,7 +47,7 @@ private:
   edm::ESHandle<HGCalTriggerGeometryBase> triggerGeometry_;
   edm::ESGetToken<HGCalTriggerGeometryBase, CaloGeometryRecord> triggerGeomToken_;
 
-  HGCalStage1TruncationImplSA theAlgo_;
+  l1thgcfirmware::HGCalLayer1TruncationFwImpl theAlgo_;
 
   // Metadata
   std::string detector_version_;

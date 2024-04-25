@@ -18,7 +18,7 @@ The HGCAL TPG simulation is split in a chain of producers, called from the [`hgc
     - `HGCalVFEProducer`: HGCROC trigger path simulation (defined in [`l1tHGCalVFEProducer_cfi.py`](python/l1tHGCalVFEProducer_cfi.py))
     - `HGCalConcentratorProducer`: ECON-T simulation (defined in [`l1tHGCalConcentratorProducer_cfi.py`](python/l1tHGCalConcentratorProducer_cfi.py))
 - Back-end producers
-    - `HGCalBackendLayer1Producer` and `HGCalBackendStage1Producer`: trigger cell path in the back-end Stage 1, the `Stage1` version is the latest version meant to be used with emulators (defined in [`l1tHGCalBackEndLayer1Producer_cfi.py`](python/l1tHGCalBackEndLayer1Producer_cfi.py)) 
+    - `HGCalBackendLayer1Producer`: trigger cell path in the back-end Stage 1 (defined in [`l1tHGCalBackEndLayer1Producer_cfi.py`](python/l1tHGCalBackEndLayer1Producer_cfi.py)) 
     - `HGCalBackendLayer2Producer`: clustering in the back-end Stage 2 (defined in [`l1tHGCalBackEndLayer2Producer_cfi.py`](python/l1tHGCalBackEndLayer2Producer_cfi.py))
     - `HGCalTowerMapProducer`: towers in the back-end Stage 1 (defined in [`l1tHGCalTowerMapProducer_cfi.py`](python/l1tHGCalTowerMapProducer_cfi.py))
     - `HGCalTowerProducer`: towers in the back-end Stage 2 (defined in [`l1tHGCalTowerProducer_cfi.py`](python/l1tHGCalTowerProducer_cfi.py))
@@ -57,7 +57,7 @@ flowchart TB
     tower -- Towers --> l1t
     click hgcroc href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalVFEProducer.cc" "click to display Producer source"
     click econ href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalConcentratorProducer.cc" "click to display Producer source"
-    click stage1 href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalBackendStage1Producer.cc" "click to display Producer source"
+    click stage1 href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalBackendLayer1Producer.cc" "click to display Producer source"
     click stage2 href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalBackendLayer2Producer.cc" "click to display Producer source"
     click towermap href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalTowerMapProducer.cc" "click to display Producer source"
     click tower href "https://github.com/cms-sw/cmssw/blob/master/L1Trigger/L1THGCal/plugins/HGCalTowerProducer.cc" "click to display Producer source"
@@ -107,7 +107,7 @@ classDiagram
 Algorithm implementations emulating dedicating firmware blocks are written in such a way that they can be executed in a standalone fashion outside CMSSW, for cross-validation with their firmware counterpart.
 Therefore they are integrated within CMSSW by the mean of wrapper classes that are translating data and configurations between the CMSSW world and the standalone emulator world.
 
-Algorithm implementations are configured by the mean of dedicated configuration objects built in the wrapper class. The wrapper class also perform the conversion of the input data from CMSSW data formats to standalone data formats, and convert back the output data from standalone data formats to CMSSW data formats. 
+Algorithm implementations are configured by the mean of dedicated configuration objects built in the wrapper class. The wrapper class also performs the conversion of the input data from CMSSW data formats to standalone data formats, and convert back the output data from standalone data formats to CMSSW data formats. 
 
 This wrapping structure is illustrated in the diagram below.
 
@@ -180,12 +180,12 @@ Deprecated Stage 1 algorithms,  which are layer-by-layer 2D clustering algorithm
 
 The different Stage 1 processing versions are implemented in:
 - [`plugins/backend/HGCalBackendLayer1Processor2DClustering.cc`](plugins/backend/HGCalBackendLayer1Processor2DClustering.cc): original implementations of the 2D layer clusterings and pass-through
-- [`plugins/backend/HGCalBackendLayer1Processor.cc`](plugins/backend/HGCalBackendLayer1Processor.cc): first implementation of Stage 1 trigger cell truncation
-- [`plugins/backend/HGCalBackendStage1Processor.cc`](plugins/backend/HGCalBackendStage1Processor.cc): latest Stage 1 processor calling the 2022 Stage 1 emulator
+- [`plugins/backend/HGCalBackendLayer1ProcessorTruncation.cc`](plugins/backend/HGCalBackendLayer1ProcessorTruncation.cc): first implementation of Stage 1 trigger cell truncation
+- [`plugins/backend/HGCalBackendLayer1ProcessorTruncationFw.cc`](plugins/backend/HGCalBackendLayer1ProcessorTruncationFw.cc): latest Stage 1 processor calling the 2022 Stage 1 emulator
 
 And actual implementations of the algorithms are stored in [`src/backend`](src/backend). These processors are configured from [`python/l1tHGCalBackEndLayer1Producer_cfi.py`](python/l1tHGCalBackEndLayer1Producer_cfi.py). Customization functions are available in
 - [`python/customClustering.py`](python/customClustering.py): old 2D layer clustering customization
-- [`python/customNewProcessors.py`](python/customNewProcessors.py): contains Stage 1 truncation and emulator customization
+- [`python/customLayer1.py`](python/customLayer1.py): contains Stage 1 truncation and emulator customization
 
 #### Stage 2 clustering
 The Stage 2 is responsible of building the final 3D clusters, initially from 2D layer clusters and now directly from trigger cells. The default Stage 2 clustering algorithm is the so-called `HistoMax`, which refers to the way the cluster building is seeded. 

@@ -10,6 +10,7 @@
 #include "DataFormats/HGCDigi/interface/HGCDigiCollections.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerGeometryBase.h"
+#include "DataFormats/ForwardDetId/interface/HGCalTriggerBackendDetId.h"
 
 #include "L1Trigger/L1THGCal/interface/HGCalProcessorBase.h"
 
@@ -32,13 +33,15 @@ private:
   edm::ESGetToken<HGCalTriggerGeometryBase, CaloGeometryRecord> triggerGeomToken_;
 
   std::unique_ptr<HGCalBackendLayer1ProcessorBase> backendProcess_;
+  bool bypass_be_mapping_ = false;
 };
 
 DEFINE_FWK_MODULE(HGCalBackendLayer1Producer);
 
 HGCalBackendLayer1Producer::HGCalBackendLayer1Producer(const edm::ParameterSet& conf)
     : input_cell_(consumes<l1t::HGCalTriggerCellBxCollection>(conf.getParameter<edm::InputTag>("InputTriggerCells"))),
-      triggerGeomToken_(esConsumes<HGCalTriggerGeometryBase, CaloGeometryRecord, edm::Transition::BeginRun>()) {
+      triggerGeomToken_(esConsumes<HGCalTriggerGeometryBase, CaloGeometryRecord, edm::Transition::BeginRun>()),
+      bypass_be_mapping_(conf.getParameter<bool>("BypassBackendMapping")) {
   //setup Backend parameters
   const edm::ParameterSet& beParamConfig = conf.getParameterSet("ProcessorParameters");
   const std::string& beProcessorName = beParamConfig.getParameter<std::string>("ProcessorName");
@@ -59,8 +62,25 @@ void HGCalBackendLayer1Producer::produce(edm::Event& e, const edm::EventSetup& e
 
   // Input collections
   edm::Handle<l1t::HGCalTriggerCellBxCollection> trigCellBxColl;
-
   e.getByToken(input_cell_, trigCellBxColl);
-  backendProcess_->run(trigCellBxColl, *be_cluster_output);
+
+  // Split trigger cell collection per FPGA
+  std::unordered_map<uint32_t, std::vector<edm::Ptr<l1t::HGCalTriggerCell>>> tcs_per_fpga;
+
+  for (unsigned i = 0; i < trigCellBxColl->size(); ++i) {
+    edm::Ptr<l1t::HGCalTriggerCell> tc_ptr(trigCellBxColl, i);
+    uint32_t fpga = 0;  // null detid
+    if (!bypass_be_mapping_) {
+      uint32_t module = triggerGeometry_->getModuleFromTriggerCell(tc_ptr->detId());
+      fpga = triggerGeometry_->getStage1FpgaFromModule(module);
+    }
+    // if bypass_be_mapping, TCs from the entire detector will be put in a single collection
+    tcs_per_fpga[fpga].push_back(tc_ptr);
+  }
+
+  for (auto& fpga_tcs : tcs_per_fpga) {
+    backendProcess_->run(fpga_tcs, *be_cluster_output);
+  }
+
   e.put(std::move(be_cluster_output), backendProcess_->name());
 }
