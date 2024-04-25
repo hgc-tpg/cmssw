@@ -8,7 +8,7 @@
 // Universite Paris-Saclay
 //************************************************************************************************/
 
-#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalStage1SortingAlg_SA.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/BatcherSorter.h"
 
 #include <iostream>
 
@@ -23,9 +23,7 @@ using namespace l1thgcfirmware;
 // @param arr_adresses - list of adresses of elements selected (output). Address goes from 0 to N
 //
 //-------------------------------------------------------------------------------------------------/
-void HGCalStage1SortingAlg_SA::sorting(const datain_t& arr_input,
-                                       dataout_t& arr_output,
-                                       adressout_t& arr_adresses) const {
+void BatcherSorter::sorting(const datain_t& arr_input, dataout_t& arr_output, adressout_t& arr_adresses) const {
   //Variables declaration
   datasorter_t arr_tmp(NS);
   datamerger_t arr_tmp_so(NMA), arr_tmp_so1(NMA), arr_tmp_so2(NMA);
@@ -117,7 +115,7 @@ void HGCalStage1SortingAlg_SA::sorting(const datain_t& arr_input,
 // The Art Of Computer Programming, D. Knuth - Sorting and Searching (2nd edition Volume 3), 1998, page 111
 //-------------------------------------------------------------------------------------------------/
 
-void HGCalStage1SortingAlg_SA::sorter(data_to_sort_t& list_sorter, adress_t& list_adresses) const {
+void BatcherSorter::sorter(data_to_sort_t& list_sorter, adress_t& list_adresses) const {
   unsigned tmp_data, tmp_adress;
   unsigned i, p, q, r, d, constant_bound;
   datasorter_t list_sorter_tmp(NS);
@@ -173,7 +171,7 @@ void HGCalStage1SortingAlg_SA::sorter(data_to_sort_t& list_sorter, adress_t& lis
 // The Art Of Computer Programming, D. Knuth - Sorting and Searching (2nd edition Volume 3), 1998, page 111
 //
 //-------------------------------------------------------------------------------------------------/
-void HGCalStage1SortingAlg_SA::merger(const unsigned& NM, data_to_merge_t& list_merger, adress_t& list_adresses) const {
+void BatcherSorter::merger(const unsigned& NM, data_to_merge_t& list_merger, adress_t& list_adresses) const {
   unsigned tmp, tmp_adress;
   unsigned i, p, q, r, d;
   datamerger_t list_merger_tmp(NM);
@@ -227,7 +225,7 @@ void HGCalStage1SortingAlg_SA::merger(const unsigned& NM, data_to_merge_t& list_
 //  Equivalent to res=ceil(log(i)/log(2))
 //
 //-------------------------------------------------------------------------------------------------/
-unsigned HGCalStage1SortingAlg_SA::log2_rounded(unsigned i) const {
+unsigned BatcherSorter::log2_rounded(unsigned i) const {
   unsigned res = 0;
   unsigned tmp = i;
 

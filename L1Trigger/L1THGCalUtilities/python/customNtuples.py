@@ -6,17 +6,16 @@ def custom_ntuples_layer1_truncation(process):
         if ntuple.NtupleName=='HGCalTriggerNtupleHGCClusters' or \
            ntuple.NtupleName=='HGCalTriggerNtupleHGCTriggerCells' or \
            ntuple.NtupleName=='HGCalTriggerNtupleHGCMulticlusters':
-            ntuple.Clusters = cms.InputTag('l1tHGCalBackEndLayer1Producer:HGCalBackendLayer1Processor')
+            ntuple.Clusters = cms.InputTag('l1tHGCalBackEndLayer1Producer:HGCalBackendLayer1ProcessorTruncation')
     return process
 
-def custom_ntuples_stage1_truncation(process):
+def custom_ntuples_layer1_truncationfw(process):
     ntuples = process.l1tHGCalTriggerNtuplizer.Ntuples
     for ntuple in ntuples:
         if ntuple.NtupleName=='HGCalTriggerNtupleHGCClusters' or \
            ntuple.NtupleName=='HGCalTriggerNtupleHGCTriggerCells' or \
            ntuple.NtupleName=='HGCalTriggerNtupleHGCMulticlusters':
-            ntuple.Clusters = cms.InputTag('l1tHGCalBackEndStage1Producer:HGCalBackendStage1Processor')
-            ntuple.Multiclusters = cms.InputTag('l1tHGCalBackEndStage2Producer:HGCalBackendLayer2Processor3DClustering')
+            ntuple.Clusters = cms.InputTag('l1tHGCalBackEndLayer1Producer:HGCalBackendLayer1ProcessorTruncationFw')
     return process
 
 def custom_ntuples_standalone_clustering(process):
