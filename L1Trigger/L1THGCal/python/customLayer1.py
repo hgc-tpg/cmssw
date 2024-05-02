@@ -17,3 +17,5 @@ def custom_layer1_truncationfw(process):
     process.l1tHGCalTowerProducer.InputTriggerCells = cms.InputTag('l1tHGCalBackEndLayer1Producer:HGCalBackendLayer1ProcessorTruncationFw')
     return process
 
+def custom_layer1_latestfw(process):
+    return custom_layer1_truncationfw(process)
