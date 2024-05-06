@@ -61,8 +61,8 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', ''
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 
 # Use new Stage 1 processor
-from L1Trigger.L1THGCal.customLayer1 import custom_layer1_truncationfw
-process = custom_layer1_truncationfw(process)
+from L1Trigger.L1THGCal.customLayer1 import custom_layer1_latestfw
+process = custom_layer1_latestfw(process)
 
 # Switch to latest trigger geometry containing information on links mapping
 from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V11_Imp3
@@ -71,10 +71,10 @@ process = custom_geometry_V11_Imp3(process)
 process.hgcl1tpg_step = cms.Path(process.L1THGCalTriggerPrimitives)
 
 
-# load ntuplizer and custom to use collections from Stag1 truncation processor
+# load ntuplizer and custom to use collections from Stage 1 firmware emulator 
 process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
-from L1Trigger.L1THGCalUtilities.customNtuples import custom_ntuples_layer1_truncationfw
-process = custom_ntuples_layer1_truncationfw(process)
+from L1Trigger.L1THGCalUtilities.customNtuples import custom_ntuples_layer1_latestfw
+process = custom_ntuples_layer1_latestfw(process)
 process.ntuple_step = cms.Path(process.L1THGCalTriggerNtuples)
 
 # Schedule definition
