@@ -27,7 +27,7 @@ typedef HGCalAlgoWrapperBaseT<l1t::HGCalMulticlusterBxCollection,
     HGCalStage2FilteringWrapperBase;
 
 typedef HGCalAlgoWrapperBaseT<std::vector<edm::Ptr<l1t::HGCalTriggerCell>>,
-                              std::vector<edm::Ptr<l1t::HGCalTriggerCell>>,
+                              l1t::HGCalClusterBxCollection,
                               std::tuple<const HGCalTriggerGeometryBase* const, const unsigned&, const uint32_t&>>
     HGCalLayer1TruncationWrapperBase;
 

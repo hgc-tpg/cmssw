@@ -20,8 +20,20 @@ namespace l1t {
     void setModule(uint32_t module) { module_ = module; }
     uint32_t module() const { return module_; }
 
+    void setColumn(int column) { column_ = column; }
+    int column() const {return column_; }
+
+    void setFrame(int frame) { frame_ = frame; }
+    int frame() const { return frame_; }
+
+    void setChannel(int channel) { channel_ = channel; }
+    int channel() const { return channel_; }
+
   private:
     uint32_t module_;
+    int channel_;
+    int frame_;
+    int column_;
   };
 
   typedef BXVector<HGCalCluster> HGCalClusterBxCollection;

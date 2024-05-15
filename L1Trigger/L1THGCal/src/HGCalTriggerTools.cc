@@ -261,6 +261,10 @@ float HGCalTriggerTools::getTCPhi(const DetId& id) const {
   return getPhi(position);
 }
 
+uint32_t HGCalTriggerTools::getModuleId(const DetId& id) const {
+  return geom_->getModuleFromTriggerCell(id);
+}
+
 float HGCalTriggerTools::getPt(const GlobalPoint& position, const float& hitEnergy, const float& vertex_z) const {
   float eta = getEta(position, vertex_z);
   float pt = hitEnergy / cosh(eta);

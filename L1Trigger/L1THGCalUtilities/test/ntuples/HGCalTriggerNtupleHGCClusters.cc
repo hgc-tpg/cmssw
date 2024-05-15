@@ -33,6 +33,9 @@ private:
   std::vector<std::vector<uint32_t>> cl_cells_id_;
   std::vector<uint32_t> cl_multicluster_id_;
   std::vector<float> cl_multicluster_pt_;
+  std::vector<int> cl_column_;
+  std::vector<int> cl_channel_;
+  std::vector<int> cl_frame_;
 };
 
 DEFINE_EDM_PLUGIN(HGCalTriggerNtupleFactory, HGCalTriggerNtupleHGCClusters, "HGCalTriggerNtupleHGCClusters");
@@ -72,6 +75,9 @@ void HGCalTriggerNtupleHGCClusters::initialize(TTree& tree,
   tree.Branch(withPrefix("cells_id"), &cl_cells_id_);
   tree.Branch(withPrefix("multicluster_id"), &cl_multicluster_id_);
   tree.Branch(withPrefix("multicluster_pt"), &cl_multicluster_pt_);
+  tree.Branch(withPrefix("column"), &cl_column_);
+  tree.Branch(withPrefix("channel"), &cl_channel_);
+  tree.Branch(withPrefix("frame"), & cl_frame_);
 }
 
 void HGCalTriggerNtupleHGCClusters::fill(const edm::Event& e, const HGCalTriggerNtupleEventSetup& es) {
@@ -113,6 +119,9 @@ void HGCalTriggerNtupleHGCClusters::fill(const edm::Event& e, const HGCalTrigger
     cl_layer_.emplace_back(triggerTools_.layerWithOffset(cl_itr->detId()));
     cl_subdet_.emplace_back(cl_itr->subdetId());
     cl_cells_n_.emplace_back(cl_itr->constituents().size());
+    cl_column_.emplace_back(cl_itr->column());
+    cl_frame_.emplace_back(cl_itr->frame());
+    cl_channel_.emplace_back(cl_itr->channel());
     // Retrieve indices of trigger cells inside cluster
     cl_cells_id_.emplace_back(cl_itr->constituents().size());
     std::transform(
@@ -139,4 +148,7 @@ void HGCalTriggerNtupleHGCClusters::clear() {
   cl_cells_id_.clear();
   cl_multicluster_id_.clear();
   cl_multicluster_pt_.clear();
+  cl_column_.clear();
+  cl_frame_.clear();
+  cl_channel_.clear();
 }

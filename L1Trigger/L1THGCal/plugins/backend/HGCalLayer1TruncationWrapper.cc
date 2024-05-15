@@ -2,7 +2,7 @@
 
 #include "DataFormats/L1THGCal/interface/HGCalTriggerCell.h"
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalTriggerCell_SA.h"
-#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalLayer1TruncationFwImpl.h"
+#include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalLayer1EmulatorFwImpl.h"
 #include "L1Trigger/L1THGCal/interface/backend_emulator/HGCalLayer1TruncationFwConfig.h"
 
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerTools.h"
@@ -16,7 +16,7 @@ public:
       const std::tuple<const HGCalTriggerGeometryBase* const, const unsigned&, const uint32_t&>& configuration) override;
 
   void process(const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs,
-               std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& tcs_out) const override;
+               l1t::HGCalClusterBxCollection& clusters) const override;
 
 private:
   void convertCMSSWInputs(const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs,
@@ -24,7 +24,7 @@ private:
 
   void convertAlgorithmOutputs(const l1thgcfirmware::HGCalTriggerCellSACollection& fpga_tcs_out,
                                const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_original,
-                               std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_trunc) const;
+                               l1t::HGCalClusterBxCollection& clusters) const;
 
   void setGeometry(const HGCalTriggerGeometryBase* const geom) { triggerTools_.setGeometry(geom); }
 
@@ -32,7 +32,7 @@ private:
   unsigned rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const;
 
   HGCalTriggerTools triggerTools_;
-  l1thgcfirmware::HGCalLayer1TruncationFwImpl theAlgo_;
+  l1thgcfirmware::HGCalLayer1EmulatorFwImpl theAlgo_;
   l1thgcfirmware::HGCalLayer1TruncationFwConfig theConfiguration_;
 
   // Scale factor for quantities sent to emulator to keep floating point precision. Value is arbitrary and could be set to relevant value.
@@ -67,6 +67,8 @@ void HGCalLayer1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr
     unsigned int digi_phi = phi * FWfactor_;
     unsigned int digi_energy = (tc->mipPt()) * FWfactor_;
     fpga_tcs_SA.emplace_back(true, true, rOverZbin, digi_phi, triggerTools_.layerWithOffset(tc->detId()), digi_energy);
+    fpga_tcs_SA.back().setModuleId(triggerTools_.getModuleId(tc->detId()));
+    std::cout<<"module ID "<<fpga_tcs_SA.back().moduleId()<<std::endl;
     fpga_tcs_SA.back().setCmsswIndex(std::make_pair(itc, 0));
     ++itc;
   }
@@ -75,16 +77,30 @@ void HGCalLayer1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr
 void HGCalLayer1TruncationWrapper::convertAlgorithmOutputs(
     const l1thgcfirmware::HGCalTriggerCellSACollection& fpga_tcs_out,
     const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_original,
-    std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_trunc) const {
+    l1t::HGCalClusterBxCollection& clusters) const {
+
+  std::vector<l1t::HGCalCluster> clustersTmp;
+
+  for (std::vector<edm::Ptr<l1t::HGCalTriggerCell>>::const_iterator otc = fpga_tcs_original.begin(); otc!=fpga_tcs_original.end(); ++otc) {
+    clustersTmp.emplace_back(*otc);
+  }
+
+
+  clusters.resize(0,clustersTmp.size());
   for (auto& tc : fpga_tcs_out) {
     unsigned tc_cmssw_id = tc.cmsswIndex().first;
-    if (tc_cmssw_id < fpga_tcs_original.size())
-      fpga_tcs_trunc.emplace_back(fpga_tcs_original[tc_cmssw_id]);
+    if (tc_cmssw_id < fpga_tcs_original.size()){
+      clustersTmp.at(tc_cmssw_id).setColumn(tc.column());
+      clustersTmp.at(tc_cmssw_id).setFrame(tc.frame());
+      clustersTmp.at(tc_cmssw_id).setChannel(tc.channel());
+      clustersTmp.at(tc_cmssw_id).setModule(tc.moduleId());
+      clusters.set(0,tc_cmssw_id,clustersTmp.at(tc_cmssw_id));
+    }
   }
 }
 
 void HGCalLayer1TruncationWrapper::process(const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs,
-                                           std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& tcs_out) const {
+                                           l1t::HGCalClusterBxCollection& clusters) const {
   l1thgcfirmware::HGCalTriggerCellSACollection fpga_tcs_SA;
   convertCMSSWInputs(fpga_tcs, fpga_tcs_SA);
 
@@ -94,7 +110,7 @@ void HGCalLayer1TruncationWrapper::process(const std::vector<edm::Ptr<l1t::HGCal
   if (error_code == 1)
     throw cms::Exception("HGCalLayer1TruncationFwImpl::OutOfRange") << "roverzbin index out of range";
 
-  convertAlgorithmOutputs(tcs_out_SA, fpga_tcs, tcs_out);
+  convertAlgorithmOutputs(tcs_out_SA, fpga_tcs, clusters);
 }
 
 void HGCalLayer1TruncationWrapper::configure(
@@ -103,6 +119,7 @@ void HGCalLayer1TruncationWrapper::configure(
 
   theConfiguration_.setSector120(std::get<1>(configuration));
   theConfiguration_.setFPGAID(std::get<2>(configuration));
+  theConfiguration_.configureMappingInfo();
 };
 
 double HGCalLayer1TruncationWrapper::rotatedphi(double phi, unsigned sector) const {

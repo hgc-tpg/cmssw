@@ -36,6 +36,10 @@ namespace l1thgcfirmware {
     void setY(const unsigned int Y) { Y_ = Y; }
     void setDeltaR2(const unsigned int deltaR2) { deltaR2_ = deltaR2; }
     void setCmsswIndex(const std::pair<int, int> index) { index_cmssw_ = index; }
+    void setModuleId(const unsigned int moduleid) {moduleId_ = moduleid; }
+    void setColumn(const int column) { column_ = column; }
+    void setFrame(const int frame) { frame_ = frame; }
+    void setChannel(const int channel) {channel_ = channel; }
 
     // Getters
     unsigned int clock() const { return clock_; }
@@ -50,7 +54,11 @@ namespace l1thgcfirmware {
     unsigned int Y() const { return Y_; }
     bool frameValid() const { return frameValid_; }
     bool dataValid() const { return dataValid_; }
+    unsigned int moduleId() const { return moduleId_ ; }
     const std::pair<int, int>& cmsswIndex() const { return index_cmssw_; }
+    int column() const {return column_;}
+    int frame() const { return frame_; }
+    int channel() const { return channel_; }
 
     // Operators
     bool operator==(const HGCalTriggerCell& rhs) const;
@@ -69,7 +77,11 @@ namespace l1thgcfirmware {
     unsigned int Y_;
     bool frameValid_;
     bool dataValid_;
+    unsigned int moduleId_; 
     std::pair<int, int> index_cmssw_;
+    int column_;
+    int frame_;
+    int channel_;
   };
 
   typedef std::vector<HGCalTriggerCell> HGCalTriggerCellSACollection;

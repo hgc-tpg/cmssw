@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdint>  // uint32_t
+#include <unordered_map>
 
 namespace l1thgcfirmware {
 
@@ -49,6 +50,20 @@ namespace l1thgcfirmware {
     void setSector120(const unsigned sector) { sector120_ = sector; }
     void setFPGAID(const uint32_t fpga_id) { fpga_id_ = fpga_id; }
 
+    void configureMappingInfo(){
+      for(unsigned i=0; i<20; ++i){
+        for(unsigned j=0;j<2;++j){
+          for(unsigned k=0; k<4; ++k){//number of slots per frame
+              chn_frame_slots_per_col_[i].push_back(std::make_pair(i+3,j));
+          }
+          for(unsigned k=0; k<4; ++k){//number of slots per frame
+              chn_frame_slots_per_col_[i].push_back(std::make_pair(i+4,j));
+          }
+        }  
+        max_tcs_per_column_.push_back(std::make_pair(i,chn_frame_slots_per_col_[i].size()));
+      }
+    }
+
     bool doTruncate() const { return do_truncate_; }
     double rozMin() const { return roz_min_; }
     double rozMax() const { return roz_max_; }
@@ -57,6 +72,8 @@ namespace l1thgcfirmware {
     const std::vector<double>& phiEdges() const { return phi_edges_; }
     unsigned phiSector() const { return sector120_; }
     uint32_t fpgaID() const { return fpga_id_; }
+    const std::vector<std::pair<int,int>> maxTcsPerColumn() const {return max_tcs_per_column_; }
+    const std::unordered_map<int,std::vector<std::pair<int,int>>> channelsAndFramesPerColumn() const { return chn_frame_slots_per_col_; }
 
   private:
     bool do_truncate_;
@@ -67,6 +84,8 @@ namespace l1thgcfirmware {
     std::vector<double> phi_edges_;
     unsigned sector120_;
     uint32_t fpga_id_;
+    std::vector<std::pair<int,int>> max_tcs_per_column_;
+    std::unordered_map<int,std::vector<std::pair<int,int>>> chn_frame_slots_per_col_; 
   };
 
 }  // namespace l1thgcfirmware
