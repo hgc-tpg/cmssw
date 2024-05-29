@@ -72,8 +72,13 @@ namespace l1thgcfirmware {
     const std::vector<double>& phiEdges() const { return phi_edges_; }
     unsigned phiSector() const { return sector120_; }
     uint32_t fpgaID() const { return fpga_id_; }
-    const std::vector<std::pair<int,int>> maxTcsPerColumn() const {return max_tcs_per_column_; }
-    const std::unordered_map<int,std::vector<std::pair<int,int>>> channelsAndFramesPerColumn() const { return chn_frame_slots_per_col_; }
+    //const std::vector<std::pair<int,int>> maxTcsPerColumn() const {return max_tcs_per_column_; }
+    //const std::unordered_map<int,std::vector<std::pair<int,int>>> channelsAndFramesPerColumn() const { return chn_frame_slots_per_col_; }
+    int getColBudgetAtIndex(int theColumnIndex ) const { return max_tcs_per_column_.at(theColumnIndex).second; }
+    int getColFromBudgetMapAtIndex(int theColumnIndex ) const  {return max_tcs_per_column_.at(theColumnIndex).first; }
+    int getChannelAtIndex(int theColumnIndex, int theChnFrameIndex ) const { return chn_frame_slots_per_col_.at(theColumnIndex).at(theChnFrameIndex).first; }
+    int getFrameAtIndex(int theColumnIndex, int theChnFrameIndex ) const {return chn_frame_slots_per_col_.at(theColumnIndex).at(theChnFrameIndex).second; }
+
 
   private:
     bool do_truncate_;

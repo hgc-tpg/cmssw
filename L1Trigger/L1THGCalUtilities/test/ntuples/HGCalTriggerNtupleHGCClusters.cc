@@ -22,6 +22,7 @@ private:
 
   int cl_n_;
   std::vector<uint32_t> cl_id_;
+  std::vector<uint32_t> cl_module_id_;
   std::vector<float> cl_mipPt_;
   std::vector<float> cl_pt_;
   std::vector<float> cl_energy_;
@@ -64,6 +65,7 @@ void HGCalTriggerNtupleHGCClusters::initialize(TTree& tree,
   // note: can't use withPrefix() twice within a same statement because bname gets overwritten
   tree.Branch(withPrefix("n"), &cl_n_, (prefix + "_n/I").c_str());
   tree.Branch(withPrefix("id"), &cl_id_);
+  tree.Branch(withPrefix("moduleId"), &cl_module_id_);
   tree.Branch(withPrefix("mipPt"), &cl_mipPt_);
   tree.Branch(withPrefix("pt"), &cl_pt_);
   tree.Branch(withPrefix("energy"), &cl_energy_);
@@ -116,6 +118,7 @@ void HGCalTriggerNtupleHGCClusters::fill(const edm::Event& e, const HGCalTrigger
     cl_phi_.emplace_back(cl_itr->phi());
 
     cl_id_.emplace_back(cl_itr->detId());
+    cl_module_id_.emplace_back(cl_itr->module());
     cl_layer_.emplace_back(triggerTools_.layerWithOffset(cl_itr->detId()));
     cl_subdet_.emplace_back(cl_itr->subdetId());
     cl_cells_n_.emplace_back(cl_itr->constituents().size());
@@ -137,6 +140,7 @@ void HGCalTriggerNtupleHGCClusters::fill(const edm::Event& e, const HGCalTrigger
 void HGCalTriggerNtupleHGCClusters::clear() {
   cl_n_ = 0;
   cl_id_.clear();
+  cl_module_id_.clear();
   cl_mipPt_.clear();
   cl_pt_.clear();
   cl_energy_.clear();

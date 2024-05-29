@@ -46,8 +46,8 @@ namespace l1thgcfirmware {
     int packColChnFrame(int column, int channel, int frame) const;
     void unpackColChnFrame(int packedbin, int& column, int& channel, int& frame) const;
 
-    std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> assignTCToCol(std::vector<std::pair<int,int>> theCols, std::vector<l1thgcfirmware::HGCalTriggerCell> tcs) const;
-    std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> assignTCToChnAndFrame(std::unordered_map<int,std::vector<std::pair<int,int>>> chnsAndFrames, std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> ord_tcs) const;
+    std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> assignTCToCol(const l1thgcfirmware::HGCalLayer1TruncationFwConfig& theConf, std::vector<l1thgcfirmware::HGCalTriggerCell> tcs) const;
+    std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> assignTCToChnAndFrame(const l1thgcfirmware::HGCalLayer1TruncationFwConfig& theConf, std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> ord_tcs) const;
   };
 
 }  // namespace l1thgcfirmware

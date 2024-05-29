@@ -19,8 +19,8 @@ unsigned HGCalLayer1EmulatorFwImpl::run(const l1thgcfirmware::HGCalTriggerCellSA
   //bool do_truncate = theConf.doTruncate();
   //const std::vector<unsigned>& maxtcsperbin = theConf.maxTcsPerBin();
 
-  const std::vector<std::pair<int,int>> cols_budget = theConf.maxTcsPerColumn();
-  const std::unordered_map<int,std::vector<std::pair<int,int>>> chns_frs_percol = theConf.channelsAndFramesPerColumn();
+  //const std::vector<std::pair<int,int>> cols_budget = theConf.maxTcsPerColumn();
+  //const std::unordered_map<int,std::vector<std::pair<int,int>>> chns_frs_percol = theConf.channelsAndFramesPerColumn();
 
   // group TCs per unique module
   for (const auto& tc : tcs_in) {
@@ -42,8 +42,9 @@ unsigned HGCalLayer1EmulatorFwImpl::run(const l1thgcfirmware::HGCalTriggerCellSA
     
     sorted_tcs = bin_tcs.second;
 
-    std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> tcs_per_col = assignTCToCol(cols_budget,sorted_tcs);
-    std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> tcs_with_ccf = assignTCToChnAndFrame(chns_frs_percol,tcs_per_col);
+    std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> tcs_per_col = assignTCToCol(theConf,sorted_tcs);
+    //std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> tcs_per_col = assignTCToCol(cols_budget,sorted_tcs);
+    std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> tcs_with_ccf = assignTCToChnAndFrame(theConf,tcs_per_col);
 
     for (auto & tcobj : tcs_with_ccf){
         tcs_out.push_back(tcobj.first);
@@ -61,7 +62,7 @@ unsigned HGCalLayer1EmulatorFwImpl::run(const l1thgcfirmware::HGCalTriggerCellSA
   return 0;
 }
 
-std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> HGCalLayer1EmulatorFwImpl::assignTCToCol(std::vector<std::pair<int,int>> theCols, std::vector<l1thgcfirmware::HGCalTriggerCell> tcs) const {
+/*std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> HGCalLayer1EmulatorFwImpl::assignTCToCol(std::vector<std::pair<int,int>> theCols, std::vector<l1thgcfirmware::HGCalTriggerCell> tcs) const {
   std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> theOrderedTCs;
   std::sort(tcs.begin(), tcs.end(),sortByPhi);
   int theColumnIndex=0;//start filling the first associated column. This assumes the columns are already ordered correctly!
@@ -75,9 +76,45 @@ std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> HGCalLayer1Emulator
     nTCinColumn+=1;
   }
   return theOrderedTCs;
+}*/
+
+std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> HGCalLayer1EmulatorFwImpl::assignTCToCol(const l1thgcfirmware::HGCalLayer1TruncationFwConfig& theConf, std::vector<l1thgcfirmware::HGCalTriggerCell> tcs) const {
+  std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> theOrderedTCs;
+  std::sort(tcs.begin(), tcs.end(),sortByPhi);
+  int theColumnIndex=0;//start filling the first associated column. This assumes the columns are already ordered correctly!
+  int nTCinColumn=0;//Number of TCs already in column
+  for(auto & tc: tcs){
+    while(!(nTCinColumn < theConf.getColBudgetAtIndex(theColumnIndex))){
+   // while(!(nTCinColumn < theCols.at(theColumnIndex).second)){
+      theColumnIndex+=1;
+      nTCinColumn=0;
+    }
+    theOrderedTCs.push_back(std::make_pair(tc,theConf.getColFromBudgetMapAtIndex(theColumnIndex)));
+    //theOrderedTCs.push_back(std::make_pair(tc,theCols.at(theColumnIndex).first));
+    nTCinColumn+=1;
+  }
+  return theOrderedTCs;
 }
 
-std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> HGCalLayer1EmulatorFwImpl::assignTCToChnAndFrame(std::unordered_map<int,std::vector<std::pair<int,int>>> chnsAndFrames, std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> ord_tcs) const {
+
+std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> HGCalLayer1EmulatorFwImpl::assignTCToChnAndFrame(const l1thgcfirmware::HGCalLayer1TruncationFwConfig& theConf, std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> ord_tcs) const {
+  std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> theTCsWithChnFrame;
+  //std::unordered_map<int, std::pair<int,int>> chnAndFrameCounterForCol; //Need to track channel and frame counter for particular column.
+  //need map from column to index for that specific column. Index should be the index in a vector that already contains the possible combinations of chn,frame (posibly slot)
+  std::unordered_map<int, int> chnAndFrameCounterForCol;//This will track the index 'per column', index is index in a vector of tuples;
+  for (auto & tc: ord_tcs){
+    int theCol = tc.second;
+    if (chnAndFrameCounterForCol.count(theCol) == 0) chnAndFrameCounterForCol[theCol] = 0;
+    int theChnFrameIndex = chnAndFrameCounterForCol[theCol];
+    chnAndFrameCounterForCol[theCol]+=1;
+    int thePackedCCF = packColChnFrame(theCol,theConf.getChannelAtIndex(theCol,theChnFrameIndex),theConf.getFrameAtIndex(theCol,theChnFrameIndex));
+    theTCsWithChnFrame.push_back(std::make_pair(tc.first,thePackedCCF));
+  }
+  return theTCsWithChnFrame;
+}
+
+
+/*std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> HGCalLayer1EmulatorFwImpl::assignTCToChnAndFrame(std::unordered_map<int,std::vector<std::pair<int,int>>> chnsAndFrames, std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> ord_tcs) const {
   std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> theTCsWithChnFrame;
   //std::unordered_map<int, std::pair<int,int>> chnAndFrameCounterForCol; //Need to track channel and frame counter for particular column.
   //need map from column to index for that specific column. Index should be the index in a vector that already contains the possible combinations of chn,frame (posibly slot)
@@ -91,15 +128,12 @@ std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell,int>> HGCalLayer1Emulator
     theTCsWithChnFrame.push_back(std::make_pair(tc.first,thePackedCCF));
   }
   return theTCsWithChnFrame;
-}
+}*/
 
 
 int HGCalLayer1EmulatorFwImpl::packColChnFrame(int column, int channel, int frame) const {//temporary very dumb 3 int -> 1 int conversion, can make this much smarter
   int packed_bin = 0;
   packed_bin = column*100000+channel*1000+frame;
-  int col = packed_bin/100000;
-  int chn = (packed_bin-col*100000)/1000;
-  int frm = (packed_bin-chn*1000-col*100000);
   return packed_bin;
 }
 
