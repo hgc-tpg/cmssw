@@ -35,8 +35,8 @@ private:
   std::vector<uint32_t> cl_multicluster_id_;
   std::vector<float> cl_multicluster_pt_;
   std::vector<int> cl_column_;
-  std::vector<int> cl_channel_;
-  std::vector<int> cl_frame_;
+  std::vector<unsigned> cl_channel_;
+  std::vector<unsigned> cl_frame_;
 };
 
 DEFINE_EDM_PLUGIN(HGCalTriggerNtupleFactory, HGCalTriggerNtupleHGCClusters, "HGCalTriggerNtupleHGCClusters");
@@ -79,7 +79,7 @@ void HGCalTriggerNtupleHGCClusters::initialize(TTree& tree,
   tree.Branch(withPrefix("multicluster_pt"), &cl_multicluster_pt_);
   tree.Branch(withPrefix("column"), &cl_column_);
   tree.Branch(withPrefix("channel"), &cl_channel_);
-  tree.Branch(withPrefix("frame"), & cl_frame_);
+  tree.Branch(withPrefix("frame"), &cl_frame_);
 }
 
 void HGCalTriggerNtupleHGCClusters::fill(const edm::Event& e, const HGCalTriggerNtupleEventSetup& es) {

@@ -39,12 +39,10 @@ private:
 };
 
 HGCalLayer1PhiOrderWrapper::HGCalLayer1PhiOrderWrapper(const edm::ParameterSet& conf)
-    : HGCalLayer1PhiOrderWrapperBase(conf),
-      theAlgo_(),
-      theConfiguration_() {}
+    : HGCalLayer1PhiOrderWrapperBase(conf), theAlgo_(), theConfiguration_() {}
 
 void HGCalLayer1PhiOrderWrapper::convertCMSSWInputs(const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs,
-                                                      l1thgcfirmware::HGCalTriggerCellSACollection& fpga_tcs_SA) const {
+                                                    l1thgcfirmware::HGCalTriggerCellSACollection& fpga_tcs_SA) const {
   fpga_tcs_SA.clear();
   fpga_tcs_SA.reserve(fpga_tcs.size());
   unsigned int itc = 0;
@@ -53,7 +51,12 @@ void HGCalLayer1PhiOrderWrapper::convertCMSSWInputs(const std::vector<edm::Ptr<l
     phi += (phi < 0) ? M_PI : 0;
     unsigned int digi_phi = phi * FWfactor_;
     unsigned int digi_energy = (tc->mipPt()) * FWfactor_;
-    fpga_tcs_SA.emplace_back(true, true, 1, digi_phi, triggerTools_.layerWithOffset(tc->detId()), digi_energy); //Assign dummy RoverZbin to not change the dataformat/creators. 
+    fpga_tcs_SA.emplace_back(true,
+                             true,
+                             1,
+                             digi_phi,
+                             triggerTools_.layerWithOffset(tc->detId()),
+                             digi_energy);  //Assign dummy RoverZbin to not change the dataformat/creators.
     fpga_tcs_SA.back().setModuleId(triggerTools_.getModuleId(tc->detId()));
     fpga_tcs_SA.back().setCmsswIndex(std::make_pair(itc, 0));
     ++itc;
@@ -64,29 +67,29 @@ void HGCalLayer1PhiOrderWrapper::convertAlgorithmOutputs(
     const l1thgcfirmware::HGCalTriggerCellSACollection& fpga_tcs_out,
     const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs_original,
     l1t::HGCalClusterBxCollection& clusters) const {
-
   std::vector<l1t::HGCalCluster> clustersTmp;
 
-  for (std::vector<edm::Ptr<l1t::HGCalTriggerCell>>::const_iterator otc = fpga_tcs_original.begin(); otc!=fpga_tcs_original.end(); ++otc) {
+  for (std::vector<edm::Ptr<l1t::HGCalTriggerCell>>::const_iterator otc = fpga_tcs_original.begin();
+       otc != fpga_tcs_original.end();
+       ++otc) {
     clustersTmp.emplace_back(*otc);
   }
 
-
-  clusters.resize(0,clustersTmp.size());
+  clusters.resize(0, clustersTmp.size());
   for (auto& tc : fpga_tcs_out) {
     unsigned tc_cmssw_id = tc.cmsswIndex().first;
-    if (tc_cmssw_id < fpga_tcs_original.size()){
+    if (tc_cmssw_id < fpga_tcs_original.size()) {
       clustersTmp.at(tc_cmssw_id).setColumn(tc.column());
       clustersTmp.at(tc_cmssw_id).setFrame(tc.frame());
       clustersTmp.at(tc_cmssw_id).setChannel(tc.channel());
       clustersTmp.at(tc_cmssw_id).setModule(tc.moduleId());
-      clusters.set(0,tc_cmssw_id,clustersTmp.at(tc_cmssw_id));
+      clusters.set(0, tc_cmssw_id, clustersTmp.at(tc_cmssw_id));
     }
   }
 }
 
 void HGCalLayer1PhiOrderWrapper::process(const std::vector<edm::Ptr<l1t::HGCalTriggerCell>>& fpga_tcs,
-                                           l1t::HGCalClusterBxCollection& clusters) const {
+                                         l1t::HGCalClusterBxCollection& clusters) const {
   l1thgcfirmware::HGCalTriggerCellSACollection fpga_tcs_SA;
   convertCMSSWInputs(fpga_tcs, fpga_tcs_SA);
 
@@ -120,6 +123,4 @@ double HGCalLayer1PhiOrderWrapper::rotatedphi(double phi, unsigned sector) const
   return phi;
 }
 
-DEFINE_EDM_PLUGIN(HGCalLayer1PhiOrderWrapperBaseFactory,
-                  HGCalLayer1PhiOrderWrapper,
-                  "HGCalLayer1PhiOrderWrapper");
+DEFINE_EDM_PLUGIN(HGCalLayer1PhiOrderWrapperBaseFactory, HGCalLayer1PhiOrderWrapper, "HGCalLayer1PhiOrderWrapper");

@@ -69,8 +69,6 @@ void HGCalBackendLayer1Producer::produce(edm::Event& e, const edm::EventSetup& e
 
   for (unsigned i = 0; i < trigCellBxColl->size(); ++i) {
     edm::Ptr<l1t::HGCalTriggerCell> tc_ptr(trigCellBxColl, i);
-    //tc_ptr->setModuleId(triggerGeometry_->getModuleFromTriggerCell(tc_ptr->detId()));
-
     uint32_t fpga = 0;  // null detid
     if (!bypass_be_mapping_) {
       uint32_t module = triggerGeometry_->getModuleFromTriggerCell(tc_ptr->detId());
@@ -78,7 +76,6 @@ void HGCalBackendLayer1Producer::produce(edm::Event& e, const edm::EventSetup& e
     }
     // if bypass_be_mapping, TCs from the entire detector will be put in a single collection
     tcs_per_fpga[fpga].push_back(tc_ptr);
-    //tcs_per_fpga[fpga].back()->setModuleId(triggerGeometry_->getModuleFromTriggerCell(tc_ptr->detId()));
   }
 
   for (auto& fpga_tcs : tcs_per_fpga) {

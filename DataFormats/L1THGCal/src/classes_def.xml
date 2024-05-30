@@ -31,7 +31,7 @@
   <class name="l1t::HGCalClusterT<l1t::HGCalTriggerCell>" />
   <class name="l1t::HGCalClusterT<l1t::HGCalTriggerSums>" />
   <class name="l1t::HGCalCluster" ClassVersion="20">
-   <version ClassVersion="20" checksum="3677977079"/>
+   <version ClassVersion="20" checksum="3312252455"/>
    <version ClassVersion="19" checksum="214410871"/>
    <version ClassVersion="18" checksum="3346067797"/>
    <version ClassVersion="17" checksum="2841504063"/>

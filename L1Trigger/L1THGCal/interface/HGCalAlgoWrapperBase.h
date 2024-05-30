@@ -27,14 +27,14 @@ typedef HGCalAlgoWrapperBaseT<l1t::HGCalMulticlusterBxCollection,
     HGCalStage2FilteringWrapperBase;
 
 typedef HGCalAlgoWrapperBaseT<std::vector<edm::Ptr<l1t::HGCalTriggerCell>>,
-	                      std::vector<edm::Ptr<l1t::HGCalTriggerCell>>,
+                              std::vector<edm::Ptr<l1t::HGCalTriggerCell>>,
                               std::tuple<const HGCalTriggerGeometryBase* const, const unsigned&, const uint32_t&>>
     HGCalLayer1TruncationWrapperBase;
 
 typedef HGCalAlgoWrapperBaseT<std::vector<edm::Ptr<l1t::HGCalTriggerCell>>,
                               l1t::HGCalClusterBxCollection,
                               std::tuple<const HGCalTriggerGeometryBase* const, const unsigned&, const uint32_t&>>
-HGCalLayer1PhiOrderWrapperBase;
+    HGCalLayer1PhiOrderWrapperBase;
 
 #include "FWCore/PluginManager/interface/PluginFactory.h"
 typedef edmplugin::PluginFactory<HGCalHistoClusteringWrapperBase*(const edm::ParameterSet&)>

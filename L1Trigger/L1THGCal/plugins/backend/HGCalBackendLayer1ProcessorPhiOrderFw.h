@@ -27,6 +27,5 @@ void HGCalBackendLayer1ProcessorPhiOrderFw::run(
       geometry(), sector120, fpga_id};
   PhiOrderWrapper_->configure(configuration);
 
-  //std::vector<edm::Ptr<l1t::HGCalTriggerCell>> truncated_tcs;
   PhiOrderWrapper_->process(fpga_id_tcs.second, clusters);
 }
