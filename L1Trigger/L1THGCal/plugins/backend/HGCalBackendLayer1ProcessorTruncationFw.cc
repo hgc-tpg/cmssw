@@ -27,6 +27,7 @@ void HGCalBackendLayer1ProcessorTruncationFw::run(
       geometry(), sector120, fpga_id};
   truncationWrapper_->configure(configuration);
 
-  //std::vector<edm::Ptr<l1t::HGCalTriggerCell>> truncated_tcs;
-  truncationWrapper_->process(fpga_id_tcs.second, clusters);
+  std::vector<edm::Ptr<l1t::HGCalTriggerCell>> truncated_tcs;
+  truncationWrapper_->process(fpga_id_tcs.second, truncated_tcs);
+  clusteringDummy_->clusterizeDummy(truncated_tcs, clusters);
 }
