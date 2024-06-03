@@ -23,10 +23,9 @@ void HGCalClusteringDummyImpl::clusterizeDummy(const std::vector<edm::Ptr<l1t::H
   }
 
   /* store clusters in the persistent collection */
-  clusters.resize(0, clustersTmp.size());
-  for (unsigned i(0); i < clustersTmp.size(); ++i) {
-    calibratePt(clustersTmp.at(i));
-    clusters.set(0, i, clustersTmp.at(i));
+  for (auto& cluster : clustersTmp) {
+    calibratePt(cluster);
+    clusters.push_back(0, cluster);
   }
 }
 
