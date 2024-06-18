@@ -28,7 +28,6 @@ private:
 
   void setGeometry(const HGCalTriggerGeometryBase* const geom) { triggerTools_.setGeometry(geom); }
 
-  double rotatedphi(double phi, unsigned sector) const;
 
   HGCalTriggerTools triggerTools_;
   l1thgcfirmware::HGCalLayer1PhiOrderFwImpl theAlgo_;
@@ -47,7 +46,7 @@ void HGCalLayer1PhiOrderWrapper::convertCMSSWInputs(const std::vector<edm::Ptr<l
   fpga_tcs_SA.reserve(fpga_tcs.size());
   unsigned int itc = 0;
   for (auto& tc : fpga_tcs) {
-    double phi = rotatedphi(tc->phi(), theConfiguration_.phiSector());
+    double phi = triggerTools_.rotatedphi(tc->phi(), theConfiguration_.phiSector());
     phi += (phi < 0) ? M_PI : 0;
     unsigned int digi_phi = phi * FWfactor_;
     unsigned int digi_energy = (tc->mipPt()) * FWfactor_;
@@ -69,13 +68,13 @@ void HGCalLayer1PhiOrderWrapper::convertAlgorithmOutputs(
     l1t::HGCalClusterBxCollection& clusters) const {
   std::vector<l1t::HGCalCluster> clustersTmp;
 
+  //for (const auto& otc : fpga_tcs_original) {
   for (std::vector<edm::Ptr<l1t::HGCalTriggerCell>>::const_iterator otc = fpga_tcs_original.begin();
        otc != fpga_tcs_original.end();
        ++otc) {
     clustersTmp.emplace_back(*otc);
   }
 
-  clusters.resize(0, clustersTmp.size());
   for (auto& tc : fpga_tcs_out) {
     unsigned tc_cmssw_id = tc.cmsswIndex().first;
     if (tc_cmssw_id < fpga_tcs_original.size()) {
@@ -83,7 +82,7 @@ void HGCalLayer1PhiOrderWrapper::convertAlgorithmOutputs(
       clustersTmp.at(tc_cmssw_id).setFrame(tc.frame());
       clustersTmp.at(tc_cmssw_id).setChannel(tc.channel());
       clustersTmp.at(tc_cmssw_id).setModule(tc.moduleId());
-      clusters.set(0, tc_cmssw_id, clustersTmp.at(tc_cmssw_id));
+      clusters.push_back(0, clustersTmp.at(tc_cmssw_id));
     }
   }
 }
@@ -111,16 +110,5 @@ void HGCalLayer1PhiOrderWrapper::configure(
   theConfiguration_.configureMappingInfo();
 };
 
-double HGCalLayer1PhiOrderWrapper::rotatedphi(double phi, unsigned sector) const {
-  if (sector == 1) {
-    if (phi < M_PI and phi > 0)
-      phi = phi - (2. * M_PI / 3.);
-    else
-      phi = phi + (4. * M_PI / 3.);
-  } else if (sector == 2) {
-    phi = phi + (2. * M_PI / 3.);
-  }
-  return phi;
-}
 
 DEFINE_EDM_PLUGIN(HGCalLayer1PhiOrderWrapperBaseFactory, HGCalLayer1PhiOrderWrapper, "HGCalLayer1PhiOrderWrapper");

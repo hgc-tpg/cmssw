@@ -28,7 +28,6 @@ private:
 
   void setGeometry(const HGCalTriggerGeometryBase* const geom) { triggerTools_.setGeometry(geom); }
 
-  double rotatedphi(double phi, unsigned sector) const;
   unsigned rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const;
 
   HGCalTriggerTools triggerTools_;
@@ -62,7 +61,7 @@ void HGCalLayer1TruncationWrapper::convertCMSSWInputs(const std::vector<edm::Ptr
     double roverz = (std::sqrt(x * x + y * y) / std::abs(z));
     unsigned int rOverZbin =
         rozBin(roverz, theConfiguration_.rozMin(), theConfiguration_.rozMax(), theConfiguration_.rozBins());
-    double phi = rotatedphi(tc->phi(), theConfiguration_.phiSector());
+    double phi = triggerTools_.rotatedphi(tc->phi(), theConfiguration_.phiSector());
     phi += (phi < 0) ? M_PI : 0;
     unsigned int digi_phi = phi * FWfactor_;
     unsigned int digi_energy = (tc->mipPt()) * FWfactor_;
@@ -105,17 +104,6 @@ void HGCalLayer1TruncationWrapper::configure(
   theConfiguration_.setFPGAID(std::get<2>(configuration));
 };
 
-double HGCalLayer1TruncationWrapper::rotatedphi(double phi, unsigned sector) const {
-  if (sector == 1) {
-    if (phi < M_PI and phi > 0)
-      phi = phi - (2. * M_PI / 3.);
-    else
-      phi = phi + (4. * M_PI / 3.);
-  } else if (sector == 2) {
-    phi = phi + (2. * M_PI / 3.);
-  }
-  return phi;
-}
 
 unsigned HGCalLayer1TruncationWrapper::rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const {
   constexpr double margin = 1.001;

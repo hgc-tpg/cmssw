@@ -10,7 +10,6 @@ HGCalBackendLayer1ProcessorPhiOrderFw::HGCalBackendLayer1ProcessorPhiOrderFw(con
   const edm::ParameterSet& PhiOrderParamConfig = conf.getParameterSet("phiorder_parameters");
   const std::string& PhiOrderWrapperName = PhiOrderParamConfig.getParameter<std::string>("AlgoName");
 
-  clusteringDummy_ = std::make_unique<HGCalClusteringDummyImpl>(conf.getParameterSet("clustering_dummy_parameters"));
   PhiOrderWrapper_ = std::unique_ptr<HGCalLayer1PhiOrderWrapperBase>{
       HGCalLayer1PhiOrderWrapperBaseFactory::get()->create(PhiOrderWrapperName, PhiOrderParamConfig)};
 }
@@ -22,7 +21,6 @@ void HGCalBackendLayer1ProcessorPhiOrderFw::run(
   const uint32_t fpga_id = fpga_id_tcs.first;
 
   // Configuration
-  clusteringDummy_->setGeometry(geometry());
   const std::tuple<const HGCalTriggerGeometryBase* const, unsigned, uint32_t> configuration{
       geometry(), sector120, fpga_id};
   PhiOrderWrapper_->configure(configuration);
