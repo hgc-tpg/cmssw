@@ -310,3 +310,16 @@ DetId HGCalTriggerTools::simToReco(const DetId& simid, const HGCalTopology& topo
   }
   return recoid;
 }
+
+double HGCalTriggerTools::rotatedphi(double phi, unsigned sector) const {
+  if (sector == 1) {
+    if (phi < M_PI and phi > 0)
+      phi = phi - (2. * M_PI / 3.);
+    else
+      phi = phi + (4. * M_PI / 3.);
+  } else if (sector == 2) {
+    phi = phi + (2. * M_PI / 3.);
+  }
+  return phi;
+}
+
