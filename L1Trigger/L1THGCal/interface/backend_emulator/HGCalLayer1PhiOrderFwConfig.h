@@ -26,7 +26,8 @@ namespace l1thgcfirmware {
             chn_frame_slots_per_mod_and_col_[dummyModId_][i].push_back(std::make_pair(i + 4, j));
           }
         }
-        max_tcs_per_module_and_column_[dummyModId_].push_back(std::make_pair(i, chn_frame_slots_per_mod_and_col_[dummyModId_][i].size()));
+        max_tcs_per_module_and_column_[dummyModId_].push_back(
+            std::make_pair(i, chn_frame_slots_per_mod_and_col_[dummyModId_][i].size()));
       }
     }
 
@@ -48,9 +49,10 @@ namespace l1thgcfirmware {
   private:
     unsigned sector120_;
     uint32_t fpga_id_;
-    std::unordered_map<unsigned, std::vector<std::pair<int, unsigned>>> max_tcs_per_module_and_column_; 
-    std::unordered_map<unsigned, std::unordered_map<int, std::vector<std::pair<unsigned, unsigned>>>> chn_frame_slots_per_mod_and_col_;
-    const uint32_t dummyModId_ = 1879048191; // Just to avoid filling maps for random module ID values. Temporary!!
+    std::unordered_map<unsigned, std::vector<std::pair<int, unsigned>>> max_tcs_per_module_and_column_;
+    std::unordered_map<unsigned, std::unordered_map<int, std::vector<std::pair<unsigned, unsigned>>>>
+        chn_frame_slots_per_mod_and_col_;
+    const uint32_t dummyModId_ = 1879048191;  // Just to avoid filling maps for random module ID values. Temporary!!
   };
 
 }  // namespace l1thgcfirmware

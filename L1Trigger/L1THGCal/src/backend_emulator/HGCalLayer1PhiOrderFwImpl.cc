@@ -34,9 +34,9 @@ unsigned HGCalLayer1PhiOrderFwImpl::run(const l1thgcfirmware::HGCalTriggerCellSA
 
     for (auto& tcobj : tcs_with_ccf) {
       tcs_out.push_back(tcobj.first);
-      int col=0;
-      unsigned ch=0;
-      unsigned fr=0;
+      int col = 0;
+      unsigned ch = 0;
+      unsigned fr = 0;
       unpackColChnFrame(tcobj.second, col, ch, fr);
       tcs_out.back().setColumn(col);
       tcs_out.back().setChannel(ch);
@@ -57,11 +57,11 @@ std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell, int>> HGCalLayer1PhiOrde
   unsigned nTCinColumn = 0;  //Number of TCs already in column
   for (auto& tc : tcs) {
     uint32_t theModuleId = tc.moduleId();
-    while (!(nTCinColumn < theConf.getColBudgetAtIndex(theModuleId,theColumnIndex))) {
+    while (!(nTCinColumn < theConf.getColBudgetAtIndex(theModuleId, theColumnIndex))) {
       theColumnIndex += 1;
       nTCinColumn = 0;
     }
-    theOrderedTCs.push_back(std::make_pair(tc, theConf.getColFromBudgetMapAtIndex(theModuleId,theColumnIndex)));
+    theOrderedTCs.push_back(std::make_pair(tc, theConf.getColFromBudgetMapAtIndex(theModuleId, theColumnIndex)));
     nTCinColumn += 1;
   }
   return theOrderedTCs;
@@ -73,7 +73,7 @@ std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell, int>> HGCalLayer1PhiOrde
   std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell, int>> theTCsWithChnFrame;
   //std::unordered_map<int, std::pair<int,int>> chnAndFrameCounterForCol; //Need to track channel and frame counter for particular column.
   //need map from column to index for that specific column. Index should be the index in a vector that already contains the possible combinations of chn,frame (could add the slot)
-  std::unordered_map<unsigned,std::unordered_map<int, unsigned>>
+  std::unordered_map<unsigned, std::unordered_map<int, unsigned>>
       chnAndFrameCounterForCol;  //This will track the index 'per column', index is index in a vector of tuples;
   for (auto& tc : ord_tcs) {
     int theCol = tc.second;
@@ -82,28 +82,30 @@ std::vector<std::pair<l1thgcfirmware::HGCalTriggerCell, int>> HGCalLayer1PhiOrde
       chnAndFrameCounterForCol[theModuleId][theCol] = 0;
     unsigned theChnFrameIndex = chnAndFrameCounterForCol[theModuleId][theCol];
     chnAndFrameCounterForCol[theModuleId][theCol] += 1;
-    int thePackedCCF = packColChnFrame(
-        theCol, theConf.getChannelAtIndex(theModuleId, theCol, theChnFrameIndex), theConf.getFrameAtIndex(theModuleId,theCol, theChnFrameIndex));
+    int thePackedCCF = packColChnFrame(theCol,
+                                       theConf.getChannelAtIndex(theModuleId, theCol, theChnFrameIndex),
+                                       theConf.getFrameAtIndex(theModuleId, theCol, theChnFrameIndex));
     theTCsWithChnFrame.push_back(std::make_pair(tc.first, thePackedCCF));
   }
   return theTCsWithChnFrame;
 }
 
-int HGCalLayer1PhiOrderFwImpl::packColChnFrame(int column, unsigned channel, unsigned frame)
-    const { 
+int HGCalLayer1PhiOrderFwImpl::packColChnFrame(int column, unsigned channel, unsigned frame) const {
   int packed_bin = 0;
   packed_bin |= (frame & frameMask_) << frameOffset_;
   packed_bin |= (channel & channelMask_) << channelOffset_;
   packed_bin |= (std::abs(column) & columnMask_) << columnOffset_;
-  if(column<0) packed_bin = -packed_bin;
+  if (column < 0)
+    packed_bin = -packed_bin;
   return packed_bin;
 }
 
 void HGCalLayer1PhiOrderFwImpl::unpackColChnFrame(int packedBin, int& column, unsigned& channel, unsigned& frame) const {
   int colsign = 1;
-  if(packedBin<0) colsign = -1;
+  if (packedBin < 0)
+    colsign = -1;
   frame = (std::abs(packedBin) >> frameOffset_) & frameMask_;
   channel = (std::abs(packedBin) >> channelOffset_) & channelMask_;
   column = (std::abs(packedBin) >> columnOffset_) & columnMask_;
-  column = colsign*column;
+  column = colsign * column;
 }

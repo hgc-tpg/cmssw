@@ -104,7 +104,6 @@ void HGCalLayer1TruncationWrapper::configure(
   theConfiguration_.setFPGAID(std::get<2>(configuration));
 };
 
-
 unsigned HGCalLayer1TruncationWrapper::rozBin(double roverz, double rozmin, double rozmax, unsigned rozbins) const {
   constexpr double margin = 1.001;
   double roz_bin_size = (rozbins > 0 ? (rozmax - rozmin) * margin / double(rozbins) : 0.);

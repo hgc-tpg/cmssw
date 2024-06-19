@@ -28,7 +28,6 @@ private:
 
   void setGeometry(const HGCalTriggerGeometryBase* const geom) { triggerTools_.setGeometry(geom); }
 
-
   HGCalTriggerTools triggerTools_;
   l1thgcfirmware::HGCalLayer1PhiOrderFwImpl theAlgo_;
   l1thgcfirmware::HGCalLayer1PhiOrderFwConfig theConfiguration_;
@@ -109,6 +108,5 @@ void HGCalLayer1PhiOrderWrapper::configure(
   theConfiguration_.setFPGAID(std::get<2>(configuration));
   theConfiguration_.configureMappingInfo();
 };
-
 
 DEFINE_EDM_PLUGIN(HGCalLayer1PhiOrderWrapperBaseFactory, HGCalLayer1PhiOrderWrapper, "HGCalLayer1PhiOrderWrapper");

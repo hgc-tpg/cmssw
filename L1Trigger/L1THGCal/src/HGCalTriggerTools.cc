@@ -322,4 +322,3 @@ double HGCalTriggerTools::rotatedphi(double phi, unsigned sector) const {
   }
   return phi;
 }
-
