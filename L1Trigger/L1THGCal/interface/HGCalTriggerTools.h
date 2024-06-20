@@ -95,7 +95,7 @@ public:
   };
   SubDetectorType getSubDetectorType(const DetId& id) const;
 
-  double rotatedphi(double phi, unsigned sector) const;
+  double rotatePhiToSectorZero(double phi, unsigned sector) const;
 
 private:
   const HGCalTriggerGeometryBase* geom_;

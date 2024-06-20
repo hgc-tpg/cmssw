@@ -45,7 +45,7 @@ void HGCalLayer1PhiOrderWrapper::convertCMSSWInputs(const std::vector<edm::Ptr<l
   fpga_tcs_SA.reserve(fpga_tcs.size());
   unsigned int itc = 0;
   for (auto& tc : fpga_tcs) {
-    double phi = triggerTools_.rotatedphi(tc->phi(), theConfiguration_.phiSector());
+    double phi = triggerTools_.rotatePhiToSectorZero(tc->phi(), theConfiguration_.phiSector());
     phi += (phi < 0) ? M_PI : 0;
     unsigned int digi_phi = phi * FWfactor_;
     unsigned int digi_energy = (tc->mipPt()) * FWfactor_;
