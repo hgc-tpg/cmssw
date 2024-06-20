@@ -23,11 +23,11 @@ namespace l1thgcfirmware {
                  l1thgcfirmware::HGCalTriggerCellSACollection& tcs_out) const;
 
   private:
-    const int columnMask_ = 0x1F;  //
-    const int columnOffset_ = 6;   //Frame and channel both have 3 bits
-    const int channelMask_ = 7;    //3 bits for channel
-    const int channelOffset_ = 3;  //Frame has 3 bits
-    const int frameMask_ = 7;      //3 bits for frame
+    const int columnMask_ = 0x1F;  //5 bits
+    const int columnOffset_ = 11;  //7 bits frame, 4 bits channel
+    const int channelMask_ = 0xF;  //4 bits for channel
+    const int channelOffset_ = 7;  //Frame has 7 bits (to fit 108 frames)
+    const int frameMask_ = 0x7F;   //7 bits for frame
     const int frameOffset_ = 0;
 
     int packColChnFrame(int column, unsigned channel, unsigned frame) const;
