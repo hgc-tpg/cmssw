@@ -27,4 +27,4 @@ def custom_layer1_phiorderfw(process):
 
 
 def custom_layer1_latestfw(process):
-    return custom_layer1_phiorderfw(process)
+    return custom_layer1_truncationfw(process)
