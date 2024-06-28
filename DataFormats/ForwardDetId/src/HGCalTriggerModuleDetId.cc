@@ -45,5 +45,5 @@ std::ostream& operator<<(std::ostream& s, const HGCalTriggerModuleDetId& id) {
   return s << "HGCalTriggerModuleDetId::HFNose:EE:HSil:HScin= " << id.isHFNose() << ":" << id.isEE() << ":"
            << id.isHSilicon() << ":" << id.isHScintillator() << " type= " << id.type() << " z= " << id.zside()
            << " layer= " << id.layer() << " sector= " << id.sector() << " module(u,v)= (" << id.moduleU() << ","
-           << id.moduleV() << ")";
+           << id.moduleV() << ") trigger subdetector= " << id.triggerSubdetId();
 }

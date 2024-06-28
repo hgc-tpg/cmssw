@@ -108,6 +108,7 @@ private:
   unsigned totalLayers_ = 0;
 
   void fillMaps();
+
   bool validCellId(unsigned det, unsigned cell_id) const;
   bool validTriggerCellFromCells(const unsigned) const;
 
@@ -813,6 +814,7 @@ void HGCalTriggerGeometryV9Imp3::fillMaps() {
   // read json mapping file
   json mapping_config;
   std::ifstream json_input_file(jsonMappingFile_.fullPath());
+  std::cout << "JSON mapping file : " << jsonMappingFile_.fullPath() << std::endl;
   if (!json_input_file.is_open()) {
     throw cms::Exception("MissingDataFile") << "Cannot open HGCalTriggerGeometry L1TMapping file\n";
   }
@@ -820,9 +822,12 @@ void HGCalTriggerGeometryV9Imp3::fillMaps() {
 
   try {
     //Stage 2 to Stage 1 links mapping
+    std::cout << "Doing Stage 2 FPGA -> Stage 1 link mapping" << std::endl;
     for (unsigned stage2_id = 0; stage2_id < mapping_config.at("Stage2").size(); stage2_id++) {
+      std::cout << "Got a stage 2 ID : " << stage2_id << std::endl;
       for (unsigned link_id = 0; link_id < mapping_config.at("Stage2").at(stage2_id).at("Stage1Links").size();
            link_id++) {
+            std::cout << "---> Link ID : " << link_id << " " << mapping_config.at("Stage2").at(stage2_id).at("Stage1Links").at(link_id).at("SameSector") << std::endl;
         stage2_to_stage1links_.emplace(stage2_id, link_id);
         stage1links_samesector_.emplace(
             link_id, mapping_config.at("Stage2").at(stage2_id).at("Stage1Links").at(link_id).at("SameSector"));
@@ -834,12 +839,15 @@ void HGCalTriggerGeometryV9Imp3::fillMaps() {
   }
 
   try {
+    std::cout << "Stage 1 links to Stage 2" << std::endl;
+    std::cout << "N stage 1 links : " << mapping_config.at("Stage1Links").size() << std::endl;
     for (unsigned link_id = 0; link_id < mapping_config.at("Stage1Links").size(); link_id++) {
       //Stage 1 links to Stage 1 FPGAs mapping
       stage1link_to_stage1_.emplace(link_id, mapping_config.at("Stage1Links").at(link_id).at("Stage1"));
 
       //Stage 1 links to Stage 2 mapping
       stage1link_to_stage2_.emplace(link_id, mapping_config.at("Stage1Links").at(link_id).at("Stage2SameSector"));
+      std::cout << "---> Link ID, S1 FPGA, S2 FGPA : " << link_id << " " << mapping_config.at("Stage1Links").at(link_id).at("Stage1") << " " << mapping_config.at("Stage1Links").at(link_id).at("Stage2SameSector") << std::endl;
     }
   } catch (const json::exception& e) {
     edm::LogError("HGCalTriggerGeometryV9Imp3")
@@ -847,17 +855,22 @@ void HGCalTriggerGeometryV9Imp3::fillMaps() {
   }
 
   try {
+    // std::cout << "Stage 1 boards to links mapping" << std::endl;
     for (unsigned stage1_id = 0; stage1_id < mapping_config.at("Stage1").size(); stage1_id++) {
       //Stage 1 to Stage 1 links mapping
+      // std::cout << "---> Stage 1 board ID : " << stage1_id << std::endl;
       for (auto& link_id : mapping_config.at("Stage1").at(stage1_id).at("Stage1Links")) {
+        // std::cout << "Link ID : " << link_id << std::endl;
         stage1_to_stage1links_.emplace(stage1_id, link_id);
       }
 
       //Stage 1 to lpgbt mapping
       std::vector<unsigned> lpgbt_id_vec;
       for (auto& lpgbt_id : mapping_config.at("Stage1").at(stage1_id).at("lpgbts")) {
+        // std::cout << "LPGBT ID : " << lpgbt_id << std::endl;
         lpgbt_id_vec.push_back(lpgbt_id);
       }
+      // std::cout << "N LPGBT : " << lpgbt_id_vec.size() << std::endl;
       stage1_to_lpgbts_.emplace(stage1_id, lpgbt_id_vec);
     }
 

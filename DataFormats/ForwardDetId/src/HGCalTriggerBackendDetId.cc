@@ -37,7 +37,7 @@ HGCalTriggerBackendDetId& HGCalTriggerBackendDetId::operator=(const DetId& gen) 
 }
 
 std::ostream& operator<<(std::ostream& s, const HGCalTriggerBackendDetId& id) {
-  return s << "HGCalTriggerBackendDetId::lpGBT:Stage1 FPGA:Stage2 FPGA= " << id.isLpGBT() << ":" << id.isStage1FPGA()
+  return s << "HGCalTriggerBackendDetId::lpGBT:Stage1 FPGA:Stage 1 link:Stage2 FPGA= " << id.isLpGBT() << ":" << id.isStage1FPGA()
            << ":" << id.isStage1Link() << ":" << id.isStage2FPGA() << " z= " << id.zside() << " sector= " << id.sector()
            << " id= " << id.label();
 }

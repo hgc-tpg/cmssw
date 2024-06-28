@@ -1,5 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
+def custom_geometry_V16_Imp4(process):
+    process.l1tHGCalTriggerGeometryESProducer.TriggerGeometry.TriggerGeometryName = cms.string('HGCalTriggerGeometryV9Imp4')
+    return process
+
 def custom_geometry_V11_Imp3(process, stage1links=120):
     process.l1tHGCalTriggerGeometryESProducer.TriggerGeometry.TriggerGeometryName = cms.string('HGCalTriggerGeometryV9Imp3')
     process.l1tHGCalTriggerGeometryESProducer.TriggerGeometry.ScintillatorTriggerCellSize = cms.uint32(2)

@@ -1,0 +1,80 @@
+<HGC-S1 id="SeparateTD.120.MixedTypes.NoSplit" SeparateDaq="True" Src="geometry/Regions.120.NoSplit.xml" Src-hash="3f68d5a5313eee2535c02e81d406e6a4" Timestamp="2024-02-04 07:48:57.365747">
+	<!-- Hierarchical XML file representing the S1-cards for one 120-degree sector of one endcap                                                                                                                 -->
+	<!-- Hierarchy is S1 board => Ref(Region)                                                                                                                                                                    -->
+	<S1 id="0x64000000">
+		<Region href="0x61430000" />
+		<Region href="0x61620002" />
+		<Region href="0x616F0004" />
+	</S1>
+	<S1 id="0x64010000">
+		<Region href="0x61410000" />
+		<Region href="0x61640002" />
+		<Region href="0x616F0002" />
+		<Region href="0x61690004" />
+	</S1>
+	<S1 id="0x64020000">
+		<Region href="0x61610002" />
+		<Region href="0x61680002" />
+		<Region href="0x61690002" />
+		<Region href="0x616B0004" />
+	</S1>
+	<S1 id="0x64030000">
+		<Region href="0x61490000" />
+		<Region href="0x61670002" />
+		<Region href="0x616C0002" />
+		<Region href="0x61650004" />
+	</S1>
+	<S1 id="0x64040000">
+		<Region href="0x61470000" />
+		<Region href="0x616A0002" />
+		<Region href="0x616B0002" />
+		<Region href="0x61660004" />
+	</S1>
+	<S1 id="0x64050000">
+		<Region href="0x614D0000" />
+		<Region href="0x61660002" />
+		<Region href="0x616E0002" />
+		<Region href="0x61630004" />
+	</S1>
+	<S1 id="0x64060000">
+		<Region href="0x61510000" />
+		<Region href="0x615B0002" />
+		<Region href="0x61680004" />
+	</S1>
+	<S1 id="0x64070000">
+		<Region href="0x61590000" />
+		<Region href="0x615F0002" />
+		<Region href="0x61670004" />
+	</S1>
+	<S1 id="0x64080000">
+		<Region href="0x61570000" />
+		<Region href="0x615E0002" />
+		<Region href="0x616A0004" />
+	</S1>
+	<S1 id="0x64090000">
+		<Region href="0x614F0000" />
+		<Region href="0x61600002" />
+		<Region href="0x61640004" />
+	</S1>
+	<S1 id="0x640A0000">
+		<Region href="0x61530000" />
+		<Region href="0x615D0002" />
+		<Region href="0x616C0004" />
+	</S1>
+	<S1 id="0x640B0000">
+		<Region href="0x61550000" />
+		<Region href="0x615C0002" />
+		<Region href="0x616D0004" />
+	</S1>
+	<S1 id="0x640C0000">
+		<Region href="0x61450000" />
+		<Region href="0x61630002" />
+		<Region href="0x616E0004" />
+	</S1>
+	<S1 id="0x640D0000">
+		<Region href="0x614B0000" />
+		<Region href="0x61650002" />
+		<Region href="0x616D0002" />
+		<Region href="0x61620004" />
+	</S1>
+</HGC-S1>
