@@ -7,3 +7,5 @@ EDM_REGISTER_PLUGINFACTORY(HGCalTowerMapsWrapperBaseFactory, "HGCalTowerMapsWrap
 EDM_REGISTER_PLUGINFACTORY(HGCalStage2FilteringWrapperBaseFactory, "HGCalStage2FilteringWrapperBaseFactory");
 
 EDM_REGISTER_PLUGINFACTORY(HGCalLayer1TruncationWrapperBaseFactory, "HGCalLayer1TruncationWrapperBaseFactory");
+
+EDM_REGISTER_PLUGINFACTORY(HGCalLayer1PhiOrderWrapperBaseFactory, "HGCalLayer1PhiOrderWrapperBaseFactory");
