@@ -261,6 +261,8 @@ float HGCalTriggerTools::getTCPhi(const DetId& id) const {
   return getPhi(position);
 }
 
+uint32_t HGCalTriggerTools::getModuleId(const DetId& id) const { return geom_->getModuleFromTriggerCell(id); }
+
 float HGCalTriggerTools::getPt(const GlobalPoint& position, const float& hitEnergy, const float& vertex_z) const {
   float eta = getEta(position, vertex_z);
   float pt = hitEnergy / cosh(eta);
@@ -307,4 +309,16 @@ DetId HGCalTriggerTools::simToReco(const DetId& simid, const HGCalTopology& topo
     recoid = simid;
   }
   return recoid;
+}
+
+double HGCalTriggerTools::rotatePhiToSectorZero(double phi, unsigned sector) const {
+  if (sector == 1) {
+    if (phi < M_PI and phi > 0)
+      phi = phi - (2. * M_PI / 3.);
+    else
+      phi = phi + (4. * M_PI / 3.);
+  } else if (sector == 2) {
+    phi = phi + (2. * M_PI / 3.);
+  }
+  return phi;
 }

@@ -68,6 +68,8 @@ public:
   float getTCPhi(const DetId& id) const;
   float getTCPt(const DetId& id, const float& hitEnergy, const float& vertex_z = 0.) const;
 
+  uint32_t getModuleId(const DetId& id) const;
+
   inline const HGCalTriggerGeometryBase* getTriggerGeometry() const { return geom_; };
 
   float getLayerZ(const unsigned& layerWithOffset) const;
@@ -92,6 +94,8 @@ public:
     hgcal_scintillator,
   };
   SubDetectorType getSubDetectorType(const DetId& id) const;
+
+  double rotatePhiToSectorZero(double phi, unsigned sector) const;
 
 private:
   const HGCalTriggerGeometryBase* geom_;

@@ -18,8 +18,17 @@ def custom_ntuples_layer1_truncationfw(process):
             ntuple.Clusters = cms.InputTag('l1tHGCalBackEndLayer1Producer:HGCalBackendLayer1ProcessorTruncationFw')
     return process
 
+def custom_ntuples_layer1_phiorderfw(process):
+    ntuples = process.l1tHGCalTriggerNtuplizer.Ntuples
+    for ntuple in ntuples:
+        if ntuple.NtupleName=='HGCalTriggerNtupleHGCClusters' or \
+           ntuple.NtupleName=='HGCalTriggerNtupleHGCTriggerCells' or \
+           ntuple.NtupleName=='HGCalTriggerNtupleHGCMulticlusters':
+            ntuple.Clusters = cms.InputTag('l1tHGCalBackEndLayer1Producer:HGCalBackendLayer1ProcessorPhiOrderFw')
+    return process
+
 def custom_ntuples_layer1_latestfw(process):
-    return custom_ntuples_layer1_truncationfw(process)
+    return custom_ntuples_layer1_phiorderfw(process)
 
 def custom_ntuples_standalone_clustering(process):
     ntuples = process.l1tHGCalTriggerNtuplizer.Ntuples
