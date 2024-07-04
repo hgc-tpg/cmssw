@@ -33,6 +33,9 @@ namespace l1t {
       void setCompressedCharge(uint32_t value) { compressedCharge_ = value; }
       uint32_t compressedCharge() const { return compressedCharge_; }
 
+      void setModuleId(uint32_t value) { moduleId_ = value; }
+      uint32_t moduleId() { return moduleId_; }
+
       void setPt(double pT);
 
     private:
@@ -43,6 +46,7 @@ namespace l1t {
 
       uint32_t uncompressedCharge_{0};
       uint32_t compressedCharge_{0};
+      uint32_t moduleId_{0};
     };
   }  // namespace io_v1
   using HGCalTriggerCell = io_v1::HGCalTriggerCell;
