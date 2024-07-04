@@ -96,6 +96,15 @@ layer1truncationfw_proc = cms.PSet(ProcessorName  = cms.string('HGCalBackendLaye
                    clustering_dummy_parameters = dummy_C2d_params.clone()
                    )
 
+phiorderfw_params = cms.PSet(AlgoName=cms.string('HGCalLayer1PhiOrderWrapper'))
+
+
+layer1phiorderfw_proc = cms.PSet(ProcessorName  = cms.string('HGCalBackendLayer1ProcessorPhiOrderFw'),
+                   phiorder_parameters = phiorderfw_params.clone(),
+                   clustering_dummy_parameters = dummy_C2d_params.clone()
+                   )
+
+
 clustering2d_proc = cms.PSet(ProcessorName  = cms.string('HGCalBackendLayer1Processor2DClustering'),
                    C2d_parameters = dummy_C2d_params.clone()
                    )
