@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 def custom_geometry_V16_Imp4(process):
     process.l1tHGCalTriggerGeometryESProducer.TriggerGeometry.TriggerGeometryName = cms.string('HGCalTriggerGeometryV9Imp4')
+    process.l1tHGCalTriggerGeometryESProducer.TriggerGeometry.xmlMappingFile = cms.FileInPath("L1Trigger/L1THGCal/data/mapping/scenarios/CombinedTD.60.MixedTypes.NoSplit/BackendMapping.xml")
     return process
 
 def custom_geometry_V11_Imp3(process, stage1links=120):
