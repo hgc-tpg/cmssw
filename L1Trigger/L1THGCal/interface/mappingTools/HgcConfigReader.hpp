@@ -29,58 +29,52 @@ namespace l1thgcmapping {
   //     return 0;
   //   }
 
-  // public:    
+  // public:
   //   template< typename... Args > std::size_t operator()( const std::tuple< Args... > &x ) const { return combine_hash( x, std::make_index_sequence<sizeof...(Args)>{}); }
-    
+
   // };
 
-
-
-  struct Maps
-  {
+  struct Maps {
     typedef uint32_t tID;
-    typedef std::tuple< tID , tID > tID2;   
-    typedef std::tuple< tID , tID , tID > tID3;    
-    typedef std::unordered_map < tID , tID > tId_to_tId;
-    typedef std::unordered_map < tID , std::vector<tID> > tId_to_tIds;
-    typedef std::unordered_multimap < tID , tID > multi_tId_to_tId;
-    // typedef std::unordered_map < tID2 , tID3 , tuplehash > tId2_to_tId3;  
-    // typedef std::unordered_map < tID3 , tID2 , tuplehash > tId3_to_tId2;  
-    
-    tId_to_tId       module_to_motherboard;
+    typedef std::tuple<tID, tID> tID2;
+    typedef std::tuple<tID, tID, tID> tID3;
+    typedef std::unordered_map<tID, tID> tId_to_tId;
+    typedef std::unordered_map<tID, std::vector<tID> > tId_to_tIds;
+    typedef std::unordered_multimap<tID, tID> multi_tId_to_tId;
+    // typedef std::unordered_map < tID2 , tID3 , tuplehash > tId2_to_tId3;
+    // typedef std::unordered_map < tID3 , tID2 , tuplehash > tId3_to_tId2;
+
+    tId_to_tId module_to_motherboard;
     multi_tId_to_tId motherboard_to_module;
 
-    tId_to_tId       motherboard_to_region;
-    multi_tId_to_tId region_to_motherboard;  
+    tId_to_tId motherboard_to_region;
+    multi_tId_to_tId region_to_motherboard;
 
-    tId_to_tId       region_to_stage1;
-    multi_tId_to_tId stage1_to_region;  
+    tId_to_tId region_to_stage1;
+    multi_tId_to_tId stage1_to_region;
 
     // tId3_to_tId2     moduleColIndex_to_s1ChannelFrame;
-    // tId2_to_tId3     s1ChannelFrame_to_moduleColIndex; 
-    
-    tId_to_tId       belink_to_reflink;
+    // tId2_to_tId3     s1ChannelFrame_to_moduleColIndex;
 
-    tId_to_tId       s1out_to_belink;
-    tId_to_tId       belink_to_s1out;
+    tId_to_tId belink_to_reflink;
 
-    tId_to_tId       belink_to_s2in;
-    tId_to_tId       s2in_to_belink; 
-    
-    tId_to_tIds      motherboard_to_trigLPGBTs;
-    tId_to_tId       motherboard_to_nTrigLPGBT;
+    tId_to_tId s1out_to_belink;
+    tId_to_tId belink_to_s1out;
 
+    tId_to_tId belink_to_s2in;
+    tId_to_tId s2in_to_belink;
+
+    tId_to_tIds motherboard_to_trigLPGBTs;
+    tId_to_tId motherboard_to_nTrigLPGBT;
   };
 
+  void OpenGeometry(const std::string& aFilename, const std::string& basePath, Maps& aMaps);
 
-  void OpenGeometry( const std::string& aFilename, const std::string& basePath, Maps& aMaps );
+  void OpenRegions(const std::string& aFilename, const std::string& basePath, Maps& aMaps);
 
-  void OpenRegions( const std::string& aFilename, const std::string& basePath, Maps& aMaps );
+  void OpenS1(const std::string& aFilename, const std::string& basePath, Maps& aMaps);
 
-  void OpenS1( const std::string& aFilename, const std::string& basePath, Maps& aMaps );
+  void OpenChannelAllocation(const std::string& aFilename, const std::string& basePath, Maps& aMaps);
 
-  void OpenChannelAllocation( const std::string& aFilename, const std::string& basePath, Maps& aMaps );
-
-  void OpenBackendMapping( const std::string& aFilename, const std::string& basePath, Maps& aMaps );
-}
-
+  void OpenBackendMapping(const std::string& aFilename, const std::string& basePath, Maps& aMaps);
+}  // namespace l1thgcmapping

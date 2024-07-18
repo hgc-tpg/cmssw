@@ -827,7 +827,9 @@ void HGCalTriggerGeometryV9Imp3::fillMaps() {
       std::cout << "Got a stage 2 ID : " << stage2_id << std::endl;
       for (unsigned link_id = 0; link_id < mapping_config.at("Stage2").at(stage2_id).at("Stage1Links").size();
            link_id++) {
-            std::cout << "---> Link ID : " << link_id << " " << mapping_config.at("Stage2").at(stage2_id).at("Stage1Links").at(link_id).at("SameSector") << std::endl;
+        std::cout << "---> Link ID : " << link_id << " "
+                  << mapping_config.at("Stage2").at(stage2_id).at("Stage1Links").at(link_id).at("SameSector")
+                  << std::endl;
         stage2_to_stage1links_.emplace(stage2_id, link_id);
         stage1links_samesector_.emplace(
             link_id, mapping_config.at("Stage2").at(stage2_id).at("Stage1Links").at(link_id).at("SameSector"));
@@ -847,7 +849,9 @@ void HGCalTriggerGeometryV9Imp3::fillMaps() {
 
       //Stage 1 links to Stage 2 mapping
       stage1link_to_stage2_.emplace(link_id, mapping_config.at("Stage1Links").at(link_id).at("Stage2SameSector"));
-      std::cout << "---> Link ID, S1 FPGA, S2 FGPA : " << link_id << " " << mapping_config.at("Stage1Links").at(link_id).at("Stage1") << " " << mapping_config.at("Stage1Links").at(link_id).at("Stage2SameSector") << std::endl;
+      std::cout << "---> Link ID, S1 FPGA, S2 FGPA : " << link_id << " "
+                << mapping_config.at("Stage1Links").at(link_id).at("Stage1") << " "
+                << mapping_config.at("Stage1Links").at(link_id).at("Stage2SameSector") << std::endl;
     }
   } catch (const json::exception& e) {
     edm::LogError("HGCalTriggerGeometryV9Imp3")

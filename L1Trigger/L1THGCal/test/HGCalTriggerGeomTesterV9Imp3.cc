@@ -675,11 +675,11 @@ bool HGCalTriggerGeomTesterV9Imp3::checkMappingConsistency() {
         if (cells_geom.find(cell) == cells_geom.end()) {
           if (id.triggerSubdetId() == HGCalTriggerSubdetector::HGCalHScTrigger) {
             // edm::LogProblem("BadModule") << "Error: \n Cell " << cell << "(" << HGCScintillatorDetId(cell)
-                                        //  << ")\n has not been found in \n module " << HGCalTriggerModuleDetId(id);
+            //  << ")\n has not been found in \n module " << HGCalTriggerModuleDetId(id);
             continue;
           } else if (id.triggerSubdetId() == HGCalTriggerSubdetector::HFNoseTrigger) {
             // edm::LogProblem("BadModule") << "Error: \n Cell " << cell << "(" << HFNoseDetId(cell)
-                                        //  << ")\n has not been found in \n module " << HGCalTriggerModuleDetId(id);
+            //  << ")\n has not been found in \n module " << HGCalTriggerModuleDetId(id);
             continue;
           } else {
             edm::LogProblem("BadModule") << "Error: \n Cell " << cell << "(" << HGCSiliconDetId(cell)
@@ -735,26 +735,25 @@ bool HGCalTriggerGeomTesterV9Imp3::checkMappingConsistency() {
       }
       const auto& modules = stage1_modules.second;
       for (auto module : modules) {
-        if ( HGCalTriggerModuleDetId(module).isHScintillator() ) continue; 
+        if (HGCalTriggerModuleDetId(module).isHScintillator())
+          continue;
         if (modules_geom.find(module) == modules_geom.end()) {
-
           // std::cout << "Not found exact match for module : " << HGCalTriggerModuleDetId(module) << " \n in stage-1 : " << HGCalTriggerBackendDetId(stage1) << std::endl;
           bool foundOKMatch = false;
           HGCalTriggerModuleDetId moduleDetId(module);
-          for ( const auto& geom_module : modules_geom ) {
+          for (const auto& geom_module : modules_geom) {
             HGCalTriggerModuleDetId geomModuleDetId(geom_module);
-            if ( moduleDetId.layer() == geomModuleDetId.layer() && \
-                 moduleDetId.moduleU() == geomModuleDetId.moduleU() && \
-                 moduleDetId.moduleV() == geomModuleDetId.moduleV()
-             ) {
+            if (moduleDetId.layer() == geomModuleDetId.layer() && moduleDetId.moduleU() == geomModuleDetId.moduleU() &&
+                moduleDetId.moduleV() == geomModuleDetId.moduleV()) {
               // std::cout << "Got a partial match" << std::endl;
               // std::cout << "Looking for : " << moduleDetId << std::endl;
               // std::cout << "Found this  : " << geomModuleDetId << std::endl;
               foundOKMatch = true;
               break;
-             }
+            }
           }
-          if ( foundOKMatch ) continue;
+          if (foundOKMatch)
+            continue;
           edm::LogProblem("BadStage1") << "Error: \n Module " << module << "(" << HGCalTriggerModuleDetId(module)
                                        << ")\n has not been found in \n stage-1 " << HGCalTriggerBackendDetId(stage1);
           std::stringstream output;

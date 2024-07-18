@@ -103,7 +103,7 @@ namespace l1thgcmapping {
   void OpenGeometry( const std::string& aFilename, const std::string& basePath, Maps& aMaps )
   {
     
-    auto doc_xerces = XmlOpen( basePath + aFilename.c_str() );
+    auto doc_xerces = XmlOpen( basePath + aFilename );
     ReciprocalInsert( doc_xerces, "Module" , HexId , HexId , aMaps.module_to_motherboard , aMaps.motherboard_to_module );
 
     DOMNodeList* mbList = doc_xerces->getElementsByTagName(XMLString::transcode("Motherboard"));
@@ -129,7 +129,7 @@ namespace l1thgcmapping {
 
   void OpenRegions( const std::string& aFilename, const std::string& basePath, Maps& aMaps )
   {   
-    auto doc_xerces = XmlOpen( basePath + aFilename.c_str() );
+    auto doc_xerces = XmlOpen( basePath + aFilename );
     OpenGeometry( getChildXMLFileName(doc_xerces), basePath, aMaps );
 
     ReciprocalInsert( doc_xerces, "Motherboard" , HexHref , HexId , aMaps.motherboard_to_region , aMaps.region_to_motherboard );
@@ -137,7 +137,7 @@ namespace l1thgcmapping {
 
   void OpenS1( const std::string& aFilename, const std::string& basePath, Maps& aMaps )
   {
-    auto doc_xerces = XmlOpen( basePath + aFilename.c_str() );
+    auto doc_xerces = XmlOpen( basePath + aFilename );
     OpenRegions( getChildXMLFileName(doc_xerces), basePath, aMaps );
     ReciprocalInsert( doc_xerces, "Region" , HexHref , HexId , aMaps.region_to_stage1 , aMaps.stage1_to_region );
     // std::cout << "Number of entries in region_to_stage1 map after xerces-C : " << aMaps.region_to_stage1.size() << " " << aMaps.region_to_stage1.begin()->first << " " << aMaps.region_to_stage1.begin()->second << std::endl;
@@ -145,7 +145,7 @@ namespace l1thgcmapping {
 
   void OpenChannelAllocation( const std::string& aFilename, const std::string& basePath, Maps& aMaps )
   {
-    auto doc_xerces = XmlOpen( basePath + aFilename.c_str() );
+    auto doc_xerces = XmlOpen( basePath + aFilename );
     OpenS1( getChildXMLFileName(doc_xerces), basePath, aMaps );
 
     // Filling of maps required for firmware mapping
@@ -183,7 +183,7 @@ namespace l1thgcmapping {
 
   void OpenBackendMapping( const std::string& aFilename, const std::string& basePath, Maps& aMaps )
   {
-    auto doc_xerces = XmlOpen( aFilename.c_str() );
+    auto doc_xerces = XmlOpen( aFilename );
     OpenChannelAllocation( getChildXMLFileName(doc_xerces), basePath, aMaps ); 
 
     DOMNodeList* nodeList = doc_xerces->getElementsByTagName(XMLString::transcode("fibre"));
