@@ -350,7 +350,9 @@ HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9Imp3::getCellsFromTrigg
       std::vector<int> cellvs = trigger_cell_trig_id.cellV();
       for (unsigned ic = 0; ic < cellus.size(); ic++) {
         HGCSiliconDetId cell_det_id(cell_det, zside, type, layer, waferu, waferv, cellus[ic], cellvs[ic]);
-        cell_det_ids.emplace(cell_det_id);
+        if (validCellId(cell_det, cell_det_id)) {
+          cell_det_ids.emplace(cell_det_id);
+        }
       }
     }
   }
