@@ -46,6 +46,7 @@ public:
   unsigned getStage2FpgaFromStage1Link(const unsigned) const final;
   geom_set getStage1LinksFromStage1Fpga(const unsigned) const final;
   std::vector<unsigned> getLpgbtsFromStage1Fpga(const unsigned) const final;
+  geom_set getModulesFromStage1Fpga(const unsigned) const final;
   unsigned getStage1FpgaFromLpgbt(const unsigned) const final;
   geom_set getModulesFromLpgbt(const unsigned) const final;
   geom_set getLpgbtsFromModule(const unsigned) const final;
@@ -671,6 +672,14 @@ std::vector<unsigned> HGCalTriggerGeometryV9Imp3::getLpgbtsFromStage1Fpga(const 
   return lpgbt_ids;
 }
 
+HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9Imp3::getModulesFromStage1Fpga(const unsigned stage1_id) const {
+  auto lpgbts = getLpgbtsFromStage1Fpga(stage1_id);
+  geom_set modules;
+  for (auto lpgbt : lpgbts) {
+    modules.merge(getModulesFromLpgbt(lpgbt));
+  }
+  return modules;
+}
 unsigned HGCalTriggerGeometryV9Imp3::getStage1FpgaFromLpgbt(const unsigned lpgbt_id) const {
   HGCalTriggerBackendDetId id(lpgbt_id);
   unsigned stage1_label = lpgbt_to_stage1_.at(id.label());
