@@ -12,7 +12,6 @@
 
 #include <vector>
 
-
 class HGCalTriggerGeometryV9 : public HGCalTriggerGeometryBase {
 public:
   HGCalTriggerGeometryV9(const edm::ParameterSet& conf);
@@ -36,7 +35,7 @@ public:
 
   geom_set getStage1FpgasFromStage2Fpga(const unsigned) const final;
   geom_set getStage2FpgasFromStage1Fpga(const unsigned) const final;
-// - Checkpoint
+
   geom_set getStage1LinksFromStage2Fpga(const unsigned) const override = 0;
   unsigned getStage1FpgaFromStage1Link(const unsigned) const final;
   unsigned getStage2FpgaFromStage1Link(const unsigned) const override = 0;
@@ -47,7 +46,6 @@ public:
   geom_set getModulesFromLpgbt(const unsigned) const final;
   geom_set getLpgbtsFromModule(const unsigned) const final;
   unsigned getStage1FpgaFromModule(const unsigned module_id) const final;
-// - Checkpoint
   unsigned getLinksInModule(const unsigned module_id) const final;
   unsigned getModuleSize(const unsigned module_id) const final;
 
@@ -81,6 +79,7 @@ protected:
   void layerWithoutOffsetAndSubdetId(unsigned& layer, int& subdetId, bool isSilicon) const;
   unsigned getNextSector(const unsigned sector) const;
   unsigned getPreviousSector(const unsigned sector) const;
+
 private:
   // HSc trigger cell grouping
   unsigned hSc_triggercell_size_ = 2;
@@ -117,5 +116,4 @@ private:
   unsigned tcEtaphiMappingToSector0(int& tc_ieta, int& tc_iphi) const;
   void getScintillatoriEtaiPhi(int& ieta, int& iphi, int tc_eta, int tc_phi, unsigned layer) const;
   unsigned layerWithOffset(unsigned) const;
-
 };

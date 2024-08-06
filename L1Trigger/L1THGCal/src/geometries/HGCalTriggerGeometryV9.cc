@@ -20,8 +20,8 @@ void HGCalTriggerGeometryV9::reset() {
 }
 
 void HGCalTriggerGeometryV9::initialize(const HGCalGeometry* hgc_ee_geometry,
-                                            const HGCalGeometry* hgc_hsi_geometry,
-                                            const HGCalGeometry* hgc_hsc_geometry) {
+                                        const HGCalGeometry* hgc_hsi_geometry,
+                                        const HGCalGeometry* hgc_hsc_geometry) {
   setEEGeometry(hgc_ee_geometry);
   setHSiGeometry(hgc_hsi_geometry);
   setHScGeometry(hgc_hsc_geometry);
@@ -44,9 +44,9 @@ void HGCalTriggerGeometryV9::initialize(const HGCalGeometry* hgc_ee_geometry,
 }
 
 void HGCalTriggerGeometryV9::initialize(const HGCalGeometry* hgc_ee_geometry,
-                                            const HGCalGeometry* hgc_hsi_geometry,
-                                            const HGCalGeometry* hgc_hsc_geometry,
-                                            const HGCalGeometry* hgc_nose_geometry) {
+                                        const HGCalGeometry* hgc_hsi_geometry,
+                                        const HGCalGeometry* hgc_hsc_geometry,
+                                        const HGCalGeometry* hgc_nose_geometry) {
   setEEGeometry(hgc_ee_geometry);
   setHSiGeometry(hgc_hsi_geometry);
   setHScGeometry(hgc_hsc_geometry);
@@ -256,8 +256,7 @@ HGCalTriggerGeometryBase::geom_ordered_set HGCalTriggerGeometryV9::getOrderedCel
   return cell_det_ids;
 }
 
-HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9::getTriggerCellsFromModule(
-    const unsigned module_id) const {
+HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9::getTriggerCellsFromModule(const unsigned module_id) const {
   HGCalTriggerModuleDetId hgc_module_id(module_id);
   unsigned subdet = hgc_module_id.triggerSubdetId();
 
@@ -455,8 +454,7 @@ unsigned HGCalTriggerGeometryV9::getPreviousSector(const unsigned sector) const 
   return previous_sector;
 }
 
-HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9::getStage1FpgasFromStage2Fpga(
-    const unsigned stage2_id) const {
+HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9::getStage1FpgasFromStage2Fpga(const unsigned stage2_id) const {
   geom_set stage1_ids;
 
   geom_set stage1_links = getStage1LinksFromStage2Fpga(stage2_id);
@@ -467,8 +465,7 @@ HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9::getStage1FpgasFromSta
   return stage1_ids;
 }
 
-HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9::getStage2FpgasFromStage1Fpga(
-    const unsigned stage1_id) const {
+HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9::getStage2FpgasFromStage1Fpga(const unsigned stage1_id) const {
   geom_set stage2_ids;
 
   geom_set stage1_links = getStage1LinksFromStage1Fpga(stage1_id);
@@ -518,8 +515,7 @@ unsigned HGCalTriggerGeometryV9::getStage1FpgaFromStage1Link(const unsigned link
 //   return HGCalTriggerBackendDetId(id.zside(), HGCalTriggerBackendDetId::BackendType::Stage2FPGA, sector, 0);
 // }
 
-HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9::getStage1LinksFromStage1Fpga(
-    const unsigned stage1_id) const {
+HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9::getStage1LinksFromStage1Fpga(const unsigned stage1_id) const {
   geom_set stage1link_ids;
   HGCalTriggerBackendDetId id(stage1_id);
 
@@ -840,8 +836,7 @@ HGCalGeomRotation::WaferCentring HGCalTriggerGeometryV9::getWaferCentring(unsign
   } else if (subdet == HGCalTriggerSubdetector::HFNoseTrigger) {  //HFNose
     return HGCalGeomRotation::WaferCentring::WaferCentred;
   } else {
-    edm::LogError("HGCalTriggerGeometryV9")
-        << "HGCalTriggerGeometryV9: trigger sub-detector expected to be silicon";
+    edm::LogError("HGCalTriggerGeometryV9") << "HGCalTriggerGeometryV9: trigger sub-detector expected to be silicon";
     return HGCalGeomRotation::WaferCentring::WaferCentred;
   }
 }
