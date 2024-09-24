@@ -29,7 +29,7 @@ private:
   void fillMaps() final;
   edm::FileInPath xmlMappingFile_;
 
-  std::unordered_map<unsigned, bool> stage1links_whichsector_;
+  std::unordered_map<unsigned, int> stage1links_whichsector_;
 };
 
 HGCalTriggerGeometryV9Imp4::HGCalTriggerGeometryV9Imp4(const edm::ParameterSet& conf)
