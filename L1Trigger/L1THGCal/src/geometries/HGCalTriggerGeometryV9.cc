@@ -834,10 +834,14 @@ HGCalGeomRotation::WaferCentring HGCalTriggerGeometryV9::getWaferCentring(unsign
   if (subdet == HGCalTriggerSubdetector::HGCalEETrigger) {  // CE-E
     return HGCalGeomRotation::WaferCentring::WaferCentred;
   } else if (subdet == HGCalTriggerSubdetector::HGCalHSiTrigger) {
+    auto topologyLayerType = hsiTopology().dddConstants().layerType(layer);
+
     if ((layer % 2) == 1) {  // CE-H Odd
-      return HGCalGeomRotation::WaferCentring::CornerCentredY;
+      if ( topologyLayerType == HGCalTypes::WaferCenter || topologyLayerType == HGCalTypes::WaferCenterR || topologyLayerType == HGCalTypes::WaferCenterB ) return HGCalGeomRotation::WaferCentring::WaferCentred;
+      else return HGCalGeomRotation::WaferCentring::CornerCentredY;
     } else {  // CE-H Even
-      return HGCalGeomRotation::WaferCentring::CornerCentredMercedes;
+      if ( topologyLayerType == HGCalTypes::WaferCenter || topologyLayerType == HGCalTypes::WaferCenterR || topologyLayerType == HGCalTypes::WaferCenterB ) return HGCalGeomRotation::WaferCentring::WaferCentred;
+      else return HGCalGeomRotation::WaferCentring::CornerCentredMercedes;
     }
   } else if (subdet == HGCalTriggerSubdetector::HFNoseTrigger) {  //HFNose
     return HGCalGeomRotation::WaferCentring::WaferCentred;
