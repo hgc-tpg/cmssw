@@ -107,6 +107,7 @@ unsigned HGCalTriggerGeometryV9::getTriggerCellFromCell(const unsigned cell_id) 
   // Silicon
   else if (det == DetId::HGCalEE || det == DetId::HGCalHSi) {
     HGCSiliconDetId cell_si_id(cell_id);
+
     trigger_cell_id = HGCalTriggerDetId(
         det == DetId::HGCalEE ? HGCalTriggerSubdetector::HGCalEETrigger : HGCalTriggerSubdetector::HGCalHSiTrigger,
         cell_si_id.zside(),
@@ -147,7 +148,8 @@ unsigned HGCalTriggerGeometryV9::getModuleFromTriggerCell(const unsigned trigger
     // HGCalTriggerModuleDetId type only distinguishes between fine and coarse divisions of scintillator (0 or 1 for type)
     // HGCScintillatorDetId defines two types of coarse divisions (1 or 2, and 0 still meaning fine divisions)
     // Correct for this here
-    if (tc_type==2) tc_type=1;
+    if (tc_type == 2)
+      tc_type = 1;
 
     module_id =
         HGCalTriggerModuleDetId(HGCalTriggerSubdetector::HGCalHScTrigger, zside, tc_type, layer, sector, ieta, iphi);
@@ -176,6 +178,7 @@ unsigned HGCalTriggerGeometryV9::getModuleFromTriggerCell(const unsigned trigger
     int waferu = trigger_cell_trig_id.waferU();
     int waferv = trigger_cell_trig_id.waferV();
     unsigned sector = geom_rotation_120_.uvMappingToSector0(getWaferCentring(layer, subdet), waferu, waferv);
+
     module_id = HGCalTriggerModuleDetId(HGCalTriggerSubdetector(subdet), zside, tc_type, layer, sector, waferu, waferv);
   }
   return module_id;
@@ -462,7 +465,6 @@ unsigned HGCalTriggerGeometryV9::getPreviousSector(const unsigned sector) const 
 
 HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV9::getStage1FpgasFromStage2Fpga(const unsigned stage2_id) const {
   geom_set stage1_ids;
-
   geom_set stage1_links = getStage1LinksFromStage2Fpga(stage2_id);
   for (const auto& stage1_link : stage1_links) {
     stage1_ids.emplace(getStage1FpgaFromStage1Link(stage1_link));
@@ -837,11 +839,17 @@ HGCalGeomRotation::WaferCentring HGCalTriggerGeometryV9::getWaferCentring(unsign
     auto topologyLayerType = hsiTopology().dddConstants().layerType(layer);
 
     if ((layer % 2) == 1) {  // CE-H Odd
-      if ( topologyLayerType == HGCalTypes::WaferCenter || topologyLayerType == HGCalTypes::WaferCenterR || topologyLayerType == HGCalTypes::WaferCenterB ) return HGCalGeomRotation::WaferCentring::WaferCentred;
-      else return HGCalGeomRotation::WaferCentring::CornerCentredY;
+      if (topologyLayerType == HGCalTypes::WaferCenter || topologyLayerType == HGCalTypes::WaferCenterR ||
+          topologyLayerType == HGCalTypes::WaferCenterB)
+        return HGCalGeomRotation::WaferCentring::WaferCentred;
+      else
+        return HGCalGeomRotation::WaferCentring::CornerCentredY;
     } else {  // CE-H Even
-      if ( topologyLayerType == HGCalTypes::WaferCenter || topologyLayerType == HGCalTypes::WaferCenterR || topologyLayerType == HGCalTypes::WaferCenterB ) return HGCalGeomRotation::WaferCentring::WaferCentred;
-      else return HGCalGeomRotation::WaferCentring::CornerCentredMercedes;
+      if (topologyLayerType == HGCalTypes::WaferCenter || topologyLayerType == HGCalTypes::WaferCenterR ||
+          topologyLayerType == HGCalTypes::WaferCenterB)
+        return HGCalGeomRotation::WaferCentring::WaferCentred;
+      else
+        return HGCalGeomRotation::WaferCentring::CornerCentredMercedes;
     }
   } else if (subdet == HGCalTriggerSubdetector::HFNoseTrigger) {  //HFNose
     return HGCalGeomRotation::WaferCentring::WaferCentred;
