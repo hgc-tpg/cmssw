@@ -269,6 +269,14 @@ unsigned HGCalTriggerGeometryV9Imp3::getModuleFromTriggerCell(const unsigned tri
     int ieta = 0;
     int iphi = 0;
     getScintillatoriEtaiPhi(ieta, iphi, tc_eta, tc_phi, layer);
+
+    // HGCalTriggerModuleDetId type only distinguishes between fine and coarse divisions of scintillator (0 or 1 for type)
+    // HGCScintillatorDetId defines two types of coarse divisions (1 or 2, and 0 still meaning fine divisions)
+    // Correct for this here
+    if (tc_type == 2) {
+      tc_type = 1;
+    }
+
     module_id =
         HGCalTriggerModuleDetId(HGCalTriggerSubdetector::HGCalHScTrigger, zside, tc_type, layer, sector, ieta, iphi);
   }
