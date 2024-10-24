@@ -964,18 +964,29 @@ void HGCalTriggerGeometryV9Imp3::etaphiMappingFromSector0(int& ieta, int& iphi, 
 
 HGCalGeomRotation::WaferCentring HGCalTriggerGeometryV9Imp3::getWaferCentring(unsigned layer, int subdet) const {
   if (subdet == HGCalTriggerSubdetector::HGCalEETrigger) {  // CE-E
-    return HGCalGeomRotation::WaferCentring::WaferCentred;
+    return HGCalGeomRotation::WaferCentring::WaferCentred;  // All layers are wafer centred
   } else if (subdet == HGCalTriggerSubdetector::HGCalHSiTrigger) {
+    auto topologyLayerType = hsiTopology().dddConstants().layerType(layer);
+
     if ((layer % 2) == 1) {  // CE-H Odd
-      return HGCalGeomRotation::WaferCentring::CornerCentredY;
+      // Check topology for wafer centred layers, otherwise CornerCentredY
+      if (topologyLayerType == HGCalTypes::WaferCenter || topologyLayerType == HGCalTypes::WaferCenterR ||
+          topologyLayerType == HGCalTypes::WaferCenterB)
+        return HGCalGeomRotation::WaferCentring::WaferCentred;
+      else
+        return HGCalGeomRotation::WaferCentring::CornerCentredY;
     } else {  // CE-H Even
-      return HGCalGeomRotation::WaferCentring::CornerCentredMercedes;
+      // Check topology for wafer centred layers, otherwise CornerCentredMercedes
+      if (topologyLayerType == HGCalTypes::WaferCenter || topologyLayerType == HGCalTypes::WaferCenterR ||
+          topologyLayerType == HGCalTypes::WaferCenterB)
+        return HGCalGeomRotation::WaferCentring::WaferCentred;
+      else
+        return HGCalGeomRotation::WaferCentring::CornerCentredMercedes;
     }
   } else if (subdet == HGCalTriggerSubdetector::HFNoseTrigger) {  //HFNose
     return HGCalGeomRotation::WaferCentring::WaferCentred;
   } else {
-    edm::LogError("HGCalTriggerGeometryV9Imp3")
-        << "HGCalTriggerGeometryV9Imp3: trigger sub-detector expected to be silicon";
+    edm::LogError("HGCalTriggerGeometryV9") << "HGCalTriggerGeometryV9: trigger sub-detector expected to be silicon";
     return HGCalGeomRotation::WaferCentring::WaferCentred;
   }
 }
