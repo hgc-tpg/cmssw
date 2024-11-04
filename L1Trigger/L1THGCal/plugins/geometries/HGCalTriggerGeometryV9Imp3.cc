@@ -968,21 +968,13 @@ HGCalGeomRotation::WaferCentring HGCalTriggerGeometryV9Imp3::getWaferCentring(un
   } else if (subdet == HGCalTriggerSubdetector::HGCalHSiTrigger) {
     auto topologyLayerType = hsiTopology().dddConstants().layerType(layer);
 
-    if ((layer % 2) == 1) {  // CE-H Odd
-      // Check topology for wafer centred layers, otherwise CornerCentredY
-      if (topologyLayerType == HGCalTypes::WaferCenter || topologyLayerType == HGCalTypes::WaferCenterR ||
-          topologyLayerType == HGCalTypes::WaferCenterB)
-        return HGCalGeomRotation::WaferCentring::WaferCentred;
-      else
-        return HGCalGeomRotation::WaferCentring::CornerCentredY;
-    } else {  // CE-H Even
-      // Check topology for wafer centred layers, otherwise CornerCentredMercedes
-      if (topologyLayerType == HGCalTypes::WaferCenter || topologyLayerType == HGCalTypes::WaferCenterR ||
-          topologyLayerType == HGCalTypes::WaferCenterB)
-        return HGCalGeomRotation::WaferCentring::WaferCentred;
-      else
-        return HGCalGeomRotation::WaferCentring::CornerCentredMercedes;
-    }
+    if (topologyLayerType == HGCalTypes::CornerCenterYp)
+      return HGCalGeomRotation::WaferCentring::CornerCentredMercedes;
+    else if (topologyLayerType == HGCalTypes::CornerCenterYm)
+      return HGCalGeomRotation::WaferCentring::CornerCentredY;
+    else
+      return HGCalGeomRotation::WaferCentring::WaferCentred;
+
   } else if (subdet == HGCalTriggerSubdetector::HFNoseTrigger) {  //HFNose
     return HGCalGeomRotation::WaferCentring::WaferCentred;
   } else {
