@@ -146,8 +146,8 @@ void HGCalTriggerGeometryV16Imp1::reset() {
 }
 
 void HGCalTriggerGeometryV16Imp1::initialize(const HGCalGeometry* hgc_ee_geometry,
-                                            const HGCalGeometry* hgc_hsi_geometry,
-                                            const HGCalGeometry* hgc_hsc_geometry) {
+                                             const HGCalGeometry* hgc_hsi_geometry,
+                                             const HGCalGeometry* hgc_hsc_geometry) {
   setEEGeometry(hgc_ee_geometry);
   setHSiGeometry(hgc_hsi_geometry);
   setHScGeometry(hgc_hsc_geometry);
@@ -170,9 +170,9 @@ void HGCalTriggerGeometryV16Imp1::initialize(const HGCalGeometry* hgc_ee_geometr
 }
 
 void HGCalTriggerGeometryV16Imp1::initialize(const HGCalGeometry* hgc_ee_geometry,
-                                            const HGCalGeometry* hgc_hsi_geometry,
-                                            const HGCalGeometry* hgc_hsc_geometry,
-                                            const HGCalGeometry* hgc_nose_geometry) {
+                                             const HGCalGeometry* hgc_hsi_geometry,
+                                             const HGCalGeometry* hgc_hsc_geometry,
+                                             const HGCalGeometry* hgc_nose_geometry) {
   setEEGeometry(hgc_ee_geometry);
   setHSiGeometry(hgc_hsi_geometry);
   setHScGeometry(hgc_hsc_geometry);
@@ -680,7 +680,8 @@ std::vector<unsigned> HGCalTriggerGeometryV16Imp1::getLpgbtsFromStage1Fpga(const
   return lpgbt_ids;
 }
 
-HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV16Imp1::getModulesFromStage1Fpga(const unsigned stage1_id) const {
+HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV16Imp1::getModulesFromStage1Fpga(
+    const unsigned stage1_id) const {
   auto lpgbts = getLpgbtsFromStage1Fpga(stage1_id);
   geom_set modules;
   for (auto lpgbt : lpgbts) {
