@@ -269,7 +269,6 @@ unsigned HGCalTriggerGeometryV9Imp3::getModuleFromTriggerCell(const unsigned tri
     int ieta = 0;
     int iphi = 0;
     getScintillatoriEtaiPhi(ieta, iphi, tc_eta, tc_phi, layer);
-
     module_id =
         HGCalTriggerModuleDetId(HGCalTriggerSubdetector::HGCalHScTrigger, zside, tc_type, layer, sector, ieta, iphi);
   }
