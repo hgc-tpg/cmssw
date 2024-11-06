@@ -64,8 +64,8 @@ from L1Trigger.L1THGCal.customLayer1 import custom_layer1_latestfw
 process = custom_layer1_latestfw(process)
 
 # Switch to latest trigger geometry containing information on links mapping
-from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V11_Imp3
-process = custom_geometry_V11_Imp3(process)
+from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V16_Imp1
+process = custom_geometry_V16_Imp1(process)
 
 process.hgcl1tpg_step = cms.Path(process.L1THGCalTriggerPrimitives)
 
