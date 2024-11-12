@@ -20,10 +20,12 @@ phase2_hfnose.toReplaceWith(
 
 from Configuration.Eras.Modifier_phase2_hgcalV10_cff import phase2_hgcalV10
 from Configuration.Eras.Modifier_phase2_hgcalV11_cff import phase2_hgcalV11
-from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V10, custom_geometry_V11_Imp3
+from Configuration.Eras.Modifier_phase2_hgcalV16_cff import phase2_hgcalV16
+from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V10, custom_geometry_V11_Imp3, custom_geometry_V16_Imp1
 from L1Trigger.L1THGCal.customCalibration import  custom_cluster_calibration_global
 modifyHgcalTriggerPrimitivesWithV10Geometry_ = (phase2_hgcalV10 & ~phase2_hgcalV11).makeProcessModifier(custom_geometry_V10)
-modifyHgcalTriggerPrimitivesWithV11Geometry_ = phase2_hgcalV11.makeProcessModifier(custom_geometry_V11_Imp3)
+modifyHgcalTriggerPrimitivesWithV11Geometry_ = (phase2_hgcalV11 & ~phase2_hgcalV16).makeProcessModifier(custom_geometry_V11_Imp3)
+modifyHgcalTriggerPrimitivesWithV16Geometry_ = phase2_hgcalV16.makeProcessModifier(custom_geometry_V16_Imp1)
 
 from Configuration.ProcessModifiers.convertHGCalDigisSim_cff import convertHGCalDigisSim
 # can't declare a producer version of simHGCalUnsuppressedDigis in the normal flow of things,
