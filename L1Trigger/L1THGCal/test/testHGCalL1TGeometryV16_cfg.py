@@ -60,8 +60,8 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 # Eventually modify default geometry parameters
-from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V11_Imp3
-process = custom_geometry_V11_Imp3(process)
+from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V16_Imp1
+process = custom_geometry_V16_Imp1(process)
 
 tester_cells = cms.PSet(
     TesterName = cms.string('HGCalTriggerGeoTesterCells')
