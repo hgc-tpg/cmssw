@@ -109,7 +109,7 @@ custom_conc_proc = cms.PSet(ProcessorName  = cms.string('HGCalConcentratorProces
                           threshold_scintillator = cms.double(2.), # MipT
                           coarsenTriggerCells = cms.vuint32(0,0,0),
                           fixedDataSizePerHGCROC = cms.bool(False),
-                          allTrigCellsInTrigSums = cms.bool(False),
+                          allTrigCellsInTrigSums = cms.bool(True),
                           type_energy_division = cms.string('superTriggerCell'),# superTriggerCell,oneBitFraction,equalShare
                           stcSize = STC_4_AND_16_SIZES,
                           ctcSize = CTC_2_SIZES,

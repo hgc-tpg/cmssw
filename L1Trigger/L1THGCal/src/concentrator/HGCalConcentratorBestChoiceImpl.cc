@@ -23,7 +23,8 @@ void HGCalConcentratorBestChoiceImpl::select(unsigned nLinks,
   std::sort(
       trigCellVecOutput.begin(),
       trigCellVecOutput.end(),
-      [](const l1t::HGCalTriggerCell& a, const l1t::HGCalTriggerCell& b) -> bool { return a.mipPt() > b.mipPt(); });
+      // [](const l1t::HGCalTriggerCell& a, const l1t::HGCalTriggerCell& b) -> bool { return a.mipPt() > b.mipPt(); });
+      [](const l1t::HGCalTriggerCell& a, const l1t::HGCalTriggerCell& b) -> bool { return a.pt() > b.pt(); });
 
   uint32_t nLinksIndex = 0;
   if (nLinks > kLinkMask_) {
@@ -33,6 +34,7 @@ void HGCalConcentratorBestChoiceImpl::select(unsigned nLinks,
   nLinksIndex |= ((nLinks - 1) & kLinkMask_);
   nLinksIndex |= (((nWafers - 1) & kWaferMask_) << kWaferOffset_);
   unsigned nData = nData_.at(nLinksIndex);
+  // std::cout<<"nLinks="<<nLinks<<" | nTC="<<nData<<"\n";
   if (nData == 0) {
     throw cms::Exception("BadConfig") << "BestChoice: NData=0 for "
                                       << " NWafers=" << nWafers << " and NLinks=" << nLinks;
