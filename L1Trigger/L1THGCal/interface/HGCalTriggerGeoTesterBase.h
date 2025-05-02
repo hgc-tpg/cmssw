@@ -54,8 +54,8 @@ private:
 
 class HGCalTriggerGeoTesterBase {
 public:
-  HGCalTriggerGeoTesterBase(const edm::ParameterSet& conf) : name_(conf.getParameter<std::string>("TesterName")){};
-  virtual ~HGCalTriggerGeoTesterBase(){};
+  HGCalTriggerGeoTesterBase(const edm::ParameterSet& conf) : name_(conf.getParameter<std::string>("TesterName")) {};
+  virtual ~HGCalTriggerGeoTesterBase() {};
   const std::string& name() const { return name_; }
   virtual void initialize(TTree*, const edm::ParameterSet&) = 0;
   virtual void check(const HGCalTriggerGeoTesterEventSetup&) = 0;

@@ -8,7 +8,7 @@
 class HGCalTriggerGeoTesterTriggerCells : public HGCalTriggerGeoTesterBase {
 public:
   HGCalTriggerGeoTesterTriggerCells(const edm::ParameterSet& conf);
-  ~HGCalTriggerGeoTesterTriggerCells() override{};
+  ~HGCalTriggerGeoTesterTriggerCells() override {};
   void initialize(TTree*, const edm::ParameterSet&) final;
   void check(const HGCalTriggerGeoTesterEventSetup& es) final;
   void fill(const HGCalTriggerGeoTesterEventSetup& es) final;
