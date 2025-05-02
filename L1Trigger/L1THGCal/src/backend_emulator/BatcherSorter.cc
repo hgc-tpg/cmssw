@@ -154,8 +154,8 @@ void BatcherSorter::sorter(data_to_sort_t& list_sorter, adress_t& list_adresses)
         }
 
       }  //Label2
-    }    //Label1
-  }      //Label0
+    }  //Label1
+  }  //Label0
 
   //Replica of output array. Important for correct HW synthesis
   for (i = 0; i < NS; i++) {
@@ -211,7 +211,7 @@ void BatcherSorter::merger(const unsigned& NM, data_to_merge_t& list_merger, adr
       }
 
     }  //Label2
-  }    //Label1
+  }  //Label1
 
   //Replica of output array. Important for correct HW synthesis
   for (i = 0; i < NM; i++) {
