@@ -60,10 +60,14 @@ process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 
 process.hgcl1tpg_step = cms.Path(process.L1THGCalTriggerPrimitives)
 
+from L1Trigger.L1THGCal.customTriggerCellSelect import custom_triggercellselect_mixedBestChoiceSuperTriggerCell
+custom_triggercellselect_mixedBestChoiceSuperTriggerCell(process)
+
 
 # load ntuplizer
 process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
 process.ntuple_step = cms.Path(process.L1THGCalTriggerNtuples)
+process.ntuple_multiclusters.FillLayerInfo = True
 
 # Schedule definition
 process.schedule = cms.Schedule(process.hgcl1tpg_step, process.ntuple_step)
