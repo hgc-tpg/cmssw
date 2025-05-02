@@ -4,7 +4,7 @@
 class HGCalTriggerGeoTesterCells : public HGCalTriggerGeoTesterBase {
 public:
   HGCalTriggerGeoTesterCells(const edm::ParameterSet& conf);
-  ~HGCalTriggerGeoTesterCells() override{};
+  ~HGCalTriggerGeoTesterCells() override {};
   void initialize(TTree*, const edm::ParameterSet&) final;
   void check(const HGCalTriggerGeoTesterEventSetup& es) final;
   void fill(const HGCalTriggerGeoTesterEventSetup& es) final;
