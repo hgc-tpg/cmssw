@@ -9,7 +9,7 @@
 class HGCalTriggerGeoTesterBackendStage1 : public HGCalTriggerGeoTesterBase {
 public:
   HGCalTriggerGeoTesterBackendStage1(const edm::ParameterSet& conf);
-  ~HGCalTriggerGeoTesterBackendStage1() override{};
+  ~HGCalTriggerGeoTesterBackendStage1() override {};
   void initialize(TTree*, const edm::ParameterSet&) final;
   void check(const HGCalTriggerGeoTesterEventSetup& es) final;
   void fill(const HGCalTriggerGeoTesterEventSetup& es) final;
