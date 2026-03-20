@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from L1Trigger.L1THGCal.l1tHGCalBackEndLayer1Producer_cfi import truncation_params
 from L1Trigger.L1THGCal.hgcalBackendLayer2_fwClustering_cfi import layer2ClusteringFw_Params
 
 def custom_clustering_standalone(process):
