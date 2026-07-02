@@ -112,6 +112,7 @@ private:
   bool validTriggerCellFromCells(const unsigned) const;
 
   int detIdWaferType(unsigned det, unsigned layer, short waferU, short waferV) const;
+  bool waferIsHD(unsigned det, unsigned layer, short waferU, short waferV) const;
   void layerWithoutOffsetAndSubdetId(unsigned& layer, int& subdetId, bool isSilicon) const;
   unsigned packLayerSubdetWaferId(unsigned layer, int subdet, int waferU, int waferV) const;
   void unpackLayerSubdetWaferId(unsigned wafer, unsigned& layer, int& subdet, int& waferU, int& waferV) const;
@@ -449,7 +450,8 @@ HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV16Imp1::getTriggerCellsF
     DetId::Detector det = (subdet == HGCalTriggerSubdetector::HGCalEETrigger ? DetId::HGCalEE : DetId::HGCalHSi);
 
     unsigned wafer_type = detIdWaferType(det, layer, moduleU, moduleV);
-    int nroc = (wafer_type == HGCSiliconDetId::HGCalFineTrigger ? 6 : 3);
+    bool wafer_ishd = waferIsHD(det, layer, moduleU, moduleV);
+    int nroc = (wafer_ishd ? 6 : 3);
     // Loop on ROCs in wafer
     for (int roc = 1; roc <= nroc; roc++) {
       // loop on TCs in ROC
@@ -1132,6 +1134,21 @@ int HGCalTriggerGeometryV16Imp1::detIdWaferType(unsigned det, unsigned layer, sh
       break;
   };
   return wafer_type;
+}
+
+bool HGCalTriggerGeometryV16Imp1::waferIsHD(unsigned det, unsigned layer, short waferU, short waferV) const {
+  bool ishd = false;
+  switch (det) {
+    case DetId::HGCalEE:
+      ishd = eeTopology().dddConstants().waferIsHD(layer, waferU, waferV);
+      break;
+    case DetId::HGCalHSi:
+      ishd = hsiTopology().dddConstants().waferIsHD(layer, waferU, waferV);
+      break;
+    default:
+      break;
+  };
+  return ishd;
 }
 
 void HGCalTriggerGeometryV16Imp1::layerWithoutOffsetAndSubdetId(unsigned& layer, int& subdetId, bool isSilicon) const {
