@@ -10,6 +10,7 @@
 #include "DataFormats/ForwardDetId/interface/HGCalTriggerModuleDetId.h"
 #include "DataFormats/ForwardDetId/interface/HGCalTriggerBackendDetId.h"
 #include "DataFormats/ForwardDetId/interface/HFNoseDetIdToModule.h"
+#include "Geometry/HGCalCommonData/interface/HGCalParameters.h"
 
 #include <fstream>
 #include <vector>
@@ -70,10 +71,9 @@ private:
   unsigned hSc_triggercell_size_ = 2;
   static constexpr unsigned hSc_num_panels_per_sector_ = 12;
   static constexpr unsigned hSc_tcs_per_module_phi_ = 4;
-  static constexpr unsigned hSc_front_layers_split_ = 12;
-  static constexpr unsigned hSc_back_layers_split_ = 8;
-  static constexpr unsigned hSc_layer_for_split_ = 40;
-  static constexpr int hSc_tc_layer0_min_ = 24;
+  static constexpr unsigned hSc_tcs_per_module_eta_ = 12;
+  static constexpr unsigned hSc_module_split_index_ = 9;
+  static constexpr unsigned hSc_tcs_per_sector_ = hSc_num_panels_per_sector_ * hSc_tcs_per_module_phi_;
   static constexpr int ntc_per_wafer_ = 48;
   static constexpr int nSectors_ = 3;
 
@@ -216,7 +216,8 @@ unsigned HGCalTriggerGeometryV16Imp1::getTriggerCellFromCell(const unsigned cell
     HGCScintillatorDetId cell_sc_id(cell_id);
     int ieta = ((cell_sc_id.ietaAbs() - 1) / hSc_triggercell_size_ + 1) * cell_sc_id.zside();
     int iphi = (cell_sc_id.iphi() - 1) / hSc_triggercell_size_ + 1;
-    trigger_cell_id = HGCScintillatorDetId(cell_sc_id.type(), cell_sc_id.layer(), ieta, iphi);
+    unsigned type = 0;
+    trigger_cell_id = HGCScintillatorDetId(type, cell_sc_id.layer(), ieta, iphi);
   }
   // HFNose
   else if (det == DetId::Forward && DetId(cell_id).subdetId() == ForwardSubdetector::HFNose) {
@@ -269,14 +270,6 @@ unsigned HGCalTriggerGeometryV16Imp1::getModuleFromTriggerCell(const unsigned tr
     int ieta = 0;
     int iphi = 0;
     getScintillatoriEtaiPhi(ieta, iphi, tc_eta, tc_phi, layer);
-
-    // HGCalTriggerModuleDetId type only distinguishes between fine and coarse divisions of scintillator (0 or 1 for type)
-    // HGCScintillatorDetId defines two types of coarse divisions (1 or 2, and 0 still meaning fine divisions)
-    // Correct for this here
-    if (tc_type == 2) {
-      tc_type = 1;
-    }
-
     module_id =
         HGCalTriggerModuleDetId(HGCalTriggerSubdetector::HGCalHScTrigger, zside, tc_type, layer, sector, ieta, iphi);
   }
@@ -317,13 +310,18 @@ HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV16Imp1::getCellsFromTrig
   // Scintillator
   if (det == DetId::HGCalHSc) {
     HGCScintillatorDetId trigger_cell_sc_id(trigger_cell_id);
+    int layer = trigger_cell_sc_id.layer();
     int ieta0 = (trigger_cell_sc_id.ietaAbs() - 1) * hSc_triggercell_size_ + 1;
     int iphi0 = (trigger_cell_sc_id.iphi() - 1) * hSc_triggercell_size_ + 1;
     for (int ietaAbs = ieta0; ietaAbs < ieta0 + (int)hSc_triggercell_size_; ietaAbs++) {
       int ieta = ietaAbs * trigger_cell_sc_id.zside();
+      int index = hscTopology().dddConstants().layerIndex(layer, true);
+      bool fine = hscTopology().dddConstants().getParameter()->scintFine(index);
+      std::pair<int, int> type_sipm = hscTopology().dddConstants().tileType(layer, ietaAbs, fine);
       for (int iphi = iphi0; iphi < iphi0 + (int)hSc_triggercell_size_; iphi++) {
-        unsigned cell_id = HGCScintillatorDetId(trigger_cell_sc_id.type(), trigger_cell_sc_id.layer(), ieta, iphi);
-        if (validCellId(DetId::HGCalHSc, cell_id))
+        HGCScintillatorDetId cell_id(type_sipm.first, trigger_cell_sc_id.layer(), ieta, iphi);
+        cell_id.setSiPM(type_sipm.second);
+        if (validCellId(DetId::HGCalHSc, (unsigned)cell_id))
           cell_det_ids.emplace(cell_id);
       }
     }
@@ -400,27 +398,20 @@ HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV16Imp1::getTriggerCellsF
   if (subdet == HGCalTriggerSubdetector::HGCalHScTrigger) {
     int ieta0 = hgc_module_id.eta();
     int iphi0 = hgc_module_id.phi();
-
     unsigned layer = hgc_module_id.layer();
     etaphiMappingFromSector0(ieta0, iphi0, hgc_module_id.sector());
-    int split = (layer > hSc_layer_for_split_) ? hSc_back_layers_split_ : hSc_front_layers_split_;
+    int tcs_per_module_eta = (ieta0 == 0 ? hSc_module_split_index_ : hSc_tcs_per_module_eta_);
     if (ieta0 == 1) {
-      ieta0 = ieta0 + split;
+      ieta0 = ieta0 + hSc_module_split_index_;
     } else {
       ieta0 = ieta0 + 1;
     }
-    iphi0 = (iphi0 * hSc_tcs_per_module_phi_) + hSc_tc_layer0_min_ + 1;
-    int total_tcs = hSc_num_panels_per_sector_ * hSc_tcs_per_module_phi_ * nSectors_;
-    if (iphi0 > total_tcs) {
-      iphi0 = iphi0 - total_tcs;
-    }
-
-    int hSc_tcs_per_module_eta = (layer > hSc_layer_for_split_) ? hSc_back_layers_split_ : hSc_front_layers_split_;
-
-    for (int ietaAbs = ieta0; ietaAbs < ieta0 + (int)hSc_tcs_per_module_eta; ietaAbs++) {
+    int total_tcs = hSc_tcs_per_sector_ * nSectors_;
+    iphi0 = ((iphi0 - 1) * hSc_tcs_per_module_phi_ + 1) % total_tcs;
+    for (int ietaAbs = ieta0; ietaAbs < ieta0 + (int)tcs_per_module_eta; ietaAbs++) {
       int ieta = ietaAbs * hgc_module_id.zside();
       for (int iphi = iphi0; iphi < iphi0 + (int)hSc_tcs_per_module_phi_; iphi++) {
-        unsigned trigger_cell_id = HGCScintillatorDetId(hgc_module_id.type(), hgc_module_id.layer(), ieta, iphi);
+        unsigned trigger_cell_id = HGCScintillatorDetId(hgc_module_id.type(), layer, ieta, iphi);
         if (validTriggerCellFromCells(trigger_cell_id))
           trigger_cell_det_ids.emplace(trigger_cell_id);
       }
@@ -480,24 +471,19 @@ HGCalTriggerGeometryBase::geom_ordered_set HGCalTriggerGeometryV16Imp1::getOrder
 
     unsigned layer = hgc_module_id.layer();
     etaphiMappingFromSector0(ieta0, iphi0, hgc_module_id.sector());
-    int split = (layer > hSc_layer_for_split_) ? hSc_back_layers_split_ : hSc_front_layers_split_;
+    int tcs_per_module_eta = (ieta0 == 0 ? hSc_module_split_index_ : hSc_tcs_per_module_eta_);
     if (ieta0 == 1) {
-      ieta0 = ieta0 + split;
+      ieta0 = ieta0 + hSc_module_split_index_;
     } else {
       ieta0 = ieta0 + 1;
     }
-    iphi0 = (iphi0 * hSc_tcs_per_module_phi_) + hSc_tc_layer0_min_ + 1;
-    int total_tcs = hSc_num_panels_per_sector_ * hSc_tcs_per_module_phi_ * nSectors_;
-    if (iphi0 > total_tcs) {
-      iphi0 = iphi0 - total_tcs;
-    }
+    int total_tcs = hSc_tcs_per_sector_ * nSectors_;
+    iphi0 = ((iphi0 - 1) * hSc_tcs_per_module_phi_ + 1) % total_tcs;
 
-    int hSc_tcs_per_module_eta = (layer > hSc_layer_for_split_) ? hSc_back_layers_split_ : hSc_front_layers_split_;
-
-    for (int ietaAbs = ieta0; ietaAbs < ieta0 + (int)hSc_tcs_per_module_eta; ietaAbs++) {
+    for (int ietaAbs = ieta0; ietaAbs < ieta0 + (int)tcs_per_module_eta; ietaAbs++) {
       int ieta = ietaAbs * hgc_module_id.zside();
       for (int iphi = iphi0; iphi < iphi0 + (int)hSc_tcs_per_module_phi_; iphi++) {
-        unsigned trigger_cell_id = HGCScintillatorDetId(hgc_module_id.type(), hgc_module_id.layer(), ieta, iphi);
+        unsigned trigger_cell_id = HGCScintillatorDetId(hgc_module_id.type(), layer, ieta, iphi);
         if (validTriggerCellFromCells(trigger_cell_id))
           trigger_cell_det_ids.emplace(trigger_cell_id);
       }
@@ -953,14 +939,7 @@ void HGCalTriggerGeometryV16Imp1::unpackLayerSubdetWaferId(
 }
 
 void HGCalTriggerGeometryV16Imp1::etaphiMappingFromSector0(int& ieta, int& iphi, unsigned sector) const {
-  if (sector == 0) {
-    return;
-  }
-  if (sector == 2) {
-    iphi = iphi + hSc_num_panels_per_sector_;
-  } else if (sector == 1) {
-    iphi = iphi + (2 * hSc_num_panels_per_sector_);
-  }
+  iphi += hSc_num_panels_per_sector_ * sector;
 }
 
 HGCalGeomRotation::WaferCentring HGCalTriggerGeometryV16Imp1::getWaferCentring(unsigned layer, int subdet) const {
@@ -985,39 +964,22 @@ HGCalGeomRotation::WaferCentring HGCalTriggerGeometryV16Imp1::getWaferCentring(u
 }
 
 unsigned HGCalTriggerGeometryV16Imp1::tcEtaphiMappingToSector0(int& tc_ieta, int& tc_iphi) const {
-  unsigned sector = 0;
-
-  if (tc_iphi > hSc_tc_layer0_min_ && tc_iphi <= hSc_tc_layer0_min_ + ntc_per_wafer_) {
-    sector = 0;
-  } else if (tc_iphi > hSc_tc_layer0_min_ + ntc_per_wafer_ && tc_iphi <= hSc_tc_layer0_min_ + 2 * ntc_per_wafer_) {
-    sector = 2;
-  } else {
-    sector = 1;
+  unsigned sector = (tc_iphi - 1) / hSc_tcs_per_sector_;
+  if (sector > nSectors_) {
+    throw cms::Exception("HGCalTriggerGeometryV16Imp1::OutOfRange")
+        << "Got sector index (" << sector << ") larger than expected (" << nSectors_ << ")";
   }
-
-  if (sector == 0) {
-    tc_iphi = tc_iphi - hSc_tc_layer0_min_;
-  } else if (sector == 2) {
-    tc_iphi = tc_iphi - (hSc_tc_layer0_min_ + ntc_per_wafer_);
-  } else if (sector == 1) {
-    if (tc_iphi <= hSc_tc_layer0_min_) {
-      tc_iphi = tc_iphi + nSectors_ * ntc_per_wafer_;
-    }
-    tc_iphi = tc_iphi - (nSectors_ * ntc_per_wafer_ - hSc_tc_layer0_min_);
-  }
+  unsigned tc_iphi_tmp = ((tc_iphi - 1) % hSc_tcs_per_sector_) + 1;  // TC index starts at 1
+  tc_iphi = tc_iphi_tmp;
 
   return sector;
 }
 
 void HGCalTriggerGeometryV16Imp1::getScintillatoriEtaiPhi(
     int& ieta, int& iphi, int tc_eta, int tc_phi, unsigned layer) const {
-  iphi = (tc_phi - 1) / hSc_tcs_per_module_phi_;  //Phi index 1-12
+  iphi = (tc_phi - 1) / hSc_tcs_per_module_phi_ + 1;  //Phi index 1-12
 
-  int split = hSc_front_layers_split_;
-  if (layer > hSc_layer_for_split_) {
-    split = hSc_back_layers_split_;
-  }
-  if (tc_eta <= split) {
+  if ((unsigned)tc_eta <= hSc_module_split_index_) {
     ieta = 0;
   } else {
     ieta = 1;
