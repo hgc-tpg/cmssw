@@ -218,8 +218,8 @@ unsigned HGCalTriggerGeometryV19Imp1::getTriggerCellFromCell(const unsigned cell
   if (det == DetId::HGCalHSc) {
     HGCScintillatorDetId cell_sc_id(cell_id);
     unsigned layer = cell_sc_id.layer();
-    unsigned tc_size = (layer<hSc_layer_transition_hd_ ? hSc_hd_triggercell_size_ : hSc_sd_triggercell_size_);
-    unsigned ieta_shift = (layer<hSc_layer_transition_hd_ ? 9 : 0);
+    unsigned tc_size = (layer < hSc_layer_transition_hd_ ? hSc_hd_triggercell_size_ : hSc_sd_triggercell_size_);
+    unsigned ieta_shift = (layer < hSc_layer_transition_hd_ ? 9 : 0);
     int ieta = ((cell_sc_id.ietaAbs() - 1) / tc_size + 1 + ieta_shift) * cell_sc_id.zside();
     int iphi = (cell_sc_id.iphi() - 1) / tc_size + 1;
     unsigned type = 0;
@@ -318,8 +318,8 @@ HGCalTriggerGeometryBase::geom_set HGCalTriggerGeometryV19Imp1::getCellsFromTrig
     HGCScintillatorDetId trigger_cell_sc_id(trigger_cell_id);
     unsigned layer = trigger_cell_sc_id.layer();
     int granularity = hscTopology().dddConstants().tileGranularity(layer);
-    unsigned tc_size = (layer<hSc_layer_transition_hd_ ? hSc_hd_triggercell_size_ : hSc_sd_triggercell_size_);
-    unsigned ieta_shift = (layer<hSc_layer_transition_hd_ ? 9 : 0);
+    unsigned tc_size = (layer < hSc_layer_transition_hd_ ? hSc_hd_triggercell_size_ : hSc_sd_triggercell_size_);
+    unsigned ieta_shift = (layer < hSc_layer_transition_hd_ ? 9 : 0);
     int ieta0 = (trigger_cell_sc_id.ietaAbs() - 1 - ieta_shift) * tc_size + 1;
     int iphi0 = (trigger_cell_sc_id.iphi() - 1) * tc_size + 1;
     for (int ietaAbs = ieta0; ietaAbs < ieta0 + (int)tc_size; ietaAbs++) {
