@@ -99,7 +99,7 @@ private:
   std::unordered_map<unsigned, unsigned> module_to_stage1_;
 
   // Disconnected modules and layers
-  bool bypass_mapping_ = false;
+  bool bypass_be_mapping_ = false;
   std::unordered_set<unsigned> disconnected_layers_;
   std::vector<unsigned> trigger_layers_;
   std::vector<unsigned> trigger_nose_layers_;
@@ -133,7 +133,7 @@ HGCalTriggerGeometryV19Imp1::HGCalTriggerGeometryV19Imp1(const edm::ParameterSet
       hSc_sd_triggercell_size_(conf.getParameter<unsigned>("ScintillatorSDTriggerCellSize")),
       hSc_hd_triggercell_size_(conf.getParameter<unsigned>("ScintillatorHDTriggerCellSize")),
       jsonMappingFile_(conf.getParameter<edm::FileInPath>("JsonMappingFile")),
-      bypass_mapping_(conf.getParameter<bool>("BypassMapping")) {
+      bypass_be_mapping_(conf.getParameter<bool>("BypassBackendMapping")) {
   std::vector<unsigned> tmp_vector = conf.getParameter<std::vector<unsigned>>("DisconnectedLayers");
   std::move(tmp_vector.begin(), tmp_vector.end(), std::inserter(disconnected_layers_, disconnected_layers_.end()));
 }
@@ -562,7 +562,16 @@ unsigned HGCalTriggerGeometryV19Imp1::getLinksInModule(const unsigned module_id)
   else {
     int packed_module =
         packLayerSubdetWaferId(module_det_id.layer(), subdet, module_det_id.moduleU(), module_det_id.moduleV());
-    links = links_per_module_.at(packed_module);
+    try {
+      links = links_per_module_.at(packed_module);
+    } catch (std::exception& ex) {
+      if (bypass_be_mapping_)
+        links = 2;
+      else
+        throw ex;
+    }
+    if (bypass_be_mapping_ && links == 0)
+      links = 2;
   }
   return links;
 }
@@ -1006,7 +1015,7 @@ bool HGCalTriggerGeometryV19Imp1::validTriggerCell(const unsigned trigger_cell_i
 bool HGCalTriggerGeometryV19Imp1::disconnectedModule(const unsigned module_id) const {
   bool disconnected = false;
   HGCalTriggerModuleDetId id(module_id);
-  if (!bypass_mapping_ &&
+  if (!bypass_be_mapping_ &&
       module_to_stage1_.find(packLayerSubdetWaferId(id.layer(), id.triggerSubdetId(), id.moduleU(), id.moduleV())) ==
           module_to_stage1_.end()) {
     disconnected = true;
