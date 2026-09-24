@@ -99,6 +99,7 @@ private:
   std::unordered_map<unsigned, unsigned> module_to_stage1_;
 
   // Disconnected modules and layers
+  bool bypass_mapping_ = false;
   std::unordered_set<unsigned> disconnected_layers_;
   std::vector<unsigned> trigger_layers_;
   std::vector<unsigned> trigger_nose_layers_;
@@ -131,7 +132,8 @@ HGCalTriggerGeometryV19Imp1::HGCalTriggerGeometryV19Imp1(const edm::ParameterSet
     : HGCalTriggerGeometryBase(conf),
       hSc_sd_triggercell_size_(conf.getParameter<unsigned>("ScintillatorSDTriggerCellSize")),
       hSc_hd_triggercell_size_(conf.getParameter<unsigned>("ScintillatorHDTriggerCellSize")),
-      jsonMappingFile_(conf.getParameter<edm::FileInPath>("JsonMappingFile")) {
+      jsonMappingFile_(conf.getParameter<edm::FileInPath>("JsonMappingFile")),
+      bypass_mapping_(conf.getParameter<bool>("BypassMapping")) {
   std::vector<unsigned> tmp_vector = conf.getParameter<std::vector<unsigned>>("DisconnectedLayers");
   std::move(tmp_vector.begin(), tmp_vector.end(), std::inserter(disconnected_layers_, disconnected_layers_.end()));
 }
@@ -1004,8 +1006,9 @@ bool HGCalTriggerGeometryV19Imp1::validTriggerCell(const unsigned trigger_cell_i
 bool HGCalTriggerGeometryV19Imp1::disconnectedModule(const unsigned module_id) const {
   bool disconnected = false;
   HGCalTriggerModuleDetId id(module_id);
-  if (module_to_stage1_.find(packLayerSubdetWaferId(id.layer(), id.triggerSubdetId(), id.moduleU(), id.moduleV())) ==
-      module_to_stage1_.end()) {
+  if (!bypass_mapping_ &&
+      module_to_stage1_.find(packLayerSubdetWaferId(id.layer(), id.triggerSubdetId(), id.moduleU(), id.moduleV())) ==
+          module_to_stage1_.end()) {
     disconnected = true;
   }
   if (disconnected_layers_.find(layerWithOffset(module_id)) != disconnected_layers_.end()) {
