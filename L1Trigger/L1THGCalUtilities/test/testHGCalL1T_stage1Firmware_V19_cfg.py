@@ -68,8 +68,8 @@ process.hgcl1tpg_step = cms.Path(process.L1THGCalTriggerPrimitives)
 
 # load ntuplizer and custom to use collections from Stage 1 firmware emulator 
 process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
-from L1Trigger.L1THGCalUtilities.customNtuples import custom_ntuples_layer1_latestfw
-process = custom_ntuples_layer1_latestfw(process)
+#  from L1Trigger.L1THGCalUtilities.customNtuples import custom_ntuples_layer1_latestfw
+#  process = custom_ntuples_layer1_latestfw(process)
 process.ntuple_step = cms.Path(process.L1THGCalTriggerNtuples)
 
 # Schedule definition
