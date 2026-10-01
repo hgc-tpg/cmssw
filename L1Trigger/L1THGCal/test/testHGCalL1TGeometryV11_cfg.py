@@ -1,7 +1,7 @@
-import FWCore.ParameterSet.Config as cms 
+import FWCore.ParameterSet.Config as cms
 
 from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
-process = cms.Process('DIGI',Phase2C9)
+process = cms.Process('SIM',Phase2C9)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -9,8 +9,8 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtendedRun4D49Reco_cff')
-process.load('Configuration.Geometry.GeometryExtendedRun4D49_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D49_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC14TeV_cfi')
@@ -24,17 +24,11 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(50)
+    input = cms.untracked.int32(1)
 )
 
 # Input source
-process.source = cms.Source("PoolSource",
-       fileNames = cms.untracked.vstring('/store/mc/Phase2HLTTDRWinter20DIGI/SingleElectron_PT2to200/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3_ext2-v2/40000/00582F93-5A2A-5847-8162-D81EE503500F.root'),
-       inputCommands=cms.untracked.vstring(
-           'keep *',
-           'drop l1tTkPrimaryVertexs_L1TkPrimaryVertex__RECO',
-           )
-       )
+process.source = cms.Source("EmptySource")
 
 process.options = cms.untracked.PSet(
 
@@ -47,39 +41,59 @@ process.configurationMetadata = cms.untracked.PSet(
     name = cms.untracked.string('Applications')
 )
 
-# Output definition
+# Additional output definition
 process.TFileService = cms.Service(
     "TFileService",
-    fileName = cms.string("ntuple.root")
+    fileName = cms.string("test_triggergeom.root")
     )
 
+MessageLogger = cms.Service("MessageLogger")
+
 # Other statements
+process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
 
-# load HGCAL TPG simulation
+process.endjob_step = cms.EndPath(process.endOfProcess)
+
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
+# Eventually modify default geometry parameters
+from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V11_Imp3
+process = custom_geometry_V11_Imp3(process)
 
-# Use new processors and standalone algorithms
-from L1Trigger.L1THGCal.customNewProcessors import custom_clustering_standalone, custom_tower_standalone
-process = custom_clustering_standalone(process)
-process = custom_tower_standalone(process)
+tester_cells = cms.PSet(
+    TesterName = cms.string('HGCalTriggerGeoTesterCells')
+)
+tester_triggercells = cms.PSet(
+    TesterName = cms.string('HGCalTriggerGeoTesterTriggerCells')
+)
+tester_modules = cms.PSet(
+    TesterName = cms.string('HGCalTriggerGeoTesterModules')
+)
 
-process.hgcl1tpg_step = cms.Path(process.L1THGCalTriggerPrimitives)
+tester_stage1 = cms.PSet(
+    TesterName = cms.string('HGCalTriggerGeoTesterBackendStage1')
+)
 
+tester_stage2 = cms.PSet(
+    TesterName = cms.string('HGCalTriggerGeoTesterBackendStage2')
+)
 
-# load ntuplizer
-process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
-from L1Trigger.L1THGCalUtilities.customNtuples import custom_ntuples_standalone_clustering, custom_ntuples_standalone_tower
-process = custom_ntuples_standalone_clustering(process)
-process = custom_ntuples_standalone_tower(process)
-process.ntuple_step = cms.Path(process.L1THGCalTriggerNtuples)
+process.L1THGCaltriggergeomtester = cms.EDAnalyzer(
+    "HGCalTriggerGeoTesterManager", 
+    Testers = cms.VPSet(
+        tester_cells,
+        tester_triggercells,
+        tester_modules,
+        tester_stage1,
+        tester_stage2,
+    )
+)
+process.test_step = cms.Path(process.L1THGCaltriggergeomtester)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.hgcl1tpg_step, process.ntuple_step)
+process.schedule = cms.Schedule(process.test_step,process.endjob_step)
 
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
-# End adding early deletion
-
