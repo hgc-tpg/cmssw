@@ -78,13 +78,13 @@ def custom_triggercellselect_mixedBestChoiceSuperTriggerCell(process,
                                               fixedDataSizePerHGCROC=custom_conc_proc.fixedDataSizePerHGCROC,
                                               triggercells=custom_conc_proc.NData
                                               ):
-    parameters = custom_conc_proc.clone(stcSize = stcSize,
-                                        type_energy_division = type_energy_division,
-                                        fixedDataSizePerHGCROC = fixedDataSizePerHGCROC,
-                                        NData=triggercells,
-                                        Method = cms.vstring('bestChoiceSelect','superTriggerCellSelect','superTriggerCellSelect'),        
-    )
-    process.l1tHGCalConcentratorProducer.ProcessorParameters = parameters
+    #  parameters = custom_conc_proc.clone(stcSize = stcSize,
+                                        #  type_energy_division = type_energy_division,
+                                        #  fixedDataSizePerHGCROC = fixedDataSizePerHGCROC,
+                                        #  NData=triggercells,
+                                        #  Method = cms.vstring('bestChoiceSelect','superTriggerCellSelect','superTriggerCellSelect'),
+    #  )
+    #  process.l1tHGCalConcentratorProducer.ProcessorParameters = parameters
     return process
 
 def custom_triggercellselect_mixedBestChoiceSuperTriggerCell_decentralized(process):
