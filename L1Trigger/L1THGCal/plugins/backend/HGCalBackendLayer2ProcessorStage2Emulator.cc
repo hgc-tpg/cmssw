@@ -229,7 +229,10 @@ private:
     unsigned outputClusters = 0;
     double outputPt = 0.;
     for (const auto& property : properties) {
-      if (property.DataValid && property.ET > 0) {
+      // Each Stage-2 sector processes an overlapping ~180 degree region, but
+      // owns only its central 120 degrees.  Keep the overlap for clustering
+      // and publish the cluster only from its nominal sector.
+      if (property.DataValid && property.Nominal_Phi && property.ET > 0) {
         output.push_back(0, makeMulticluster(property, fpga));
         ++outputClusters;
         outputPt += property.ET * 0.25;
