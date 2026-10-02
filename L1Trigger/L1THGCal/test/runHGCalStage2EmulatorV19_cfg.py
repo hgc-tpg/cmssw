@@ -39,8 +39,8 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T35', '')
 
 process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
-from L1Trigger.L1THGCal.customNewProcessors import custom_stage2_emulator
-process = custom_stage2_emulator(process)
+from L1Trigger.L1THGCal.customNewProcessors import custom_stage2_comparison
+process = custom_stage2_comparison(process)
 
 process.TFileService = cms.Service('TFileService', fileName=cms.string(options.outputFile))
 process.load('L1Trigger.L1THGCalUtilities.hgcalTriggerNtuples_cff')
@@ -57,9 +57,13 @@ input_clusters = ntuple_clusters.clone(
 )
 reference_multiclusters = ntuple_multiclusters.clone(
     Prefix=cms.untracked.string('refcl3d'),
-    Multiclusters=cms.InputTag('l1tHGCalBackEndLayer2Producer',
-                               'HGCalBackendLayer2Processor3DClustering',
-                               'HLT'),
+    Multiclusters=cms.InputTag('l1tHGCalBackEndLayer2ProducerReference',
+                               'HGCalBackendLayer2Processor3DClustering'),
+)
+semi_emulator_multiclusters = ntuple_multiclusters.clone(
+    Prefix=cms.untracked.string('semicl3d'),
+    Multiclusters=cms.InputTag('l1tHGCalBackEndLayer2ProducerSemiEmulator',
+                               'HGCalBackendLayer2ProcessorSemiEmulator'),
 )
 stage2_emulator_multiclusters = ntuple_multiclusters.clone(
     Prefix=cms.untracked.string('s2cl3d'),
@@ -71,6 +75,7 @@ process.l1tHGCalTriggerNtuplizer.Ntuples = cms.VPSet(
     ntuple_gen.clone(MCEvent=cms.InputTag('generatorSmeared', '', 'GEN')),
     input_clusters,
     reference_multiclusters,
+    semi_emulator_multiclusters,
     stage2_emulator_multiclusters,
 )
 

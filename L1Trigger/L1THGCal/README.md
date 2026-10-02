@@ -212,8 +212,17 @@ For a V19/D127 GEN-SIM-DIGI-RAW file, run
 `cmsRun L1Trigger/L1THGCal/test/runHGCalStage2EmulatorV19_cfg.py inputFile=file:/path/to/input.root maxEvents=10 outputFile=stage2.root`.
 The configuration writes an HGCal trigger ntuple for quick inspection with
 ROOT. It stores the Layer-1 inputs (`cl2d`), the
-existing simulation-based Stage-2 result from the input file (`refcl3d`), and
-the new emulator result (`s2cl3d`) in the same tree.
+current simulation-based Stage-2 result (`refcl3d`), the older hybrid
+semi-emulator result (`semicl3d`), and the new firmware emulator result
+(`s2cl3d`) in the same tree. All three Layer-2 processors consume the same
+Layer-1 collection in the same CMSSW process.
+
+The semi-emulator core is kept in `interface/backend_semiemulator`. It uses
+floating-point triangular clustering followed by fixed-width cluster-property
+calculations and is provided for comparison only; it is not an emulation of a
+released firmware design. Select just that processor with
+`stage2_semi_emulator_proc`, or use `custom_stage2_comparison(process)` to
+schedule all three implementations together.
 
 And actual implementations of the algorithms are stored in [`src/backend`](src/backend) and [`src/backend_emulator`](src/backend_emulator) for the bit-level emulator. These processors are configured from [`python/l1tHGCalBackEndLayer2Producer_cfi.py`](python/l1tHGCalBackEndLayer2Producer_cfi.py), and [`python/hgcalBackendLayer2_fwClustering_cfi.py`](python/hgcalBackendLayer2_fwClustering_cfi.py) for the bit-level emulator. Customization functions are available in
 - [`python/customClustering.py`](python/customClustering.py): clustering algorithms based on floating-point calculation
