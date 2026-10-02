@@ -178,6 +178,17 @@ stage2_emulator_proc = cms.PSet(
         virtualTransportEnergyScale = cms.double(2048.)
         )
 
+# Older hybrid implementation: floating-point triangular clustering followed
+# by fixed-width cluster-property calculations.  It is retained as a distinct
+# processor for validation; it is not an emulation of the current firmware.
+stage2_semi_emulator_proc = cms.PSet(
+        ProcessorName = cms.string('HGCalBackendLayer2ProcessorSemiEmulator'),
+        triangleSideLength = cms.double(0.016),
+        minimumClusterPt = cms.double(0.5),
+        meanEtaLUT = cms.FileInPath('L1Trigger/L1THGCal/data/mean_eta_LUT.csv'),
+        sigmaEtaLUT = cms.FileInPath('L1Trigger/L1THGCal/data/sigma_eta_LUT.csv'),
+        )
+
 l1tHGCalBackEndLayer2Producer = cms.EDProducer(
     "HGCalBackendLayer2Producer",
     InputCluster = cms.InputTag('l1tHGCalBackEndLayer1Producer:HGCalBackendLayer1Processor2DClustering'),
