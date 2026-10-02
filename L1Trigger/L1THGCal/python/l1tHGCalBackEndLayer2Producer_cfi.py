@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
+from L1Trigger.L1THGCal.l1tHGCalBackEndLayer1Producer_cfi import truncation_params
+
 from L1Trigger.L1THGCal.egammaIdentification import egamma_identification_drnn_cone, \
                                                     egamma_identification_drnn_dbscan, \
                                                     egamma_identification_histomax
@@ -165,6 +167,16 @@ be_proc = cms.PSet(ProcessorName  = cms.string('HGCalBackendLayer2Processor3DClu
                    C3d_parameters = histoMax_C3d_params.clone(),
                    energy_interpretations = energy_interpretations
                    )
+
+# Temporary CMSSW-to-Stage2 interface. Trigger cells are assigned to virtual
+# decoder addresses deterministically while their decoder records are derived
+# from the V19 trigger geometry. Replace this transport mapping with the
+# generated FE/BE link map once it is available.
+stage2_emulator_proc = cms.PSet(
+        ProcessorName = cms.string('HGCalBackendLayer2ProcessorStage2Emulator'),
+        DistributionParameters = truncation_params.clone(),
+        virtualTransportEnergyScale = cms.double(2048.)
+        )
 
 l1tHGCalBackEndLayer2Producer = cms.EDProducer(
     "HGCalBackendLayer2Producer",
