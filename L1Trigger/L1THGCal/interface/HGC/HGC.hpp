@@ -22,6 +22,8 @@
 
 #include "L1Trigger/L1THGCal/interface/HGC/modules/Links_MuxOutput.hpp"
 
+#include <memory>
+
 namespace HGC
 {
 
@@ -45,27 +47,32 @@ namespace HGC
   void Clusters_Step2( const std::array< std::array< Cluster , 154 > , 162 >& ProtoClustersIn,
                              std::array< ClusterProperty             , 162 >& ClusterPropertiesOut )
   {
-    // Intermediate signals for chaining algorithm modules
-    std::array< std::array< Cluster , 154 > , 162 > AccumulatedClusters;
-    std::array< std::array< Cluster ,  44 > ,  41 > Triangles1 , Hexagons1 , Filtered1;
-    std::array< std::array< Cluster ,  44 > ,  41 > Triangles2 , Hexagons2 , Filtered2;
-    std::array< std::array< Cluster ,  44 > ,  41 > Triangles3;
-    std::array< std::array< DebugBoolean2 , 44 > , 41 > Debug1 , Debug2;
-    std::array< Cluster ,  162 > Funneled1 , Funneled2 , Buffered;
+    // These signals occupy roughly 7.5 MiB.  Keep them off the CMSSW worker
+    // thread stack, which is normally limited to 8 MiB and also contains the
+    // input and output arrays owned by the caller.
+    struct Workspace {
+      std::array< std::array< Cluster , 154 > , 162 > AccumulatedClusters;
+      std::array< std::array< Cluster ,  44 > ,  41 > Triangles1 , Hexagons1 , Filtered1;
+      std::array< std::array< Cluster ,  44 > ,  41 > Triangles2 , Hexagons2 , Filtered2;
+      std::array< std::array< Cluster ,  44 > ,  41 > Triangles3;
+      std::array< std::array< DebugBoolean2 , 44 > , 41 > Debug1 , Debug2;
+      std::array< Cluster ,  162 > Funneled1 , Funneled2 , Buffered;
+    };
+    auto workspace = std::make_unique<Workspace>();
 
     // Emulate the algorithm modules
-    Cluster_Accumulator( ProtoClustersIn , AccumulatedClusters );
-    Cluster_ColumnAdder( AccumulatedClusters , Triangles1 );
-    Cluster_HexagonSum( Triangles1 , Hexagons1 );
-    Cluster_OverlapFilter( Hexagons1 , Debug1 , Filtered1 );
-    Cluster_TriangleFilter( Hexagons1 , Triangles1 , Triangles2 );
-    Cluster_Funnel( Hexagons1 , Funneled1 );
-    Cluster_HexagonSum( Triangles2 , Hexagons2 );
-    Cluster_OverlapFilter( Hexagons2 , Debug2 , Filtered2 );
-    Cluster_TriangleFilter( Hexagons2 , Triangles2 , Triangles3 );
-    Cluster_Funnel( Hexagons2 , Funneled2 );
-    Cluster_Buffer2( Funneled1 , Funneled2 , Buffered );
-    Cluster_Properties( Buffered , ClusterPropertiesOut );
+    Cluster_Accumulator( ProtoClustersIn , workspace->AccumulatedClusters );
+    Cluster_ColumnAdder( workspace->AccumulatedClusters , workspace->Triangles1 );
+    Cluster_HexagonSum( workspace->Triangles1 , workspace->Hexagons1 );
+    Cluster_OverlapFilter( workspace->Hexagons1 , workspace->Debug1 , workspace->Filtered1 );
+    Cluster_TriangleFilter( workspace->Hexagons1 , workspace->Triangles1 , workspace->Triangles2 );
+    Cluster_Funnel( workspace->Hexagons1 , workspace->Funneled1 );
+    Cluster_HexagonSum( workspace->Triangles2 , workspace->Hexagons2 );
+    Cluster_OverlapFilter( workspace->Hexagons2 , workspace->Debug2 , workspace->Filtered2 );
+    Cluster_TriangleFilter( workspace->Hexagons2 , workspace->Triangles2 , workspace->Triangles3 );
+    Cluster_Funnel( workspace->Hexagons2 , workspace->Funneled2 );
+    Cluster_Buffer2( workspace->Funneled1 , workspace->Funneled2 , workspace->Buffered );
+    Cluster_Properties( workspace->Buffered , ClusterPropertiesOut );
   }
   // ===================================================================================================
 

@@ -13,6 +13,59 @@
 namespace HGC
 {
 
+  void Cluster_Decode(const LinkTriggerCell& lCell, const TcDecoder& lDecoded, Cluster& lCluster) {
+    lCluster = Cluster();
+    lCluster.Last = lCell.Last;
+    lCluster.Cell = lDecoded.Cell;
+    if (!lCell.DataValid || !lDecoded.DataValid)
+      return;
+
+    lCluster.DataValid = true;
+    lCluster.Field0.ShapeQ = 1;
+    lCluster.Field1.N_TC = 1;
+    lCluster.Field2.N_TC_W = 1;
+
+    uint64_t E = lCell.Mantissa;
+    if (lCell.Exponent)
+      E = (E | 0x10) << lCell.Exponent;
+
+    lCluster.Field0.E = (E >> 1) & 0x0003FFFF;
+    lCluster.Field0.xE = (E >> 19);
+
+    lCluster.Field0.W = (E >> 2) & 0x0000FFFF;
+    if (lCluster.Field0.W == 0)
+      lCluster.Field0.W = 1;
+
+    lCluster.Field1.WZ = (lCluster.Field0.W * lDecoded.LayerDepth) >> 4;
+    lCluster.Field2.Wroz = (lCluster.Field0.W * lDecoded.RoverZ) >> 4;
+    lCluster.Field3.Wphi = (lCluster.Field0.W * lDecoded.Phi) >> 4;
+
+    lCluster.Field0.W2 = ((uint64_t)lCluster.Field0.W * lCluster.Field0.W);
+    lCluster.Field1.WZ2 = ((uint64_t)lCluster.Field1.WZ * lDecoded.LayerDepth) >> 4;
+    lCluster.Field2.Wroz2 = ((uint64_t)lCluster.Field2.Wroz * lDecoded.RoverZ) >> 4;
+    lCluster.Field3.Wphi2 = ((uint64_t)lCluster.Field3.Wphi * lDecoded.Phi) >> 4;
+
+    uint64_t Eem = ((uint64_t)lCluster.Field0.E * (uint64_t)lDecoded.LayerWeight) + (uint64_t)131071;
+    lCluster.Field4.Eem = (Eem >> 18) & 0x0003FFFF;
+    lCluster.Field4.xEem = (Eem >> 36);
+
+    if (lDecoded.TriggerLayer >= 15 and lDecoded.TriggerLayer <= 18) {
+      lCluster.Field4.Ehearly = lCluster.Field0.E;
+      lCluster.Field4.xEhearly = lCluster.Field0.xE;
+    }
+
+    if (lDecoded.TriggerLayer >= 4 and lDecoded.TriggerLayer <= 8) {
+      lCluster.Field4.Eemcore = lCluster.Field4.Eem;
+      lCluster.Field4.xEemcore = lCluster.Field4.xEem;
+    }
+
+    uint64_t Layer = (uint64_t)(0x1) << lDecoded.TriggerLayer;
+    lCluster.Field1.LayerBits = (Layer >> 3) & 0x7;
+    lCluster.Field2.LayerBits = (Layer >> 6) & 0x7;
+    lCluster.Field3.LayerBits = (Layer >> 9) & 0x3FFF;
+    lCluster.Field4.LayerBits = (Layer >> 23) & 0x3FFF;
+  }
+
   // ----------------------------------------------------------------
   std::array< TcDecoder , 4096 > InitDummyClusterDecoderROM()
   {
@@ -57,78 +110,41 @@ namespace HGC
 
 
 
-  void Cluster_Decoders( const std::array< std::array< LinkTriggerCell , 154 > , 162 >& CellsIn ,
-                               std::array< std::array< Cluster         , 154 > , 162 >& ClusterOut )
-  {
-
-    static const std::array< TcDecoder , 4096 > ClusterDecoderROM = InitDummyClusterDecoderROM();
+  void Cluster_Decoders(const std::array<std::array<LinkTriggerCell, 154>, 162>& cellsIn,
+                        const std::array<TcDecoder, 4096>& clusterDecoderROM,
+                        std::array<std::array<Cluster, 154>, 162>& clusterOut) {
 
     for ( int j(0); j!= 154; ++j ) { // decoder
       for ( int i(0); i!= 162; ++i ) { // clock
 
-        const LinkTriggerCell& lCell = CellsIn.at(i).at(j);
-        Cluster&            lCluster = ClusterOut.at(i).at(j);
-
-        lCluster = Cluster(); // By default, set null
+        const LinkTriggerCell& lCell = cellsIn.at(i).at(j);
+        Cluster& lCluster = clusterOut.at(i).at(j);
+        lCluster = Cluster();
         lCluster.Last = lCell.Last;
 
         // Convert clock-cycle and channel to LUT block-index
         uint16_t BlockIndex = UnpackingLut[j][i];
 
+        // Empty virtual lanes need no ROM lookup.  The complete firmware LUT
+        // addresses more blocks than the temporary CMSSW virtual ROM, so make
+        // the bounds requirement explicit before forming its index.
+        const unsigned decoderAddress = (64 * BlockIndex) + lCell.TcId;
+        if (BlockIndex == 0 || !lCell.DataValid || decoderAddress >= clusterDecoderROM.size())
+          continue;
+
         // Look-up the decoder value
-        TcDecoder lDecoded = ClusterDecoderROM[ ( 64 * BlockIndex ) + lCell.TcId ];
-        lCluster.Cell = lDecoded.Cell;
-
-        if ( BlockIndex == 0 ) continue;
-
-        // If index is non-zero, it is valid
-        lCluster.DataValid     = true;
-        lCluster.Field0.ShapeQ = 1;
-        lCluster.Field1.N_TC   = 1;
-        lCluster.Field2.N_TC_W = 1;
-
-        // Unpack the energy
-        uint64_t E = lCell.Mantissa;
-        if( lCell.Exponent ) E = ( E | 0x10 ) << lCell.Exponent;
-
-        lCluster.Field0.E  = ( E >> 1 ) & 0x0003FFFF;
-        lCluster.Field0.xE = ( E >> 19 );
-
-        lCluster.Field0.W  = ( E >> 2 ) & 0x0000FFFF;
-        if( lCluster.Field0.W == 0 ) lCluster.Field0.W = 1;
-
-        lCluster.Field1.WZ   = ( lCluster.Field0.W * lDecoded.LayerDepth ) >> 4;
-        lCluster.Field2.Wroz = ( lCluster.Field0.W * lDecoded.RoverZ     ) >> 4;
-        lCluster.Field3.Wphi = ( lCluster.Field0.W * lDecoded.Phi        ) >> 4;
-
-        lCluster.Field0.W2    = ( (uint64_t)lCluster.Field0.W    * lCluster.Field0.W   );
-        lCluster.Field1.WZ2   = ( (uint64_t)lCluster.Field1.WZ   * lDecoded.LayerDepth ) >> 4;
-        lCluster.Field2.Wroz2 = ( (uint64_t)lCluster.Field2.Wroz * lDecoded.RoverZ     ) >> 4;
-        lCluster.Field3.Wphi2 = ( (uint64_t)lCluster.Field3.Wphi * lDecoded.Phi        ) >> 4;
-
-        uint64_t Eem = ( (uint64_t)lCluster.Field0.E * (uint64_t)lDecoded.LayerWeight ) + (uint64_t)131071;
-        lCluster.Field4. Eem = ( Eem >> 18 ) & 0x0003FFFF;
-        lCluster.Field4.xEem = ( Eem >> 36 );
-
-        if ( lDecoded.TriggerLayer >= 15 and lDecoded.TriggerLayer <= 18 ){
-          lCluster.Field4. Ehearly = lCluster.Field0.E;
-          lCluster.Field4.xEhearly = lCluster.Field0.xE;
-        }
-
-        if ( lDecoded.TriggerLayer >= 4 and lDecoded.TriggerLayer <= 8 ){
-          lCluster.Field4. Eemcore = lCluster.Field4.Eem;
-          lCluster.Field4.xEemcore = lCluster.Field4.xEem;
-        }
-
-        // Unpack the layer
-        uint64_t Layer = (uint64_t)(0x1) << lDecoded.TriggerLayer;
-        lCluster.Field1.LayerBits = ( Layer >>  3 ) & 0x7;
-        lCluster.Field2.LayerBits = ( Layer >>  6 ) & 0x7;
-        lCluster.Field3.LayerBits = ( Layer >>  9 ) & 0x3FFF;
-        lCluster.Field4.LayerBits = ( Layer >> 23 ) & 0x3FFF;
-
+        const TcDecoder& lDecoded = clusterDecoderROM[decoderAddress];
+        if (!lDecoded.DataValid)
+          continue;
+        Cluster_Decode(lCell, lDecoded, lCluster);
       }
     }
+  }
+
+  void Cluster_Decoders(const std::array<std::array<LinkTriggerCell, 154>, 162>& cellsIn,
+                        std::array<std::array<Cluster, 154>, 162>& clusterOut) {
+    static const std::array<TcDecoder, 4096> clusterDecoderROM = InitDummyClusterDecoderROM();
+    Cluster_Decoders(cellsIn, clusterDecoderROM, clusterOut);
   }
 
 

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <array>
+#include <bit>
 #include <cstdlib>
 #include<cmath>
 
@@ -1255,6 +1256,10 @@ namespace HGC
                                  ClusterProperty& ClusterOut ,
                                  const int& DebugIndex )
   {
+    ClusterOut = ClusterProperty{};
+    ClusterOut.Last = ClusterIn.Last;
+    if( !ClusterIn.DataValid || ClusterIn.Field0.W == 0 ) return;
+
     ClusterOut.Number_of_Cells        = ClusterIn.Field1.N_TC;
     ClusterOut.Saturated_Trigger_Cell = ClusterIn.Field0.xE;
     ClusterOut.Quality_of_Sigmas_and_Means = ClusterIn.Field0.ShapeQ;
@@ -1295,9 +1300,9 @@ namespace HGC
     ClusterOut.Quality_of_Fraction_in_core_CE_E  = ( !ClusterIn.Field4.xEemcore ) && ( !ClusterIn.Field4.xEem );
     ClusterOut.Quality_of_Fraction_in_front_CE_H = ( !ClusterIn.Field4.xEhearly ) && ( !ClusterIn.Field0.xE );
 
-    ClusterOut.ET_Weighted_Z = std::round( (float)ClusterIn.Field1.WZ / (float)ClusterIn.Field0.W );
+    ClusterOut.ET_Weighted_Z = std::round( 16.f * (float)ClusterIn.Field1.WZ / (float)ClusterIn.Field0.W );
 
-    int64_t Phi = std::round( (float)c_phi_scale * (float)ClusterIn.Field3.Wphi / (float)ClusterIn.Field0.W );
+    int64_t Phi = std::round( 16.f * (float)c_phi_scale * (float)ClusterIn.Field3.Wphi / (float)ClusterIn.Field0.W );
     int64_t phi = Phi - c_phi_offset;
 
     ClusterOut.Nominal_Phi = (phi>-241) and (phi<240);
@@ -1317,9 +1322,9 @@ namespace HGC
 
     ClusterOut.Sigma_E      = std::min( 0x7F , 0xFF & int( std::round( stddev( ClusterIn.Field2.N_TC_W  , ClusterIn.Field0.W , ClusterIn.Field0.W2 , NTCW2 , c_sigma_E_scale ) ) ) );
     ClusterOut.Sigma_ZZ     = std::min( 0x7F , 0xFF & int( std::round( stddev( ClusterIn.Field0.W , ClusterIn.Field1.WZ , ClusterIn.Field1.WZ2 , W2 , c_sigma_z_scale ) ) ) );
-    float sigmaroz = stddev( ClusterIn.Field0.W , ClusterIn.Field2.Wroz , ClusterIn.Field2.Wroz2 , W2 , c_sigma_roz_scale ); // reused for both Sigma_RoZRoZ and d_eta_over_d_roz
+    float sigmaroz = stddev( ClusterIn.Field0.W , ClusterIn.Field2.Wroz , ClusterIn.Field2.Wroz2 , W2 , 16.f * c_sigma_roz_scale ); // reused for both Sigma_RoZRoZ and d_eta_over_d_roz
     ClusterOut.Sigma_RoZRoZ = std::min( 0x7F , 0xFF & int( std::round( sigmaroz ) ) );
-    ClusterOut.Sigma_PhiPhi = std::min( 0x7F , 0xFF & int( std::round( stddev( ClusterIn.Field0.W , ClusterIn.Field3.Wphi , ClusterIn.Field3.Wphi2 , W2 , c_sigma_phi_scale ) ) ) );
+    ClusterOut.Sigma_PhiPhi = std::min( 0x7F , 0xFF & int( std::round( stddev( ClusterIn.Field0.W , ClusterIn.Field3.Wphi , ClusterIn.Field3.Wphi2 , W2 , 16.f * c_sigma_phi_scale ) ) ) );
 
     ClusterOut.Fraction_in_CE_E       = std::min( 0xff , 0x1ff & int( std::round( std::round( std::pow(2.0,12.0) * (float)ClusterIn.Field4.Eem     / (float)ClusterIn.Field0.E   ) / 16.0 ) ) );
     ClusterOut.Fraction_in_core_CE_E  = std::min( 0xff , 0x1ff & int( std::round( std::round( std::pow(2.0,12.0) * (float)ClusterIn.Field4.Eemcore / (float)ClusterIn.Field4.Eem ) / 16.0 ) ) );
@@ -1331,13 +1336,13 @@ namespace HGC
     ClusterOut.GCT_e_or_gamma_Select_3 = ClusterOut.e_or_gamma_ET          > c_GCT_3;
 
 
-    float MeanRoz = (float)ClusterIn.Field2.Wroz / (float)ClusterIn.Field0.W;
+    float MeanRoz = 16.f * c_LSB_roz_TC * (float)ClusterIn.Field2.Wroz / (float)ClusterIn.Field0.W;
     if     ( MeanRoz < c_roz_min_L1T ) MeanRoz = c_roz_min_L1T;
     else if( c_roz_max_L1T < MeanRoz ) MeanRoz = c_roz_max_L1T;
-    int iMeanRoz = std::min( 0x3FF , int( std::round( c_roz_scale * ( MeanRoz - c_roz_min_L1T ) ) ) );
+    int iMeanRoz = std::max( 0 , std::min( 0x3FF , int( std::round( ( MeanRoz - c_roz_min_L1T ) / c_LSB_roz_LUT ) ) ) );
     ClusterOut.ET_Weighted_Eta = mean_Eta_LUT[ iMeanRoz ];
 
-    float d_eta_over_d_roz = sigmaroz * static_cast<float>( d_eta_over_d_roz_LUT[ 0x1FFF & uint32_t( round( MeanRoz ) ) ] );
+    float d_eta_over_d_roz = sigmaroz * std::bit_cast<float>( d_eta_over_d_roz_LUT[ 0x1FFF & uint32_t( round( MeanRoz / c_LSB_roz_TC ) ) ] );
     ClusterOut.Sigma_EtaEta = std::min( 0x7F , int( std::round( c_sigma_eta_scale * d_eta_over_d_roz ) ) );
   }
 
