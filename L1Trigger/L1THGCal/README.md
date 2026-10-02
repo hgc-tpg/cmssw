@@ -201,6 +201,19 @@ By default the `HistoMax` clustering algorithm used is the original simulation b
 The different Stage 2 processing versions are implemented in:
 - [`plugins/backend/HGCalBackendLayer2Processor3DClustering.cc`](plugins/backend/HGCalBackendLayer2Processor3DClustering.cc): original floating-point simulation of different clustering algorithms (including the `HistoMax` algorithm) 
 - [`plugins/backend/HGCalBackendLayer2Processor3DClustering_SA.cc`](plugins/backend/HGCalBackendLayer2Processor3DClustering_SA.cc): bit-level Stage 2 clustering emulator
+- [`plugins/backend/HGCalBackendLayer2ProcessorStage2Emulator.cc`](plugins/backend/HGCalBackendLayer2ProcessorStage2Emulator.cc): adapter for the new Stage-2 clustering core.  It temporarily assigns already-unpacked CMSSW trigger cells to a deterministic, virtual input transport while the FE/BE link mapping and generated decoder ROM are unavailable.
+
+Select the latter with `custom_stage2_emulator(process)` from
+[`python/customNewProcessors.py`](python/customNewProcessors.py).  It produces
+the normal Layer-2 multicluster collection, so existing downstream consumers
+can be used without an output-format change.
+
+For a V19/D127 GEN-SIM-DIGI-RAW file, run
+`cmsRun L1Trigger/L1THGCal/test/runHGCalStage2EmulatorV19_cfg.py inputFile=file:/path/to/input.root maxEvents=10 outputFile=stage2.root`.
+The configuration writes an HGCal trigger ntuple for quick inspection with
+ROOT. It stores the Layer-1 inputs (`cl2d`), the
+existing simulation-based Stage-2 result from the input file (`refcl3d`), and
+the new emulator result (`s2cl3d`) in the same tree.
 
 And actual implementations of the algorithms are stored in [`src/backend`](src/backend) and [`src/backend_emulator`](src/backend_emulator) for the bit-level emulator. These processors are configured from [`python/l1tHGCalBackEndLayer2Producer_cfi.py`](python/l1tHGCalBackEndLayer2Producer_cfi.py), and [`python/hgcalBackendLayer2_fwClustering_cfi.py`](python/hgcalBackendLayer2_fwClustering_cfi.py) for the bit-level emulator. Customization functions are available in
 - [`python/customClustering.py`](python/customClustering.py): clustering algorithms based on floating-point calculation

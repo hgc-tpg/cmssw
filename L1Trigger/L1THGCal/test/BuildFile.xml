@@ -7,6 +7,8 @@
   <flags EDM_PLUGIN="1"/>
 </library>
 
+<test name="testHGCalStage2Emulator" command="cmsRun ${SCRAM_TEST_PATH}/testHGCalStage2Emulator_cfg.py"/>
+
 <library name="testL1TriggerL1THGCal_geometry" file="geometry/*.cc">
   <use name="Geometry/HGCalGeometry"/>
   <use name="L1Trigger/L1THGCal"/>
