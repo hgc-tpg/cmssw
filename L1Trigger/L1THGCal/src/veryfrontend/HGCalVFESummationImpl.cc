@@ -17,8 +17,12 @@ HGCalVFESummationImpl::HGCalVFESummationImpl(const edm::ParameterSet& conf)
 
 void HGCalVFESummationImpl::checkSizeValidity() const {
   unsigned nThickness = triggerTools_.nSiWaferTypes();
-  if (thresholds_silicon_.size() != nThickness) {
-    throw cms::Exception("Configuration") << thresholds_silicon_.size() << " silicon thresholds are given instead of "
+  // V19 distinguishes the HD and LD 200 um wafers in its thickness index,
+  // while nSiWaferTypes() reports the three physical thicknesses.  Requiring
+  // equality rejects the valid four-entry V19 configuration; only an
+  // undersized vector is unsafe when thicknessIndex() is used below.
+  if (thresholds_silicon_.size() < nThickness) {
+    throw cms::Exception("Configuration") << thresholds_silicon_.size() << " silicon thresholds are given, fewer than "
                                           << nThickness << " (the number of sensor thicknesses)";
   }
 }
