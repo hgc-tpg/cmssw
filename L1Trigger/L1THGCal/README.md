@@ -189,6 +189,11 @@ And actual implementations of the algorithms are stored in [`src/backend`](src/b
 
 #### Stage 2 clustering
 The Stage 2 is responsible of building the final 3D clusters, initially from 2D layer clusters and now directly from trigger cells. The default Stage 2 clustering algorithm is the so-called `HistoMax`, which refers to the way the cluster building is seeded. 
+
+For checkout, execution, ntuple inspection, component responsibilities, and
+the current limitations of the new full firmware-emulator integration, see
+the [Stage-2 firmware emulator integration guide](doc/Stage2EmulatorIntegration.md).
+
 The `HistoMax` 3D clustering is divided in several steps:
 - Histogramming: trigger cell transverse energies are projected into a 2D histogram in the $(r/z, \phi)$ space
 - Smoothing: smoothing kernels are applied on the 2D histogram in both $r/z$ and $\phi$ dimensions
@@ -201,7 +206,7 @@ By default the `HistoMax` clustering algorithm used is the original simulation b
 The different Stage 2 processing versions are implemented in:
 - [`plugins/backend/HGCalBackendLayer2Processor3DClustering.cc`](plugins/backend/HGCalBackendLayer2Processor3DClustering.cc): original floating-point simulation of different clustering algorithms (including the `HistoMax` algorithm) 
 - [`plugins/backend/HGCalBackendLayer2Processor3DClustering_SA.cc`](plugins/backend/HGCalBackendLayer2Processor3DClustering_SA.cc): bit-level Stage 2 clustering emulator
-- [`plugins/backend/HGCalBackendLayer2ProcessorStage2Emulator.cc`](plugins/backend/HGCalBackendLayer2ProcessorStage2Emulator.cc): adapter for the new Stage-2 clustering core.  It temporarily assigns already-unpacked CMSSW trigger cells to a deterministic, virtual input transport while the FE/BE link mapping and generated decoder ROM are unavailable.
+- [`plugins/backend/HGCalBackendLayer2ProcessorStage2Emulator.cc`](plugins/backend/HGCalBackendLayer2ProcessorStage2Emulator.cc): adapter for the new Stage-2 clustering core. The configured dummy Layer-1 clustering wraps each trigger cell in an `HGCalCluster`; the adapter temporarily encodes these one-per-trigger-cell objects into a deterministic, virtual input transport while the FE/BE link mapping and generated decoder ROM are unavailable.
 
 Select the latter with `custom_stage2_emulator(process)` from
 [`python/customNewProcessors.py`](python/customNewProcessors.py).  It produces
