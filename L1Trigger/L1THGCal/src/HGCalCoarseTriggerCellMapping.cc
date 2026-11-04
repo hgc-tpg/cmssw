@@ -65,13 +65,11 @@ uint32_t HGCalCoarseTriggerCellMapping::getCoarseTriggerCellId(uint32_t detid) c
 
 uint32_t HGCalCoarseTriggerCellMapping::getCoarseTriggerCellSplit(uint32_t detid) const {
   uint32_t tcSplit = 0;
-
-  unsigned int layer = triggerTools_.layerWithOffset(detid);
-  int thickness = triggerTools_.thicknessIndex(detid);
-  int ctcSize = ctcSize_.at(thickness * kNHGCalLayersMax_ + layer);
   uint32_t detector = DetId(detid).det();
-
   if (detector == DetId::HGCalTrigger || detector == DetId::HGCalHSc) {
+    unsigned int layer = triggerTools_.layerWithOffset(detid);
+    int thickness = triggerTools_.thicknessIndex(detid);
+    int ctcSize = ctcSize_.at(thickness * kNHGCalLayersMax_ + layer);
     if (triggerTools_.isScintillator(detid)) {
       HGCScintillatorDetId tc_Id(detid);
 
@@ -87,10 +85,10 @@ uint32_t HGCalCoarseTriggerCellMapping::getCoarseTriggerCellSplit(uint32_t detid
     } else {
       HGCalTriggerDetId tc_Id(detid);
 
+      const int typeThreeROCs = 1;
       int uPrime = 0;
       int vPrime = 0;
-      int type = 1;
-      int rocnum = detIdToROC_.getROCNumber(tc_Id.triggerCellU(), tc_Id.triggerCellV(), type);
+      int rocnum = detIdToROC_.getROCNumber(tc_Id.triggerCellU(), tc_Id.triggerCellV(), typeThreeROCs);
 
       if (rocnum == kRoc0deg_) {
         uPrime = tc_Id.triggerCellU();

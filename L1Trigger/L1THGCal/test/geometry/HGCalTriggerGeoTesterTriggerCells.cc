@@ -70,7 +70,7 @@ void HGCalTriggerGeoTesterTriggerCells::initialize(TTree* tree, const edm::Param
   tree_->Branch("type", &type_, "type/i");
   tree_->Branch("modid", &modid_, "modid/i");
   tree_->Branch("stcid", &stcid_, "stcid/i");
-  tree_->Branch("stcsplit", &stcsplit_, "stcsplit/i");
+  tree_->Branch("stcsplit", &stcsplit_, "stcsplit/I");
   tree_->Branch("x", &x_, "x/F");
   tree_->Branch("y", &y_, "y/F");
   tree_->Branch("z", &z_, "z/F");
