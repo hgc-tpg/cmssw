@@ -54,7 +54,7 @@
   <class name="edm::Wrapper<l1t::HGCalMulticlusterBxCollection>"/>
 
   <class name="l1t::io_v1::HGCalTriggerCell" ClassVersion="5">
-   <version ClassVersion="5" checksum="1894136743"/>
+   <version ClassVersion="5" checksum="3897154446"/>
    <version ClassVersion="4" checksum="2951999726"/>
    <version ClassVersion="3" checksum="3220253986"/>
   </class>

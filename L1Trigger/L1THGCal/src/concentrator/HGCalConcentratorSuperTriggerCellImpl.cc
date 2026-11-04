@@ -85,7 +85,7 @@ void HGCalConcentratorSuperTriggerCellImpl::createAllTriggerCells(
   // assign energy
   for (l1t::HGCalTriggerCell& tc : trigCellVecOutput) {
     const auto& stc = STCs[superTCmapping_.getCoarseTriggerCellId(tc.detId())];
-    tc.setStcId(superTCmapping_.getCoarseTriggerCellSplit(tc.detId()));
+    tc.setStcSplit(superTCmapping_.getCoarseTriggerCellSplit(tc.detId()));
     assignSuperTriggerCellEnergyAndPosition(tc, stc);
   }
 }

@@ -36,8 +36,8 @@ namespace l1t {
       void setModuleId(uint32_t value) { moduleId_ = value; }
       uint32_t moduleId() const { return moduleId_; }
 
-      void setStcId(int32_t value) { stcId_ = value; }
-      int32_t stcId() const { return stcId_; }
+      void setStcSplit(int32_t value) { stcSplit_ = value; }
+      int32_t stcSplit() const { return stcSplit_; }
 
       void setPt(double pT);
 
@@ -50,7 +50,7 @@ namespace l1t {
       uint32_t uncompressedCharge_{0};
       uint32_t compressedCharge_{0};
       uint32_t moduleId_{0};
-      int32_t stcId_{-1};
+      int32_t stcSplit_{-1};
     };
   }  // namespace io_v1
   using HGCalTriggerCell = io_v1::HGCalTriggerCell;

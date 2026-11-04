@@ -53,7 +53,7 @@ private:
   std::vector<int> tc_wafertype_;
   std::vector<int> tc_cellu_;
   std::vector<int> tc_cellv_;
-  std::vector<int> tc_stcid_;
+  std::vector<int> tc_stcsplit_;
   std::vector<uint32_t> tc_data_;
   std::vector<uint32_t> tc_uncompressedCharge_;
   std::vector<uint32_t> tc_compressedCharge_;
@@ -124,7 +124,7 @@ void HGCalTriggerNtupleHGCTriggerCells::initialize(TTree& tree,
   tree.Branch(withPrefix("wafertype"), &tc_wafertype_);
   tree.Branch(withPrefix("cellu"), &tc_cellu_);
   tree.Branch(withPrefix("cellv"), &tc_cellv_);
-  tree.Branch(withPrefix("stcid"), &tc_stcid_);
+  tree.Branch(withPrefix("stcsplit"), &tc_stcsplit_);
   tree.Branch(withPrefix("data"), &tc_data_);
   tree.Branch(withPrefix("uncompressedCharge"), &tc_uncompressedCharge_);
   tree.Branch(withPrefix("compressedCharge"), &tc_compressedCharge_);
@@ -226,7 +226,7 @@ void HGCalTriggerNtupleHGCTriggerCells::fill(const edm::Event& e, const HGCalTri
         throw cms::Exception("InvalidHGCalTriggerDetid")
             << "Found unexpected trigger cell detid to be filled in HGCal Trigger Cell ntuple.";
       }
-      tc_stcid_.emplace_back(tc_itr->stcId());
+      tc_stcsplit_.emplace_back(tc_itr->stcSplit());
       tc_data_.emplace_back(tc_itr->hwPt());
       tc_uncompressedCharge_.emplace_back(tc_itr->uncompressedCharge());
       tc_compressedCharge_.emplace_back(tc_itr->compressedCharge());
@@ -337,7 +337,7 @@ void HGCalTriggerNtupleHGCTriggerCells::clear() {
   tc_wafertype_.clear();
   tc_cellu_.clear();
   tc_cellv_.clear();
-  tc_stcid_.clear();
+  tc_stcsplit_.clear();
   tc_data_.clear();
   tc_uncompressedCharge_.clear();
   tc_compressedCharge_.clear();
