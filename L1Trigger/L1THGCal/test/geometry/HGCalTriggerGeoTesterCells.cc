@@ -1,5 +1,6 @@
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerGeoTesterBase.h"
 #include "L1Trigger/L1THGCal/interface/HGCalTriggerGeometryBase.h"
+#include "L1Trigger/L1THGCal/interface/HGCalCoarseTriggerCellMapping.h"
 
 class HGCalTriggerGeoTesterCells : public HGCalTriggerGeoTesterBase {
 public:
@@ -12,6 +13,8 @@ public:
 private:
   void clear() final;
   bool validCellIdFromPosition(unsigned cell_id, const HGCalTriggerGeoTesterEventSetup& es) const;
+
+  HGCalCoarseTriggerCellMapping superTCmapping_;
 
   unsigned id_ = 0;
   unsigned errorbits_ = 0;
@@ -27,6 +30,7 @@ private:
   int waferV_ = 0;
   int type_ = 0;
   unsigned tcid_ = 0;
+  unsigned stcid_ = 0;
   unsigned modid_ = 0;
   float x_ = 0.;
   float y_ = 0.;
@@ -42,7 +46,7 @@ private:
 DEFINE_EDM_PLUGIN(HGCalTriggerGeoTesterFactory, HGCalTriggerGeoTesterCells, "HGCalTriggerGeoTesterCells");
 
 HGCalTriggerGeoTesterCells::HGCalTriggerGeoTesterCells(const edm::ParameterSet& conf)
-    : HGCalTriggerGeoTesterBase(conf) {}
+    : HGCalTriggerGeoTesterBase(conf), superTCmapping_(conf.getParameter<std::vector<unsigned>>("stcSize")) {}
 
 void HGCalTriggerGeoTesterCells::initialize(TTree* tree, const edm::ParameterSet& conf) {
   tree_ = tree;
@@ -61,7 +65,8 @@ void HGCalTriggerGeoTesterCells::initialize(TTree* tree, const edm::ParameterSet
   tree_->Branch("waferV", &waferV_, "waferV/I");
   tree_->Branch("type", &type_, "type/i");
   tree_->Branch("tcid", &tcid_, "tcid/i");
-  tree_->Branch("modid", &modid_, "modid/I");
+  tree_->Branch("stcid", &stcid_, "stcid/i");
+  tree_->Branch("modid", &modid_, "modid/i");
   tree_->Branch("x", &x_, "x/F");
   tree_->Branch("y", &y_, "y/F");
   tree_->Branch("z", &z_, "z/F");
@@ -99,6 +104,7 @@ void HGCalTriggerGeoTesterCells::fill(const HGCalTriggerGeoTesterEventSetup& es)
     waferV_ = detid.waferV();
     type_ = detid.type();
     tcid_ = es.geometry->getTriggerCellFromCell(id);
+    stcid_ = superTCmapping_.getCoarseTriggerCellId(tcid_);
     modid_ = es.geometry->getModuleFromTriggerCell(tcid_);
     //
     GlobalPoint center = es.geometry->eeGeometry()->getPosition(id);
@@ -142,6 +148,7 @@ void HGCalTriggerGeoTesterCells::fill(const HGCalTriggerGeoTesterEventSetup& es)
     waferV_ = detid.waferV();
     type_ = detid.type();
     tcid_ = es.geometry->getTriggerCellFromCell(id_);
+    stcid_ = superTCmapping_.getCoarseTriggerCellId(tcid_);
     modid_ = es.geometry->getModuleFromTriggerCell(tcid_);
     //
     GlobalPoint center = es.geometry->hsiGeometry()->getPosition(id);
@@ -187,6 +194,7 @@ void HGCalTriggerGeoTesterCells::fill(const HGCalTriggerGeoTesterEventSetup& es)
       waferV_ = detid.waferV();
       type_ = detid.type();
       tcid_ = es.geometry->getTriggerCellFromCell(id_);
+      stcid_ = superTCmapping_.getCoarseTriggerCellId(tcid_);
       modid_ = es.geometry->getModuleFromTriggerCell(tcid_);
       //
       GlobalPoint center = es.geometry->noseGeometry()->getPosition(id);
@@ -231,6 +239,7 @@ void HGCalTriggerGeoTesterCells::fill(const HGCalTriggerGeoTesterEventSetup& es)
     waferV_ = -999;
     type_ = detid.type();
     tcid_ = es.geometry->getTriggerCellFromCell(id_);
+    stcid_ = superTCmapping_.getCoarseTriggerCellId(tcid_);
     modid_ = es.geometry->getModuleFromTriggerCell(tcid_);
     //
     GlobalPoint center = es.geometry->hscGeometry()->getPosition(id);
@@ -257,6 +266,8 @@ void HGCalTriggerGeoTesterCells::fill(const HGCalTriggerGeoTesterEventSetup& es)
 
 void HGCalTriggerGeoTesterCells::check(const HGCalTriggerGeoTesterEventSetup& es) {
   edm::LogPrint("GeoTester") << "Checking cells";
+
+  superTCmapping_.setGeometry(es.geometry.product());
   for (const auto& id : es.geometry->eeGeometry()->getValidDetIds()) {
     if (!es.geometry->eeTopology().valid(id)) {
       errors_.fill(HGCalTriggerGeoTesterErrors::CellValidity, id);
@@ -336,6 +347,7 @@ void HGCalTriggerGeoTesterCells::clear() {
   waferV_ = 0;
   type_ = 0;
   tcid_ = 0;
+  stcid_ = 0;
   modid_ = 0;
   x_ = 0.;
   y_ = 0.;
