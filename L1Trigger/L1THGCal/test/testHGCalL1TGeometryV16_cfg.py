@@ -63,11 +63,15 @@ process.load('L1Trigger.L1THGCal.hgcalTriggerPrimitives_cff')
 from L1Trigger.L1THGCal.customTriggerGeometry import custom_geometry_V16_Imp1
 process = custom_geometry_V16_Imp1(process)
 
+from L1Trigger.L1THGCal.l1tHGCalConcentratorProducer_cfi import supertc_conc_proc
+
 tester_cells = cms.PSet(
-    TesterName = cms.string('HGCalTriggerGeoTesterCells')
+    TesterName = cms.string('HGCalTriggerGeoTesterCells'),
+    stcSize = supertc_conc_proc.stcSize,
 )
 tester_triggercells = cms.PSet(
-    TesterName = cms.string('HGCalTriggerGeoTesterTriggerCells')
+    TesterName = cms.string('HGCalTriggerGeoTesterTriggerCells'),
+    stcSize = supertc_conc_proc.stcSize,
 )
 tester_modules = cms.PSet(
     TesterName = cms.string('HGCalTriggerGeoTesterModules')

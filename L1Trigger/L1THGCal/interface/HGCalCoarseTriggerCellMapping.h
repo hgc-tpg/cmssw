@@ -13,6 +13,7 @@ public:
   std::vector<uint32_t> getConstituentTriggerCells(uint32_t ctcId) const;
   GlobalPoint getCoarseTriggerCellPosition(uint32_t ctcId) const;
   uint32_t getCoarseTriggerCellId(uint32_t detid) const;
+  uint32_t getCoarseTriggerCellSplit(uint32_t detid) const;
   void checkSizeValidity() const;
   void setGeometry(const HGCalTriggerGeometryBase* const geom) {
     triggerTools_.setGeometry(geom);
