@@ -55,6 +55,9 @@ private:
   static constexpr int kVMask_ = 0x3;
   static constexpr int kHGCalCellMaskInv_ = ~0xff;
   static constexpr int kHGCalScinCellMaskInv_ = ~0x1ffff;
+  static constexpr int kHGCalScinModuleRadiusOffset_ = 7;
+  static constexpr int kHGCalScinModuleRadiusMask_ = 0x80;
+  static constexpr int kHGCalScinModuleRadiusMaskInv_ = 0x7F;
 
   static constexpr int kRoc0deg_ = 1;
   static constexpr int kRoc120deg_ = 2;

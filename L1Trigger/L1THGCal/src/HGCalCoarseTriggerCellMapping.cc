@@ -1,5 +1,6 @@
 #include "L1Trigger/L1THGCal/interface/HGCalCoarseTriggerCellMapping.h"
 #include "DataFormats/ForwardDetId/interface/HGCalTriggerDetId.h"
+#include "DataFormats/ForwardDetId/interface/HGCalTriggerModuleDetId.h"
 
 HGCalCoarseTriggerCellMapping::HGCalCoarseTriggerCellMapping(const std::vector<unsigned>& ctcSize)
     : ctcSize_(ctcSize) {}
@@ -72,6 +73,22 @@ uint32_t HGCalCoarseTriggerCellMapping::getCoarseTriggerCellSplit(uint32_t detid
     int ctcSize = ctcSize_.at(thickness * kNHGCalLayersMax_ + layer);
     if (triggerTools_.isScintillator(detid)) {
       HGCScintillatorDetId tc_Id(detid);
+      uint32_t modid = triggerTools_.getTriggerGeometry()->getModuleFromTriggerCell(detid);
+      unsigned firstTcRingInModule = triggerTools_.getTriggerGeometry()->scintillatorModuleFirstTcEta(modid);
+      // Shift TC eta/ring to a module internal indexing
+      unsigned ieta = tc_Id.ietaAbs() - firstTcRingInModule + 1;
+      if (ieta > kHGCalScinModuleRadiusMaskInv_) {
+        throw cms::Exception("HGCTriggerCoarseTriggerCellMappingError")
+            << "Scintillator Coarse TC ring index (" << ieta << ") larger than the max value that can be encoded ("
+            << kHGCalScinModuleRadiusMaskInv_ << ")";
+      }
+      unsigned modeta = HGCalTriggerModuleDetId(modid).eta();
+      if (modeta > 1) {
+        throw cms::Exception("HGCTriggerCoarseTriggerCellMappingError")
+            << "Scintillator module ring index >1 (" << modeta << ")";
+      }
+      // Use the MSB of the eta/ring field to store the module index
+      ieta = ieta | (modeta << kHGCalScinModuleRadiusOffset_);
 
       //  |EEEEEEEE|PPPPPPPPP|
       // &|11111111|111111111| (individual cells)
@@ -79,8 +96,8 @@ uint32_t HGCalCoarseTriggerCellMapping::getCoarseTriggerCellSplit(uint32_t detid
       // &|11111110|111111110| (CTC4)
       // &|11111110|111111100| (CTC8)
       // &|11111100|111111100| (CTC16)
-      tcSplit = (((tc_Id.ietaAbs() - 1) << HGCScintillatorDetId::kHGCalRadiusOffset) | (tc_Id.iphi() - 1)) &
-                kSplit_Scin_.at(ctcSize);
+      tcSplit =
+          (((ieta - 1) << HGCScintillatorDetId::kHGCalRadiusOffset) | (tc_Id.iphi() - 1)) & kSplit_Scin_.at(ctcSize);
 
     } else {
       HGCalTriggerDetId tc_Id(detid);
@@ -125,14 +142,30 @@ std::vector<uint32_t> HGCalCoarseTriggerCellMapping::getConstituentTriggerCells(
 
   if (tc_Id.det() == DetId::HGCalTrigger || tc_Id.det() == DetId::HGCalHSc) {
     if (triggerTools_.isScintillator(ctcId)) {
+      HGCScintillatorDetId id(ctcId);
+      unsigned tc_type = id.type();
+      unsigned layer = id.layer();
+      int zside = id.zside();
+      unsigned ieta = id.ietaAbs();
+      // Retrieve module ring/eta index, stored in the MSB of the ieta field
+      // This is needed to get the index of the first TC in this module
+      // This is used later to shift the TC ring from module internal indexing to absolute indexing
+      unsigned modeta = (ieta & kHGCalScinModuleRadiusMask_) >> kHGCalScinModuleRadiusOffset_;
+      HGCalTriggerModuleDetId modid(HGCalTriggerSubdetector::HGCalHScTrigger, zside, tc_type, layer, 0, modeta, 0);
+      unsigned firstTcRingInModule = triggerTools_.getTriggerGeometry()->scintillatorModuleFirstTcEta(modid);
+      ieta = (ieta & kHGCalScinModuleRadiusMaskInv_);
+      uint32_t tcSplit = ((ieta << HGCScintillatorDetId::kHGCalRadiusOffset) | id.iphi());
+      ctcId = (ctcId & kHGCalScinCellMaskInv_) | tcSplit;
       int splitInv = ~(kHGCalScinCellMaskInv_ | kSplit_Scin_.at(ctcSize));
       for (int i = 0; i < splitInv + 1; i++) {
         if ((i & splitInv) != i)
           continue;
 
         HGCScintillatorDetId prime = (ctcId | i);
+        // Shift the TC ring from module internal indexing back to its absolute indexing
+        unsigned tc_ieta = prime.iradiusAbs() + firstTcRingInModule - 1;
         unsigned outid = (ctcId & kHGCalScinCellMaskInv_) |
-                         (((prime.iradiusAbs() + 1) << HGCScintillatorDetId::kHGCalRadiusOffset) | (prime.iphi() + 1));
+                         (((tc_ieta + 1) << HGCScintillatorDetId::kHGCalRadiusOffset) | (prime.iphi() + 1));
 
         if (triggerTools_.getTriggerGeometry()->validTriggerCell(outid)) {
           output_ids.emplace_back(outid);
