@@ -206,6 +206,11 @@ void HGCalTriggerGeoTesterTriggerCells::check(const HGCalTriggerGeoTesterEventSe
         errors_.fill(HGCalTriggerGeoTesterErrors::InvalidCellInTC, tcid);
       }
     }
+    unsigned ctcid = superTCmapping_.getCoarseTriggerCellId(tcid);
+    auto tcs = superTCmapping_.getConstituentTriggerCells(ctcid);
+    if (std::find(tcs.begin(), tcs.end(), tcid) == tcs.end()) {
+      errors_.fill(HGCalTriggerGeoTesterErrors::MissingTCInSTC, tcid);
+    }
   }
 }
 

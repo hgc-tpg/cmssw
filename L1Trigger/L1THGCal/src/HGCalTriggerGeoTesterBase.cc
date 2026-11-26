@@ -4,6 +4,7 @@ const std::unordered_map<HGCalTriggerGeoTesterErrors::ErrorCode, std::string> HG
     {HGCalTriggerGeoTesterErrors::CellValidity, "Found invalid cell(s)"},
     {HGCalTriggerGeoTesterErrors::MissingCellInTC, "Found missing cell(s) in trigger cell"},
     {HGCalTriggerGeoTesterErrors::InvalidCellInTC, "Found invalid cell(s) in trigger cell"},
+    {HGCalTriggerGeoTesterErrors::MissingTCInSTC, "Found missing trigger cell(s) in STC"},
     {HGCalTriggerGeoTesterErrors::MissingTCInModule, "Found missing trigger cell(s) in module"},
     {HGCalTriggerGeoTesterErrors::InvalidTCInModule, "Found invalid trigger cell(s) in module"},
     {HGCalTriggerGeoTesterErrors::ConnectedModuleWithoutLpgbt, "Found module without lpGBT but flagged as connected"},
