@@ -1222,9 +1222,9 @@ const unsigned HGCalTriggerGeometryV19Imp1::scintillatorModuleFirstTcEta(const u
     int eta = id.eta();
     if (eta == 0) {
       std::pair<int, int> range = hscTopology().dddConstants().getREtaRange(id.layer());
-      index = (range.first - 1) / tc_size + 1;
+      index = (range.first - 1) / tc_size + 1;  // TC index start at 1
     } else if (eta == 1) {
-      index = hSc_module_split_index_ + 1;
+      index = hSc_module_split_index_ + 1;  // TC index start at 1
     }
   }
   return index;

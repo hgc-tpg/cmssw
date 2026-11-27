@@ -143,15 +143,13 @@ std::vector<uint32_t> HGCalCoarseTriggerCellMapping::getConstituentTriggerCells(
   if (tc_Id.det() == DetId::HGCalTrigger || tc_Id.det() == DetId::HGCalHSc) {
     if (triggerTools_.isScintillator(ctcId)) {
       HGCScintillatorDetId id(ctcId);
-      unsigned tc_type = id.type();
-      unsigned layer = id.layer();
-      int zside = id.zside();
       unsigned ieta = id.ietaAbs();
       // Retrieve module ring/eta index, stored in the MSB of the ieta field
       // This is needed to get the index of the first TC in this module
       // This is used later to shift the TC ring from module internal indexing to absolute indexing
       unsigned modeta = (ieta & kHGCalScinModuleRadiusMask_) >> kHGCalScinModuleRadiusOffset_;
-      HGCalTriggerModuleDetId modid(HGCalTriggerSubdetector::HGCalHScTrigger, zside, tc_type, layer, 0, modeta, 0);
+      HGCalTriggerModuleDetId modid(
+          HGCalTriggerSubdetector::HGCalHScTrigger, id.zside(), id.type(), id.layer(), 0, modeta, 0);
       unsigned firstTcRingInModule = triggerTools_.getTriggerGeometry()->scintillatorModuleFirstTcEta(modid);
       ieta = (ieta & kHGCalScinModuleRadiusMaskInv_);
       uint32_t tcSplit = ((ieta << HGCScintillatorDetId::kHGCalRadiusOffset) | id.iphi());
