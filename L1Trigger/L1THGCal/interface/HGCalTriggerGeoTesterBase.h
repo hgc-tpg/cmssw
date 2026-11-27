@@ -27,6 +27,7 @@ public:
     CellValidity = 0,
     MissingCellInTC,
     InvalidCellInTC,
+    MissingTCInSTC,
     MissingTCInModule,
     InvalidTCInModule,
     ConnectedModuleWithoutLpgbt,

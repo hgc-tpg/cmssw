@@ -64,6 +64,7 @@ public:
   unsigned lastTriggerLayer() const final { return last_trigger_layer_; }
   unsigned triggerLayer(const unsigned) const final;
   const std::vector<unsigned>& triggerLayers() const final { return trigger_layers_; }
+  const unsigned scintillatorModuleFirstTcEta(const unsigned modid) const final { return 1; /* TC index starts at 1 */ }
 
 private:
   // HSc trigger cell grouping

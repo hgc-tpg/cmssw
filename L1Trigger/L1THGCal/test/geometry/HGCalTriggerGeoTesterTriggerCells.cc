@@ -193,8 +193,8 @@ void HGCalTriggerGeoTesterTriggerCells::check(const HGCalTriggerGeoTesterEventSe
     }
   }
 
-  // Check consistency of cells included in trigger cell
   for (const auto& [tcid, cells] : triggercells_to_cells) {
+    // Check consistency of cells included in trigger cell
     HGCalTriggerGeometryBase::geom_set cells_from_tc = es.geometry->getCellsFromTriggerCell(tcid);
     for (auto cell : cells) {
       if (cells_from_tc.find(cell) == cells_from_tc.end()) {
@@ -205,6 +205,12 @@ void HGCalTriggerGeoTesterTriggerCells::check(const HGCalTriggerGeoTesterEventSe
       if (cells.find(cell) == cells.end()) {
         errors_.fill(HGCalTriggerGeoTesterErrors::InvalidCellInTC, tcid);
       }
+    }
+    // Check consistency of coarse trigger cells
+    unsigned ctcid = superTCmapping_.getCoarseTriggerCellId(tcid);
+    auto tcs = superTCmapping_.getConstituentTriggerCells(ctcid);
+    if (std::find(tcs.begin(), tcs.end(), tcid) == tcs.end()) {
+      errors_.fill(HGCalTriggerGeoTesterErrors::MissingTCInSTC, tcid);
     }
   }
 }

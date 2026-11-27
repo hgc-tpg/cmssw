@@ -65,15 +65,16 @@ public:
   unsigned lastTriggerLayer() const final { return last_trigger_layer_; }
   unsigned triggerLayer(const unsigned) const final;
   const std::vector<unsigned>& triggerLayers() const final { return trigger_layers_; }
+  const unsigned scintillatorModuleFirstTcEta(const unsigned modid) const final;
 
 private:
   // HSc trigger cell grouping
   unsigned hSc_triggercell_size_ = 2;
-  static constexpr unsigned hSc_num_panels_per_sector_ = 12;
+  static constexpr unsigned hSc_modules_per_sector_ = 12;
   static constexpr unsigned hSc_tcs_per_module_phi_ = 4;
   static constexpr unsigned hSc_tcs_per_module_eta_ = 12;
-  static constexpr unsigned hSc_module_split_index_ = 9;
-  static constexpr unsigned hSc_tcs_per_sector_ = hSc_num_panels_per_sector_ * hSc_tcs_per_module_phi_;
+  static constexpr unsigned hSc_module_split_index_ = 9;  // TC index
+  static constexpr unsigned hSc_tcs_per_sector_ = hSc_modules_per_sector_ * hSc_tcs_per_module_phi_;
   static constexpr int ntc_per_wafer_ = 48;
   static constexpr int nSectors_ = 3;
 
@@ -986,7 +987,7 @@ void HGCalTriggerGeometryV16Imp1::unpackLayerSubdetWaferId(
 }
 
 void HGCalTriggerGeometryV16Imp1::etaphiMappingFromSector0(int& ieta, int& iphi, unsigned sector) const {
-  iphi += hSc_num_panels_per_sector_ * sector;
+  iphi += hSc_modules_per_sector_ * sector;
 }
 
 HGCalGeomRotation::WaferCentring HGCalTriggerGeometryV16Imp1::getWaferCentring(unsigned layer, int subdet) const {
@@ -1200,6 +1201,21 @@ unsigned HGCalTriggerGeometryV16Imp1::layerWithOffset(unsigned id) const {
     }
   }
   return layer;
+}
+
+const unsigned HGCalTriggerGeometryV16Imp1::scintillatorModuleFirstTcEta(const unsigned modid) const {
+  unsigned index = 0;
+  HGCalTriggerModuleDetId id(modid);
+  if (id.isHScintillator()) {
+    int eta = id.eta();
+    if (eta == 0) {
+      std::pair<int, int> range = hscTopology().dddConstants().getREtaRange(id.layer());
+      index = (range.first - 1) / hSc_triggercell_size_ + 1;  // TC index start at 1
+    } else if (eta == 1) {
+      index = hSc_module_split_index_ + 1;  // TC index start at 1
+    }
+  }
+  return index;
 }
 
 DEFINE_EDM_PLUGIN(HGCalTriggerGeometryFactory, HGCalTriggerGeometryV16Imp1, "HGCalTriggerGeometryV16Imp1");

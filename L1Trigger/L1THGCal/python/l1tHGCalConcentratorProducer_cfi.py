@@ -14,7 +14,8 @@ adcNbitsBH = digiparam.hgchebackDigitizer.digiCfg.feCfg.adcNbits
 MAX_LAYERS = 52
 N_THICKNESSES = HGCAL_reco_constants.numberOfThicknesses.value()
 CTC_2_SIZES = cms.vuint32( [2]*(MAX_LAYERS+1)*(N_THICKNESSES+1) )
-STC_4_AND_16_SIZES = cms.vuint32( [4]*(MAX_LAYERS+1)+ [16]*(MAX_LAYERS+1)*N_THICKNESSES )
+# STC4 in silicon HD and scintillator; STC16 in silicon LD
+STC_4_AND_16_SIZES = cms.vuint32( [4]*(MAX_LAYERS+1) + [16]*(MAX_LAYERS+1)*2 + [4]*(MAX_LAYERS+1)*(N_THICKNESSES-2) )
 STC_4_AND_8_SIZES = cms.vuint32( [4]*(MAX_LAYERS+1)+ [8]*(MAX_LAYERS+1)*N_THICKNESSES )
 
 threshold_conc_proc = cms.PSet(ProcessorName  = cms.string('HGCalConcentratorProcessorSelection'),
